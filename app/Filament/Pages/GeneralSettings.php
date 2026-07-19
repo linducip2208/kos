@@ -81,13 +81,16 @@ class GeneralSettings extends Page implements HasForms
                     Textarea::make('contact_address')->label('Alamat Kantor / Kantor Pengelola')->rows(2)->columnSpanFull(),
                 ]),
 
-            Section::make('Notifikasi WhatsApp (Fonnte)')->schema([
+            Section::make('Notifikasi WhatsApp (ChatGo)')->schema([
                 Toggle::make('whatsapp_enabled')->label('Aktifkan WhatsApp Notif')->live(),
-                Grid::make(2)->schema([
-                    TextInput::make('whatsapp_api_key')->label('API Key Fonnte')
+                Grid::make(3)->schema([
+                    TextInput::make('whatsapp_api_key')->label('API Key ChatGo')
                         ->password()->revealable()->visible(fn ($get) => $get('whatsapp_enabled')),
-                    TextInput::make('whatsapp_sender')->label('Nomor WhatsApp Pengirim')
+                    TextInput::make('whatsapp_sender')->label('No. WhatsApp Pengirim')
                         ->placeholder('628xxxxxxxxxx')->visible(fn ($get) => $get('whatsapp_enabled')),
+                    TextInput::make('whatsapp_api_url')->label('ChatGo API URL')
+                        ->default('https://chatgo.whitelabel.co.id')
+                        ->visible(fn ($get) => $get('whatsapp_enabled')),
                 ]),
             ]),
         ])->statePath('data');
@@ -109,6 +112,7 @@ class GeneralSettings extends Page implements HasForms
         Setting::set('whatsapp_enabled', $data['whatsapp_enabled'], 'notif', 'boolean');
         Setting::set('whatsapp_api_key', $data['whatsapp_api_key'], 'notif', 'encrypted');
         Setting::set('whatsapp_sender', $data['whatsapp_sender'], 'notif');
+        Setting::set('whatsapp_api_url', $data['whatsapp_api_url'] ?? 'https://chatgo.whitelabel.co.id', 'notif');
 
         Notification::make()->title('Pengaturan disimpan.')->success()->send();
     }

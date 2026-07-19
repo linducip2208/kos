@@ -39,19 +39,22 @@ class WhatsAppService
         }
 
         try {
-            $response = Http::timeout(15)->post('https://api.fonnte.com/send', [
-                'target'  => $number,
+            $baseUrl = setting('whatsapp_api_url', 'https://chatgo.whitelabel.co.id', 'notif');
+
+            $response = Http::timeout(15)->post($baseUrl . '/api/send-message', [
+                'number'  => $number,
                 'message' => $message,
-                'token'   => $this->apiKey,
+                'api_key' => $this->apiKey,
             ]);
 
-            $success = $response->successful() && ($response->json('status') ?? false);
+            $body = $response->json();
+            $success = $response->successful() && ($body['status'] ?? $body['success'] ?? false);
 
             $log->update([
                 'status'           => $success ? 'sent' : 'failed',
-                'gateway_response' => $response->json(),
+                'gateway_response' => $body,
                 'sent_at'          => $success ? now() : null,
-                'error_message'    => $success ? null : ($response->json('reason') ?? 'Unknown error'),
+                'error_message'    => $success ? null : ($body['message'] ?? $body['reason'] ?? 'Unknown error'),
             ]);
 
             return $success;
