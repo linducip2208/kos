@@ -184,7 +184,7 @@
         <p class="text-primary-100 mt-3 max-w-lg mx-auto">Coba demo gratis atau beli source code untuk digunakan selamanya.</p>
         <div class="flex flex-wrap justify-center gap-4 mt-8">
             <a href="/admin" class="bg-white text-primary-700 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors">Coba Demo</a>
-            <a href="https://wa.me/6281234567890" class="bg-green-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-600 transition-colors">WhatsApp</a>
+            <a href="https://wa.me/6281296052010" class="bg-green-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-600 transition-colors">WhatsApp</a>
         </div>
     </section>
 </div>

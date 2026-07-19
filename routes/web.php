@@ -72,19 +72,55 @@ Route::get('/docs', [App\Http\Controllers\DocsController::class, 'index'])->name
 // Sitemap
 Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 
-// Programmatic SEO
-Route::prefix('best')->name('pseo.')->group(function () {
-    Route::get('/{city}', [App\Http\Controllers\ProgrammaticSeoController::class, 'bestCity'])->name('best.city');
-});
-Route::prefix('kos-dekat')->name('pseo.')->group(function () {
-    Route::get('/{kampus}', [App\Http\Controllers\ProgrammaticSeoController::class, 'bestKampus'])->name('best.kampus');
-});
-Route::get('/fasilitas/{fasilitas}', [App\Http\Controllers\ProgrammaticSeoController::class, 'kosFasilitas'])->name('pseo.fasilitas');
-Route::get('/kos-{tipe}', [App\Http\Controllers\ProgrammaticSeoController::class, 'kosTipe'])->where('tipe', 'putra|putri|campur|harian|bulanan|tahunan')->name('pseo.tipe');
-Route::get('/kos-{range}', [App\Http\Controllers\ProgrammaticSeoController::class, 'kosHarga'])->where('range', 'dibawah-500rb|500rb-1jt|1jt-2jt|diatas-2jt')->name('pseo.harga');
-Route::get('/alternatif/{slug}', [App\Http\Controllers\ProgrammaticSeoController::class, 'alternatif'])->name('pseo.alternatif');
-Route::get('/bandingkan/{slug}', [App\Http\Controllers\ProgrammaticSeoController::class, 'bandingkan'])->where('slug', '.*-vs-.*')->name('pseo.bandingkan');
+// Programmatic SEO — 1,000,000+ halaman organik
+// ⚠️ Urutan penting: spesifik dulu, baru generik
+
+// Source Code Selling
 Route::get('/beli-aplikasi-kos', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCode'])->name('pseo.beli');
+Route::get('/beli-aplikasi-kos/di/{city}', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCodeByCity'])->name('pseo.beli.city');
+Route::get('/beli-aplikasi-kos/fitur/{feature}', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCodeByFeature'])->name('pseo.beli.feature');
+Route::get('/source-code-kos/{feature}', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCodeByFeature'])->name('pseo.sourcecode');
+
+// Bandingkan & Alternatif
+Route::get('/bandingkan', [App\Http\Controllers\ProgrammaticSeoController::class, 'bandingkan'])->name('pseo.bandingkan.form');
+Route::get('/bandingkan/{slug}', [App\Http\Controllers\ProgrammaticSeoController::class, 'bandingkan'])->where('slug', '.*-vs-.*')->name('pseo.bandingkan');
+Route::get('/alternatif/{slug}', [App\Http\Controllers\ProgrammaticSeoController::class, 'alternatif'])->name('pseo.alternatif');
+
+// Kombinasi spesifik: kampus + kota
+Route::get('/kos-dekat-{kampus}-di-{city}', [App\Http\Controllers\ProgrammaticSeoController::class, 'campusCity'])->name('pseo.campus-city');
+Route::get('/kos-dekat/{kampus}', [App\Http\Controllers\ProgrammaticSeoController::class, 'campusCity'])->name('pseo.best.kampus');
+
+// Kos di kota × fasilitas
+Route::get('/kos-di-{city}-{facility}', [App\Http\Controllers\ProgrammaticSeoController::class, 'cityFacility'])
+    ->where('facility', '(ac|wifi|kamar-mandi-dalam|dapur-bersama|parkir-motor|parkir-mobil|tv-kabel|spring-bed|lemari|meja-belajar|laundry|kulkas|water-heater|balkon|rooftop|gym|kolam-renang|cctv|satpam-24-jam|akses-kunci-card|jemuran|taman|ruang-tamu|dapur-pribadi|kipas-angin)')
+    ->name('pseo.city-facility');
+
+// Kos di kota × harga
+Route::get('/kos-di-{city}-{range}', [App\Http\Controllers\ProgrammaticSeoController::class, 'cityPrice'])
+    ->where('range', '(dibawah-500rb|500rb-1jt|1jt-15jt|15jt-2jt|2jt-3jt|diatas-3jt)')
+    ->name('pseo.city-price');
+
+// Kos di kota × tipe
+Route::get('/kos-di-{city}-untuk-{type}', [App\Http\Controllers\ProgrammaticSeoController::class, 'cityType'])
+    ->where('type', '(putra|putri|campur|harian|bulanan|tahunan|pegawai|mahasiswa|keluarga|eksklusif)')
+    ->name('pseo.city-type');
+
+// Kos di kota (standalone)
+Route::get('/best/{city}', [App\Http\Controllers\ProgrammaticSeoController::class, 'bestCity'])->name('pseo.best.city');
+Route::get('/kos-di-{city}', [App\Http\Controllers\ProgrammaticSeoController::class, 'bestCity'])->name('pseo.kos-di');
+
+// Fasilitas standalone
+Route::get('/fasilitas/{fasilitas}', [App\Http\Controllers\ProgrammaticSeoController::class, 'kosFasilitas'])->name('pseo.fasilitas');
+
+// Tipe standalone
+Route::get('/kos-untuk-{tipe}', [App\Http\Controllers\ProgrammaticSeoController::class, 'kosTipe'])
+    ->where('tipe', 'putra|putri|campur|harian|bulanan|tahunan|pegawai|mahasiswa|keluarga|eksklusif')
+    ->name('pseo.tipe');
+
+// Harga standalone
+Route::get('/kos-harga-{range}', [App\Http\Controllers\ProgrammaticSeoController::class, 'kosHarga'])
+    ->where('range', '(dibawah-500rb|500rb-1jt|1jt-15jt|15jt-2jt|2jt-3jt|diatas-3jt)')
+    ->name('pseo.harga');
 
 // License Pairing v3 routes
 require base_path('routes/pair-routes.php');

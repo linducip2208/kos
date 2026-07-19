@@ -302,7 +302,14 @@
     function render() {
         if (!shouldShow()) return;
         var html =
-            '<div id="purchase-popup" class="fixed bottom-4 left-4 z-[60] w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl ring-1 ring-slate-200 overflow-hidden">' +
+                        '<div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 mt-16">' +
+              '<div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">' +
+                '<h2 class="text-3xl font-extrabold mb-4">Butuh Aplikasi Manajemen Kos Kosan?</h2>' +
+                '<p class="text-blue-100 mb-8 max-w-2xl mx-auto">Source code aplikasi Kos Kosan Pro siap pakai. Fitur lengkap: manajemen properti, booking, invoice otomatis, laporan keuangan, portal penghuni. Bisa dikustomisasi!</p>' +
+                '<a href="https://wa.me/6281296052010" target="_blank" class="inline-block bg-white text-primary-700 px-8 py-3 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors">Beli Source Code</a>' +
+                '<p class="text-blue-200 text-sm mt-4">Atau hubungi WhatsApp kami untuk demo gratis</p>' +
+              '</div>' +
+            '</div>' +
               '<div style="background:linear-gradient(135deg,#10b981,#0d9488);" class="px-5 py-4 flex items-start justify-between gap-3">' +
                 '<div class="flex items-center gap-3">' +
                   '<div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">💼</div>' +
@@ -315,8 +322,8 @@
               '</div>' +
               '<div class="p-5">' +
                 '<div class="text-xs text-slate-500 mb-1">WhatsApp</div>' +
-                '<div class="text-2xl font-extrabold text-slate-800 mb-3 tracking-tight">081286052010</div>' +
-                '<a href="https://wa.me/6281286052010?text=Halo%2C%20saya%20tertarik%20untuk%20membeli%20aplikasi%20Kos%20Manager" target="_blank" rel="noopener"' +
+                '<div class="text-2xl font-extrabold text-slate-800 mb-3 tracking-tight">081296052010</div>' +
+                '<a href="https://wa.me/6281296052010?text=Halo%2C%20saya%20tertarik%20untuk%20membeli%20aplikasi%20Kos%20Kosan%20Pro" target="_blank" rel="noopener"' +
                    ' class="block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition">Chat WhatsApp Sekarang</a>' +
                 '<p style="font-size:11px;" class="text-slate-400 mt-3 mb-0 text-center">Tutup untuk sembunyikan 7 hari.</p>' +
               '</div>' +
