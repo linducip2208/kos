@@ -22,9 +22,9 @@ class OccupantResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-users';
     protected static ?int    $navigationSort = 10;
 
-    public static function getNavigationGroup(): ?string { return '?? Penghuni & Sewa'; }
-    public static function getLabel(): ?string            { return __('navigation.occupant'); }
-    public static function getPluralLabel(): ?string      { return __('navigation.occupants'); }
+    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
+    public static function getLabel(): ?string            { return 'Penyewa'; }
+    public static function getPluralLabel(): ?string      { return 'Penyewa'; }
 
     public static function form(Schema $schema): Schema
     {
