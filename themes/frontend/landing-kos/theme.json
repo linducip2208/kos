@@ -1,0 +1,9 @@
+{
+  "name": "Landing Kos",
+  "slug": "landing-kos",
+  "area": "frontend",
+  "version": "1.0.0",
+  "description": "Theme portal publik untuk calon penyewa",
+  "author": "Kos Manager",
+  "preview": "assets/preview.png"
+}

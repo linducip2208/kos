@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi · Kos Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+        body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Inter", sans-serif; }
+        .prose-doc h2 { @apply text-2xl font-bold text-slate-800 mt-12 mb-4 pb-2 border-b border-slate-200; }
+        .prose-doc h3 { @apply text-lg font-semibold text-slate-700 mt-8 mb-3; }
+        .prose-doc p  { @apply text-slate-600 leading-relaxed mb-4; }
+        .prose-doc ul { @apply space-y-1.5 mb-4 text-slate-600 list-disc list-inside; }
+        .prose-doc ol { @apply space-y-1.5 mb-4 text-slate-600; }
+        .prose-doc code { @apply text-pink-700 bg-pink-50 px-1.5 py-0.5 rounded text-sm font-mono; }
+        .prose-doc pre code { @apply text-slate-100 bg-transparent p-0; }
+        .prose-doc a { @apply text-indigo-600 hover:underline; }
+        .prose-doc strong { @apply text-slate-800 font-semibold; }
+        .prose-doc table { @apply w-full text-sm mb-4 border border-slate-200 rounded-lg overflow-hidden; }
+        .prose-doc thead { @apply bg-slate-50; }
+        .prose-doc th { @apply text-left p-3 font-semibold text-slate-700 border-b border-slate-200; }
+        .prose-doc td { @apply p-3 border-b border-slate-100 align-top; }
+        .prose-doc tr:last-child td { @apply border-b-0; }
+        .step-num { @apply flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-sm; }
+        @media print {
+            aside, .no-print { display: none !important; }
+            main { margin-left: 0 !important; }
+        }
+        /* Purchase popup */
+        @keyframes popup-slide-in {
+            from { opacity: 0; transform: translateY(20px) scale(.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        #purchase-popup {
+            animation: popup-slide-in .35s ease-out;
+        }
+        @media print {
+            #purchase-popup { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- ═══════════════════════ TOP BAR ═══════════════════════ -->
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <a href="#pengenalan" class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">K</div>
+            <div>
+                <div class="font-bold text-slate-900 leading-tight">Kos Manager</div>
+                <div class="text-xs text-slate-500 leading-tight">Dokumentasi v1.0</div>
+            </div>
+        </a>
+        <nav class="flex items-center gap-2">
+            <a href="/admin/login" class="text-sm text-slate-600 hover:text-indigo-600 px-3 py-1.5">Admin</a>
+            <a href="/portal/login" class="text-sm text-slate-600 hover:text-indigo-600 px-3 py-1.5">Portal</a>
+            <a href="/" class="text-sm text-slate-600 hover:text-indigo-600 px-3 py-1.5">Landing</a>
+            <button onclick="window.print()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md">🖨 Cetak</button>
+        </nav>
+    </div>
+</header>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+        <div class="max-w-3xl">
+            <div class="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs font-medium mb-4 ring-1 ring-white/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Panduan lengkap dari A sampai Z
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
+                Dokumentasi <span class="text-cyan-200">Kos Manager</span>
+            </h1>
+            <p class="text-lg text-blue-100 mb-8">
+                Mulai dari aktivasi lisensi, setup properti & kamar, manajemen penyewa, hingga penggunaan portal oleh penyewa Anda.
+            </p>
+            <div class="flex flex-wrap gap-3">
+                <a href="#aktivasi-lisensi" class="bg-white text-indigo-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 transition shadow-sm">
+                    🚀 Mulai Setup
+                </a>
+                <a href="#portal-penyewa" class="bg-white/10 ring-1 ring-white/30 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-white/20 transition">
+                    👤 Panduan Penyewa
+                </a>
+                <a href="#cli-reference" class="bg-white/10 ring-1 ring-white/30 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-white/20 transition">
+                    ⚡ CLI Reference
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════ LAYOUT ═══════════════════════ -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex gap-8 relative">
+
+<!-- ───────── SIDEBAR TOC ───────── -->
+<aside class="hidden lg:block w-64 flex-shrink-0 no-print">
+    <nav class="sticky top-24 space-y-1 text-sm" x-data="{ open: '' }">
+        <p class="text-xs uppercase font-bold text-slate-400 mb-2 mt-2 px-2">Mulai</p>
+        <a href="#pengenalan" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Pengenalan</a>
+        <a href="#persyaratan" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Persyaratan Sistem</a>
+        <a href="#instalasi" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Instalasi</a>
+        <a href="#aktivasi-lisensi" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Aktivasi Lisensi</a>
+
+        <p class="text-xs uppercase font-bold text-slate-400 mb-2 mt-6 px-2">Konfigurasi</p>
+        <a href="#login-admin" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Login Admin</a>
+        <a href="#general-settings" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">General Settings</a>
+        <a href="#payment-gateway" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Payment Gateway</a>
+        <a href="#whatsapp-gateway" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">WhatsApp Gateway</a>
+
+        <p class="text-xs uppercase font-bold text-slate-400 mb-2 mt-6 px-2">Manajemen</p>
+        <a href="#properti" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Properti / Kos</a>
+        <a href="#tipe-kamar" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Tipe Kamar</a>
+        <a href="#kamar" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Kamar</a>
+        <a href="#penyewa" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Penyewa</a>
+        <a href="#kontrak" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Kontrak Sewa</a>
+        <a href="#tagihan" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Tagihan / Invoice</a>
+
+        <p class="text-xs uppercase font-bold text-slate-400 mb-2 mt-6 px-2">Penggunaan</p>
+        <a href="#portal-penyewa" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Portal Penyewa</a>
+        <a href="#landing-page" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Landing Page Publik</a>
+        <a href="#booking-online" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Booking Online</a>
+
+        <p class="text-xs uppercase font-bold text-slate-400 mb-2 mt-6 px-2">Operasional</p>
+        <a href="#laporan" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Laporan Keuangan</a>
+        <a href="#cetak-dokumen" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Cetak Tagihan & Kwitansi</a>
+        <a href="#maintenance" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Maintenance Request</a>
+        <a href="#backup" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Backup Database</a>
+        <a href="#plugin-theme" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Plugin & Theme</a>
+
+        <p class="text-xs uppercase font-bold text-slate-400 mb-2 mt-6 px-2">Referensi</p>
+        <a href="#cli-reference" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">CLI Reference</a>
+        <a href="#smoke-test" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Smoke Test Tool</a>
+        <a href="#troubleshooting" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Troubleshooting</a>
+        <a href="#pembelian" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">Pembelian Aplikasi</a>
+        <a href="#marketing" class="block px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-indigo-600">📋 Materi Marketing</a>
+    </nav>
+</aside>
+
+<!-- ───────── MAIN CONTENT ───────── -->
+<main class="flex-1 min-w-0 prose-doc">
+
+<!-- ═════════ PENGENALAN ═════════ -->
+<section id="pengenalan">
+    <h2>📖 Pengenalan</h2>
+    <p>
+        <strong>Kos Manager</strong> adalah aplikasi manajemen kos / boarding house lengkap, dibangun di atas Laravel 13 + Filament v5.
+        Aplikasi ini mengelola seluruh aspek operasional bisnis kos dari satu dashboard:
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-xl mb-3">🏢</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Multi Properti & Kamar</h4>
+            <p class="text-sm text-slate-500 mb-0">Kelola banyak kos dengan ratusan kamar dari satu admin panel.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-xl mb-3">📄</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Kontrak & Tagihan</h4>
+            <p class="text-sm text-slate-500 mb-0">Generate invoice bulanan otomatis, denda keterlambatan, reminder WhatsApp.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl mb-3">💳</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Payment Gateway</h4>
+            <p class="text-sm text-slate-500 mb-0">Integrasi Midtrans, Tripay, atau pembayaran manual transfer bank.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-xl mb-3">📱</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Portal Penyewa</h4>
+            <p class="text-sm text-slate-500 mb-0">Penyewa lihat tagihan, bayar online, lapor maintenance lewat HP.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-xl mb-3">🌐</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Landing Page</h4>
+            <p class="text-sm text-slate-500 mb-0">Halaman publik untuk calon penyewa cari kamar & booking online.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center text-xl mb-3">📊</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Laporan Keuangan</h4>
+            <p class="text-sm text-slate-500 mb-0">Grafik pendapatan, occupancy rate per properti, tunggakan.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═════════ PERSYARATAN ═════════ -->
+<section id="persyaratan">
+    <h2>⚙️ Persyaratan Sistem</h2>
+    <table>
+        <thead>
+            <tr><th>Komponen</th><th>Versi Minimum</th><th>Direkomendasikan</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>PHP</td><td>8.3</td><td>8.3.x atau 8.4</td></tr>
+            <tr><td>Database</td><td>MySQL 5.7 / MariaDB 10.3 / PostgreSQL 13</td><td>MySQL 8.0+</td></tr>
+            <tr><td>Web Server</td><td>Apache / Nginx</td><td>Nginx + PHP-FPM</td></tr>
+            <tr><td>Composer</td><td>2.x</td><td>2.7+</td></tr>
+            <tr><td>Node.js</td><td>18 LTS</td><td>20 LTS</td></tr>
+            <tr><td>RAM</td><td>1 GB</td><td>2 GB+</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Extension PHP yang dibutuhkan</h3>
+    <ul>
+        <li><code>php-bcmath</code>, <code>php-curl</code>, <code>php-fileinfo</code>, <code>php-gd</code></li>
+        <li><code>php-mbstring</code>, <code>php-mysql</code> (atau pgsql), <code>php-tokenizer</code></li>
+        <li><code>php-xml</code>, <code>php-zip</code>, <code>php-intl</code></li>
+    </ul>
+</section>
+
+<!-- ═════════ INSTALASI ═════════ -->
+<section id="instalasi">
+    <h2>📦 Instalasi</h2>
+
+    <div class="space-y-6 my-6">
+        <div class="flex gap-4">
+            <div class="step-num">1</div>
+            <div class="flex-1">
+                <h4 class="font-semibold text-slate-800 mb-1">Clone / Extract Source Code</h4>
+                <p class="text-sm text-slate-500 mb-2">Letakkan source di folder web server Anda, mis. <code>/var/www/kos</code> atau <code>htdocs/kos_app</code>.</p>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>cd /var/www/
+unzip kos-manager.zip
+cd kos-manager</code></pre>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <div class="step-num">2</div>
+            <div class="flex-1">
+                <h4 class="font-semibold text-slate-800 mb-1">Install Dependencies</h4>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>composer install --no-dev --optimize-autoloader
+npm install
+npm run build</code></pre>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <div class="step-num">3</div>
+            <div class="flex-1">
+                <h4 class="font-semibold text-slate-800 mb-1">Salin & Edit File <code>.env</code></h4>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>cp .env.example .env
+php artisan key:generate</code></pre>
+                <p class="text-sm text-slate-500 mt-2 mb-2">Edit minimal field-field berikut di <code>.env</code>:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>APP_NAME="Kos Manager"
+APP_URL=https://kos.domain.anda
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=kos_manager
+DB_USERNAME=root
+DB_PASSWORD=rahasia
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587</code></pre>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <div class="step-num">4</div>
+            <div class="flex-1">
+                <h4 class="font-semibold text-slate-800 mb-1">Migrasi Database & Seed</h4>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan migrate --force
+php artisan db:seed --force
+php artisan storage:link</code></pre>
+                <div class="mt-3 bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
+                    <p class="text-sm text-blue-700 mb-0"><strong>💡 Tips:</strong> Untuk demo dengan data lengkap (100 kos, 10K kamar, 1K user), jalankan: <code>php artisan db:seed --class=MassDataSeeder</code></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <div class="step-num">5</div>
+            <div class="flex-1">
+                <h4 class="font-semibold text-slate-800 mb-1">Setup Permissions (Linux)</h4>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache</code></pre>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <div class="step-num">6</div>
+            <div class="flex-1">
+                <h4 class="font-semibold text-slate-800 mb-1">Setup Cron Job</h4>
+                <p class="text-sm text-slate-500 mb-2">Untuk reminder otomatis, generate tagihan bulanan, dll. Tambahkan ke crontab:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>* * * * * cd /var/www/kos && php artisan schedule:run >> /dev/null 2>&1</code></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═════════ AKTIVASI LISENSI ═════════ -->
+<section id="aktivasi-lisensi">
+    <h2>🔑 Aktivasi Lisensi</h2>
+    <p>
+        Aplikasi memerlukan lisensi aktif dari <a href="https://whitelabel.co.id" target="_blank">whitelabel.co.id</a> untuk dijalankan.
+        Ada dua cara aktivasi:
+    </p>
+
+    <h3>Cara 1: Via Command Line (Direkomendasikan)</h3>
+    <p>Setelah membeli lisensi, Anda akan menerima <strong>activation key</strong> dengan format <code>XXXXX-XXXXX-XXXXX-XXXXX</code>.</p>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan license:activate XXXXX-XXXXX-XXXXX-XXXXX</code></pre>
+    <p>Output sukses:</p>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>✓ Lisensi berhasil diaktifkan untuk Kos Manager v1.0.0
+  Tipe: Single Domain
+  Aktif sampai: 2027-04-26</code></pre>
+
+    <h3>Cara 2: Via Admin Panel</h3>
+    <ol class="list-decimal list-inside">
+        <li>Buka <a href="/admin/license-settings"><code>/admin/license-settings</code></a></li>
+        <li>Masukkan activation key Anda</li>
+        <li>Klik tombol <strong>Aktifkan</strong></li>
+        <li>Status berubah jadi <span class="inline-block bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">Aktif</span></li>
+    </ol>
+
+    <h3>Validasi & Manajemen Lisensi</h3>
+    <table>
+        <thead>
+            <tr><th>Perintah CLI</th><th>Fungsi</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>php artisan license:info</code></td><td>Lihat info lisensi aktif</td></tr>
+            <tr><td><code>php artisan license:validate</code></td><td>Cek ulang validitas ke server</td></tr>
+            <tr><td><code>php artisan license:revoke</code></td><td>Cabut lisensi (sebelum pindah domain)</td></tr>
+        </tbody>
+    </table>
+
+    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded my-4">
+        <p class="text-sm text-amber-800 mb-0"><strong>⚠️ Penting:</strong> Sebelum pindah server / domain, jalankan <code>license:revoke</code> dulu agar bisa diaktifkan di domain baru. Lisensi terikat per domain.</p>
+    </div>
+</section>
+
+<!-- ═════════ LOGIN ADMIN ═════════ -->
+<section id="login-admin">
+    <h2>🚪 Login Admin Panel</h2>
+
+    <div class="grid md:grid-cols-2 gap-4 my-6">
+        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-5">
+            <div class="text-xs uppercase font-bold text-indigo-600 mb-1">Default Login</div>
+            <div class="font-mono text-sm space-y-1 mb-3">
+                <div>📧 <strong>admin@kos.test</strong></div>
+                <div>🔑 <strong>password</strong></div>
+            </div>
+            <a href="/admin/login" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md inline-block">→ Login Admin</a>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-xs uppercase font-bold text-slate-500 mb-1">Buat User Owner Baru</div>
+            <p class="text-sm text-slate-600 mb-2">Untuk produksi, buat akun owner Anda:</p>
+            <pre class="bg-slate-900 text-slate-100 rounded-md p-3 text-xs overflow-x-auto"><code>php artisan create:owner</code></pre>
+        </div>
+    </div>
+
+    <div class="bg-rose-50 border-l-4 border-rose-400 p-4 rounded">
+        <p class="text-sm text-rose-700 mb-0"><strong>🔒 Keamanan:</strong> Segera ganti password default <code>password</code> di produksi! Buka <code>/admin</code> → klik avatar → Edit Profile → ganti password.</p>
+    </div>
+</section>
+
+<!-- ═════════ GENERAL SETTINGS ═════════ -->
+<section id="general-settings">
+    <h2>⚙️ General Settings</h2>
+    <p>Buka <a href="/admin/general-settings"><code>/admin/general-settings</code></a> untuk mengatur identitas aplikasi:</p>
+
+    <div class="grid md:grid-cols-2 gap-4 my-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h4 class="font-semibold text-slate-800 mb-2">📛 Identitas Aplikasi</h4>
+            <ul class="text-sm space-y-1 mb-0">
+                <li><strong>Nama Aplikasi</strong> — tampil di header & email</li>
+                <li><strong>Logo</strong> — upload file PNG/JPG</li>
+                <li><strong>Prefix Invoice</strong> — mis. <code>INV</code> → <code>INV-202604-0001</code></li>
+                <li><strong>Prefix Kontrak</strong> — mis. <code>KTR</code></li>
+                <li><strong>Reminder Days</strong> — H-3, H-7, dst</li>
+            </ul>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h4 class="font-semibold text-slate-800 mb-2">📞 Kontak Landing Page</h4>
+            <ul class="text-sm space-y-1 mb-0">
+                <li><strong>Nomor WhatsApp</strong> — format <code>628xxxxxxxxxx</code></li>
+                <li><strong>Nomor Telepon</strong></li>
+                <li><strong>Email</strong></li>
+                <li><strong>Alamat Kantor</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+        <p class="text-sm text-blue-700 mb-0"><strong>💡 Tips:</strong> Setelah simpan, perubahan langsung terlihat di landing page (<code>/</code>) dan footer di seluruh halaman.</p>
+    </div>
+</section>
+
+<!-- ═════════ PAYMENT GATEWAY ═════════ -->
+<section id="payment-gateway">
+    <h2>💳 Payment Gateway</h2>
+    <p>Buka <a href="/admin/payment-gateway-settings"><code>/admin/payment-gateway-settings</code></a>. Pilih salah satu mode:</p>
+
+    <div class="grid md:grid-cols-3 gap-4 my-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-2xl mb-2">🏦</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Manual</h4>
+            <p class="text-sm text-slate-500 mb-2">Transfer bank / tunai. Konfirmasi pembayaran manual oleh admin.</p>
+            <p class="text-xs text-slate-400 mb-0">Cocok: kos kecil, hubungan personal dengan penyewa.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-2xl mb-2">⚡</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Midtrans</h4>
+            <p class="text-sm text-slate-500 mb-2">Snap UI: Virtual Account, GoPay, Shopee Pay, kartu kredit.</p>
+            <p class="text-xs text-slate-400 mb-0">Field: Server Key, Client Key, Production toggle.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-2xl mb-2">🔄</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Tripay</h4>
+            <p class="text-sm text-slate-500 mb-2">VA Bank Indonesia, QRIS. Fee per transaksi terjangkau.</p>
+            <p class="text-xs text-slate-400 mb-0">Field: API Key, Private Key, Merchant Code, Channel default.</p>
+        </div>
+    </div>
+
+    <h3>Webhook URL</h3>
+    <p>Konfigurasi di dashboard provider:</p>
+    <table>
+        <thead><tr><th>Provider</th><th>Notification URL</th></tr></thead>
+        <tbody>
+            <tr><td>Midtrans</td><td><code>{APP_URL}/webhook/midtrans</code></td></tr>
+            <tr><td>Tripay</td><td><code>{APP_URL}/webhook/tripay</code></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ═════════ WHATSAPP GATEWAY ═════════ -->
+<section id="whatsapp-gateway">
+    <h2>📲 WhatsApp Gateway (Fonnte)</h2>
+    <p>Untuk reminder tagihan otomatis & blast pesan ke penyewa, integrasikan dengan <a href="https://fonnte.com" target="_blank">Fonnte</a>:</p>
+    <ol class="list-decimal list-inside">
+        <li>Daftar dan beli paket di fonnte.com</li>
+        <li>Hubungkan WhatsApp Anda di dashboard Fonnte</li>
+        <li>Copy API Token</li>
+        <li>Buka <a href="/admin/general-settings"><code>/admin/general-settings</code></a> section "Notifikasi WhatsApp"</li>
+        <li>Aktifkan toggle, paste API Key & nomor sender</li>
+    </ol>
+
+    <h3>Fitur WhatsApp Otomatis</h3>
+    <ul>
+        <li>📋 Kirim invoice baru ke penyewa</li>
+        <li>⏰ Reminder H-3 sebelum jatuh tempo</li>
+        <li>🔴 Notifikasi tagihan jatuh tempo (overdue)</li>
+        <li>🏠 Welcome message + kredensial portal saat penyewa baru daftar</li>
+    </ul>
+</section>
+
+<!-- ═════════ PROPERTI ═════════ -->
+<section id="properti">
+    <h2>🏢 Manajemen Properti / Kos</h2>
+    <p>Buka <a href="/admin/properties"><code>/admin/properties</code></a>. Setiap "Properti" adalah satu unit kos / gedung.</p>
+
+    <h3>Field Properti</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Tipe</th><th>Wajib</th><th>Catatan</th></tr></thead>
+        <tbody>
+            <tr><td>Nama</td><td>Text</td><td>✓</td><td>mis. "Kos Bahagia Pusat"</td></tr>
+            <tr><td>Alamat</td><td>Textarea</td><td>✓</td><td>tampil di landing</td></tr>
+            <tr><td>Kota & Provinsi</td><td>Text</td><td>✓</td><td>untuk filter pencarian</td></tr>
+            <tr><td>Postal Code</td><td>Text</td><td>—</td><td>opsional</td></tr>
+            <tr><td>Latitude/Longitude</td><td>Decimal</td><td>—</td><td>untuk peta</td></tr>
+            <tr><td>Deskripsi</td><td>Rich Text</td><td>—</td><td>HTML support</td></tr>
+            <tr><td>Foto</td><td>Multiple Image</td><td>—</td><td>min. 1 untuk landing page</td></tr>
+            <tr><td>Fasilitas</td><td>Tags</td><td>—</td><td>WiFi, parkir, CCTV, dll</td></tr>
+            <tr><td>Peraturan</td><td>Textarea</td><td>—</td><td>1 baris = 1 peraturan</td></tr>
+            <tr><td>Status Aktif</td><td>Toggle</td><td>—</td><td>matikan untuk hide dari landing</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ═════════ TIPE KAMAR ═════════ -->
+<section id="tipe-kamar">
+    <h2>🛏️ Tipe Kamar</h2>
+    <p>Buka <a href="/admin/room-types"><code>/admin/room-types</code></a>. Setiap properti punya beberapa tipe kamar dengan harga & fasilitas berbeda.</p>
+
+    <p>Contoh tipe untuk satu kos:</p>
+    <table>
+        <thead><tr><th>Tipe</th><th>Harga / Bulan</th><th>Fasilitas</th><th>Luas</th></tr></thead>
+        <tbody>
+            <tr><td>Standar</td><td>Rp 800.000</td><td>Kasur, lemari, kipas angin</td><td>9 m²</td></tr>
+            <tr><td>Deluxe</td><td>Rp 1.300.000</td><td>+ AC, KM dalam</td><td>12 m²</td></tr>
+            <tr><td>VIP</td><td>Rp 2.000.000</td><td>+ TV, kulkas, balkon</td><td>16 m²</td></tr>
+        </tbody>
+    </table>
+
+    <p>Field harga: <code>base_price_monthly</code>, <code>base_price_quarterly</code>, <code>base_price_yearly</code> — diisi salah satu sesuai siklus penagihan.</p>
+</section>
+
+<!-- ═════════ KAMAR ═════════ -->
+<section id="kamar">
+    <h2>🚪 Kamar</h2>
+    <p>Buka <a href="/admin/rooms"><code>/admin/rooms</code></a>. Setiap kamar individual dengan nomor unik per properti.</p>
+
+    <h3>Status Kamar</h3>
+    <div class="grid md:grid-cols-4 gap-3 my-4">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+            <div class="text-2xl mb-1">🟢</div>
+            <div class="font-semibold text-emerald-700 text-sm">Tersedia</div>
+            <div class="text-xs text-emerald-600">muncul di landing</div>
+        </div>
+        <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
+            <div class="text-2xl mb-1">🔴</div>
+            <div class="font-semibold text-rose-700 text-sm">Terisi</div>
+            <div class="text-xs text-rose-600">ada kontrak aktif</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+            <div class="text-2xl mb-1">🟡</div>
+            <div class="font-semibold text-amber-700 text-sm">Maintenance</div>
+            <div class="text-xs text-amber-600">sedang diperbaiki</div>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+            <div class="text-2xl mb-1">🔵</div>
+            <div class="font-semibold text-blue-700 text-sm">Reserved</div>
+            <div class="text-xs text-blue-600">sudah dipesan</div>
+        </div>
+    </div>
+
+    <h3>Tab Filter</h3>
+    <p>Halaman list kamar punya 4 tab: <strong>Semua / Tersedia / Terisi / Maintenance</strong> untuk akses cepat.</p>
+
+    <h3>Override Harga</h3>
+    <p>Kamar bisa override harga dari tipe (mis. kamar pojok lebih mahal). Kosongkan untuk pakai harga tipe.</p>
+</section>
+
+<!-- ═════════ PENYEWA ═════════ -->
+<section id="penyewa">
+    <h2>👤 Manajemen Penyewa</h2>
+    <p>Buka <a href="/admin/occupants"><code>/admin/occupants</code></a>. Data lengkap penyewa termasuk KTP & kontak darurat.</p>
+
+    <h3>Field Penyewa</h3>
+    <ul>
+        <li><strong>Identitas</strong>: Nama, KTP/SIM/Passport, foto KTP, foto selfie</li>
+        <li><strong>Kontak</strong>: Telepon, WhatsApp, email</li>
+        <li><strong>Alamat asal</strong> (alamat KTP)</li>
+        <li><strong>Pekerjaan & Tempat Kerja</strong></li>
+        <li><strong>Kontak Darurat</strong>: nama + nomor</li>
+        <li><strong>Akses Portal</strong>: aktif/nonaktif + password</li>
+    </ul>
+
+    <h3>Set Password Portal</h3>
+    <p>Saat tambah penyewa, set password awal di field "Password Portal" — atau pakai CLI:</p>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan portal:set-password 081234567890 password_baru</code></pre>
+</section>
+
+<!-- ═════════ KONTRAK ═════════ -->
+<section id="kontrak">
+    <h2>📋 Kontrak Sewa (Lease)</h2>
+    <p>Buka <a href="/admin/leases"><code>/admin/leases</code></a>. Menghubungkan <strong>Kamar</strong> dan <strong>Penyewa</strong> dengan periode + harga.</p>
+
+    <h3>Alur Kontrak</h3>
+    <div class="bg-white border border-slate-200 rounded-xl p-5 my-4">
+        <div class="flex items-center gap-3 text-sm">
+            <div class="step-num">1</div>
+            <span>Pilih kamar (status <code>available</code>) →</span>
+            <div class="step-num">2</div>
+            <span>Pilih penyewa →</span>
+            <div class="step-num">3</div>
+            <span>Set tanggal mulai & berakhir →</span>
+            <div class="step-num">4</div>
+            <span>Status kamar otomatis jadi <code>occupied</code></span>
+        </div>
+    </div>
+
+    <h3>Billing Cycle</h3>
+    <ul>
+        <li><strong>Monthly</strong> (1 bulan) — paling umum</li>
+        <li><strong>Quarterly</strong> (3 bulan)</li>
+        <li><strong>Yearly</strong> (12 bulan, biasanya diskon)</li>
+    </ul>
+
+    <h3>Status Kontrak</h3>
+    <ul>
+        <li><code>pending</code> — draft, belum dimulai</li>
+        <li><code>active</code> — sedang berjalan</li>
+        <li><code>expired</code> — periode habis (otomatis via cron)</li>
+        <li><code>terminated</code> — dihentikan paksa (penyewa keluar)</li>
+    </ul>
+
+    <h3>Cek Kontrak Hampir Habis</h3>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan lease:check-expiring     # default H-30
+php artisan lease:check-expiring 7   # H-7</code></pre>
+</section>
+
+<!-- ═════════ TAGIHAN ═════════ -->
+<section id="tagihan">
+    <h2>🧾 Tagihan / Invoice</h2>
+    <p>Buka <a href="/admin/invoices"><code>/admin/invoices</code></a>.</p>
+
+    <h3>Generate Tagihan Bulanan Otomatis</h3>
+    <p>Klik tombol <strong>"Generate Tagihan Bulan Ini"</strong> di pojok kanan atas list, atau pakai CLI:</p>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan invoice:generate-monthly</code></pre>
+    <p>Otomatis bikin invoice untuk semua kontrak aktif yang <code>billing_date</code>-nya jatuh hari ini.</p>
+
+    <h3>Status Invoice</h3>
+    <table>
+        <thead><tr><th>Status</th><th>Arti</th><th>Aksi</th></tr></thead>
+        <tbody>
+            <tr><td><code>draft</code></td><td>Belum dikirim</td><td>Edit dulu</td></tr>
+            <tr><td><code>sent</code></td><td>Sudah dikirim ke penyewa</td><td>Tunggu pembayaran</td></tr>
+            <tr><td><code>paid</code></td><td>Lunas</td><td>—</td></tr>
+            <tr><td><code>overdue</code></td><td>Lewat jatuh tempo</td><td>Reminder + denda</td></tr>
+            <tr><td><code>cancelled</code></td><td>Dibatalkan</td><td>—</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Reminder Otomatis</h3>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan reminders:send         # H-3 reminder via WA
+php artisan invoices:mark-overdue  # tandai overdue + denda</code></pre>
+
+    <h3>Denda Keterlambatan</h3>
+    <p>Set di <a href="/admin/payment-gateway-settings"><code>/admin/payment-gateway-settings</code></a> → "Persentase Denda". Denda dihitung per 30 hari keterlambatan.</p>
+</section>
+
+<!-- ═════════ PORTAL PENYEWA ═════════ -->
+<section id="portal-penyewa">
+    <h2>📱 Portal Penyewa (End-User)</h2>
+    <p class="text-lg text-slate-700">Bagian ini untuk Anda berikan ke <strong>penyewa Anda</strong> sebagai panduan menggunakan aplikasi.</p>
+
+    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6 my-6">
+        <h3 class="text-emerald-800 mt-0">🎯 Cara Penyewa Login</h3>
+        <ol class="list-decimal list-inside text-emerald-900">
+            <li>Buka URL <a href="/portal/login" class="text-emerald-700 underline"><code>https://kos.domain.com/portal/login</code></a> di HP / browser</li>
+            <li>Masukkan <strong>Nomor HP</strong> (yang didaftarkan admin) — contoh: <code>081234567890</code></li>
+            <li>Masukkan password (default: <code>password</code> — bisa diubah di menu Profil)</li>
+            <li>Klik <strong>Masuk</strong></li>
+        </ol>
+    </div>
+
+    <h3>Menu Portal</h3>
+    <div class="grid md:grid-cols-2 gap-4 my-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h4 class="font-semibold text-slate-800 mb-2">🏠 Dashboard</h4>
+            <ul class="text-sm space-y-1 mb-0">
+                <li>Info kamar yang disewa (properti, no kamar, kontrak)</li>
+                <li>Jumlah tagihan belum bayar</li>
+                <li>Jumlah laporan maintenance terbuka</li>
+                <li>Quick link ke pembayaran & lapor maintenance</li>
+            </ul>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h4 class="font-semibold text-slate-800 mb-2">📄 Tagihan</h4>
+            <ul class="text-sm space-y-1 mb-0">
+                <li>Riwayat semua tagihan</li>
+                <li>Status: Lunas / Belum Bayar / Jatuh Tempo</li>
+                <li>Detail invoice (rincian biaya, diskon)</li>
+                <li>Tombol bayar online (jika gateway aktif)</li>
+            </ul>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h4 class="font-semibold text-slate-800 mb-2">🔧 Maintenance</h4>
+            <ul class="text-sm space-y-1 mb-0">
+                <li>Riwayat laporan kerusakan</li>
+                <li>Tombol "Lapor Baru"</li>
+                <li>Status: Menunggu / Diproses / Selesai</li>
+            </ul>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h4 class="font-semibold text-slate-800 mb-2">👤 Profil</h4>
+            <ul class="text-sm space-y-1 mb-0">
+                <li>Edit nama, HP, email, WhatsApp</li>
+                <li>Ganti password portal</li>
+            </ul>
+        </div>
+    </div>
+
+    <h3>Cara Lapor Kerusakan</h3>
+    <ol class="list-decimal list-inside">
+        <li>Login portal → klik menu <strong>Maintenance</strong></li>
+        <li>Klik tombol <strong>+ Lapor Baru</strong></li>
+        <li>Isi judul (mis. "AC tidak dingin")</li>
+        <li>Deskripsikan masalah secara detail</li>
+        <li>Pilih prioritas: Rendah / Sedang / Tinggi / Urgent</li>
+        <li>Klik <strong>Kirim Laporan</strong></li>
+        <li>Admin akan merespon, status berubah otomatis</li>
+    </ol>
+
+    <h3>Cara Ganti Password</h3>
+    <ol class="list-decimal list-inside">
+        <li>Login portal → menu <strong>Profil</strong></li>
+        <li>Scroll ke section "Ubah Password"</li>
+        <li>Isi password lama, baru (min 6 karakter), dan konfirmasi</li>
+        <li>Klik <strong>Ubah Password</strong></li>
+    </ol>
+</section>
+
+<!-- ═════════ LANDING PAGE ═════════ -->
+<section id="landing-page">
+    <h2>🌐 Landing Page Publik</h2>
+    <p>URL: <a href="/"><code>https://kos.domain.com/</code></a> — bisa diakses tanpa login. Tampilan untuk calon penyewa.</p>
+
+    <h3>Yang Tampil Otomatis</h3>
+    <ul>
+        <li>Daftar semua properti dengan status <code>is_active = true</code></li>
+        <li>Foto, nama, alamat, kota</li>
+        <li>Jumlah kamar tersedia (dihitung dari rooms <code>status=available</code>)</li>
+        <li>Range harga termurah – termahal</li>
+        <li>Testimoni penyewa (max 6)</li>
+        <li>Kontak global (WhatsApp, telepon, email, alamat)</li>
+    </ul>
+
+    <h3>Single vs Multi Property</h3>
+    <p>Jika hanya ada 1 properti aktif → langsung redirect ke <code>/property/{id}</code> (page detail).</p>
+    <p>Jika ada lebih dari 1 properti → tampil sebagai grid pilihan.</p>
+</section>
+
+<!-- ═════════ BOOKING ONLINE ═════════ -->
+<section id="booking-online">
+    <h2>🎫 Booking Online</h2>
+    <p>Calon penyewa bisa booking via tombol di halaman properti. Form: <code>/booking/{property_id}</code>.</p>
+
+    <h3>Alur Booking</h3>
+    <div class="space-y-3 my-4">
+        <div class="flex gap-4 items-start">
+            <div class="step-num">1</div>
+            <div>
+                <strong class="text-slate-800">Calon penyewa</strong> isi form: nama, HP, email, kapan move-in, pilih tipe kamar, pesan
+            </div>
+        </div>
+        <div class="flex gap-4 items-start">
+            <div class="step-num">2</div>
+            <div>
+                <strong class="text-slate-800">Admin</strong> terima notifikasi, buka <a href="/admin/booking-requests"><code>/admin/booking-requests</code></a>
+            </div>
+        </div>
+        <div class="flex gap-4 items-start">
+            <div class="step-num">3</div>
+            <div>Klik tombol <strong>Hubungi via WhatsApp</strong> di list — buka chat WA langsung dengan calon penyewa</div>
+        </div>
+        <div class="flex gap-4 items-start">
+            <div class="step-num">4</div>
+            <div>Setelah deal, buat <strong>Penyewa</strong> baru → <strong>Kontrak</strong> → status booking jadi <code>converted</code></div>
+        </div>
+    </div>
+
+    <h3>Status Booking</h3>
+    <ul>
+        <li><code>pending</code> → baru masuk</li>
+        <li><code>contacted</code> → sudah dihubungi admin</li>
+        <li><code>approved</code> → setuju, menunggu deposit</li>
+        <li><code>converted</code> → jadi kontrak resmi</li>
+        <li><code>rejected</code> → ditolak</li>
+    </ul>
+</section>
+
+<!-- ═════════ LAPORAN ═════════ -->
+<section id="laporan">
+    <h2>📊 Laporan Keuangan</h2>
+    <p>Buka <a href="/admin/financial-report"><code>/admin/financial-report</code></a>. Berisi:</p>
+    <ul>
+        <li><strong>KPI Bar</strong>: pendapatan bulan ini, YTD, total tunggakan</li>
+        <li><strong>Pendapatan 12 Bulan Terakhir</strong> (tabel + bar chart sederhana)</li>
+        <li><strong>Tingkat Hunian per Properti</strong> dengan persentase & grafik</li>
+    </ul>
+
+    <h3>Dashboard Widgets</h3>
+    <p>Halaman <a href="/admin"><code>/admin</code></a> juga menampilkan widget summary:</p>
+    <ul>
+        <li><strong>StatsOverview</strong>: total kamar, occupancy rate, pendapatan, tunggakan, kontrak hampir berakhir</li>
+        <li><strong>RoomStatus</strong>: tabel kamar dengan filter status</li>
+        <li><strong>RecentPayments</strong>: 15 invoice terbaru (overdue di atas)</li>
+    </ul>
+</section>
+
+<!-- ═════════ CETAK DOKUMEN ═════════ -->
+<section id="cetak-dokumen">
+    <h2>🖨 Cetak Tagihan & Kwitansi</h2>
+    <p>Aplikasi ini punya 3 dokumen yang bisa dicetak / di-download dalam format PDF (pakai engine DomPDF):</p>
+
+    <div class="grid md:grid-cols-3 gap-4 my-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-3xl mb-2">📄</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Tagihan / Invoice</h4>
+            <p class="text-sm text-slate-500 mb-2">Untuk setiap invoice — semua status (draft, sent, paid, overdue).</p>
+            <p class="text-xs text-slate-400 mb-0">Berisi: header app, info penyewa, periode, breakdown biaya, total, status badge.</p>
+        </div>
+        <div class="bg-white border border-emerald-200 rounded-xl p-5 ring-1 ring-emerald-100">
+            <div class="text-3xl mb-2">🧾</div>
+            <h4 class="font-semibold text-emerald-800 mb-1">Kwitansi</h4>
+            <p class="text-sm text-slate-500 mb-2">Bukti pembayaran — <strong>hanya untuk invoice yang sudah <code>paid</code></strong>.</p>
+            <p class="text-xs text-slate-400 mb-0">Berisi: stempel "LUNAS", terbilang, signature line untuk pembayar & pengelola.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-3xl mb-2">📊</div>
+            <h4 class="font-semibold text-slate-800 mb-1">Laporan Tagihan</h4>
+            <p class="text-sm text-slate-500 mb-2">Rekap list tagihan dengan filter periode & status.</p>
+            <p class="text-xs text-slate-400 mb-0">Berisi: tabel semua invoice, total grand sum di footer.</p>
+        </div>
+    </div>
+
+    <h3>Cara cetak dari Admin Panel</h3>
+    <ol class="list-decimal list-inside">
+        <li>Buka <a href="/admin/invoices"><code>/admin/invoices</code></a></li>
+        <li>Di tiap baris, ada tombol <strong>"Cetak Tagihan"</strong> (ikon printer abu-abu) — buka tab baru, langsung tampil PDF preview di browser. Klik ikon download di PDF viewer untuk simpan.</li>
+        <li>Tombol <strong>"Cetak Kwitansi"</strong> (ikon centang hijau) hanya muncul kalau invoice sudah <code>paid</code>.</li>
+        <li>Untuk laporan periode, klik tombol <strong>"Cetak Laporan PDF"</strong> di pojok kanan atas list (di samping tombol "Buat Tagihan").</li>
+    </ol>
+
+    <h3>Cara cetak dari Portal Penyewa</h3>
+    <ol class="list-decimal list-inside">
+        <li>Penyewa login di <a href="/portal/login"><code>/portal/login</code></a></li>
+        <li>Buka menu <strong>Tagihan</strong> → klik salah satu invoice</li>
+        <li>Di halaman detail, ada 2 tombol:
+            <ul class="ml-6 mt-1">
+                <li><strong>Cetak Tagihan</strong> (biru) — selalu tersedia</li>
+                <li><strong>Cetak Kwitansi</strong> (hijau) — muncul kalau status sudah <code>Lunas</code></li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>URL Langsung (untuk integrasi/embed)</h3>
+    <table>
+        <thead><tr><th>Dokumen</th><th>URL</th><th>Akses</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>Invoice PDF</td>
+                <td><code>/print/invoice/{id}</code></td>
+                <td>Admin (semua) atau penyewa (milik sendiri)</td>
+            </tr>
+            <tr>
+                <td>Kwitansi PDF</td>
+                <td><code>/print/kwitansi/{id}</code></td>
+                <td>Sama, hanya invoice <code>paid</code></td>
+            </tr>
+            <tr>
+                <td>Laporan Tagihan PDF</td>
+                <td><code>/print/report/invoices</code></td>
+                <td>Admin login</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Tambahkan query <code>?download=1</code> untuk paksa download (bukan preview), <code>?status=paid</code> / <code>?from=2026-01-01</code> / <code>?to=2026-12-31</code> untuk filter laporan.</p>
+
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code># Contoh
+/print/invoice/123                              → preview PDF di browser
+/print/invoice/123?download=1                   → download langsung
+/print/kwitansi/123                             → kwitansi (hanya untuk paid)
+/print/report/invoices?status=overdue           → laporan tunggakan
+/print/report/invoices?from=2026-01-01&to=2026-12-31&status=paid&download=1</code></pre>
+
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded my-4">
+        <p class="text-sm text-blue-700 mb-0"><strong>💡 Tips cetak fisik:</strong> Saat preview PDF di browser, klik ikon printer di toolbar PDF viewer (atau tekan <kbd>Ctrl+P</kbd>) untuk kirim ke printer. Format A4 portrait sudah otomatis.</p>
+    </div>
+
+    <h3>Customisasi tampilan PDF</h3>
+    <p>Edit file blade berikut sesuai kebutuhan branding Anda:</p>
+    <ul>
+        <li><code>resources/views/pdf/invoice.blade.php</code> — desain invoice</li>
+        <li><code>resources/views/pdf/kwitansi.blade.php</code> — desain kwitansi (warna hijau, stempel LUNAS)</li>
+        <li><code>resources/views/pdf/report-invoices.blade.php</code> — desain laporan</li>
+    </ul>
+    <p>Logo & nama aplikasi otomatis ambil dari General Settings (<code>setting('app_name')</code>, <code>setting('contact_address')</code>).</p>
+</section>
+
+<!-- ═════════ MAINTENANCE ═════════ -->
+<section id="maintenance">
+    <h2>🛠️ Maintenance Request</h2>
+    <p>Buka <a href="/admin/maintenance-requests"><code>/admin/maintenance-requests</code></a>. Bisa diinput dari 2 sumber:</p>
+    <ol class="list-decimal list-inside">
+        <li><strong>Penyewa</strong> via portal (<code>/portal/maintenance/create</code>)</li>
+        <li><strong>Admin</strong> langsung dari panel</li>
+    </ol>
+
+    <h3>Workflow</h3>
+    <p><code>open</code> → <code>in_progress</code> → <code>waiting_parts</code> (opsional) → <code>resolved</code> / <code>cancelled</code></p>
+
+    <h3>Field Tambahan</h3>
+    <ul>
+        <li><strong>Assigned To</strong>: pilih user (admin/teknisi) yang menangani</li>
+        <li><strong>Estimated Cost</strong> & <strong>Actual Cost</strong></li>
+        <li><strong>Resolution Notes</strong> & foto setelah perbaikan</li>
+        <li><strong>Resolved At</strong>: timestamp selesai</li>
+    </ul>
+</section>
+
+<!-- ═════════ BACKUP ═════════ -->
+<section id="backup">
+    <h2>💾 Backup Database</h2>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code># Manual backup
+php artisan backup:database
+
+# Hasilnya: storage/app/backups/db-YYYY-MM-DD-HHMMSS.sql.gz
+
+# Otomatis via cron (rekomendasi: harian 02:00)
+0 2 * * * cd /var/www/kos && php artisan backup:database</code></pre>
+
+    <h3>Restore</h3>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>gunzip db-2026-04-26-020000.sql.gz
+mysql -u root -p kos_manager &lt; db-2026-04-26-020000.sql</code></pre>
+
+    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded my-4">
+        <p class="text-sm text-amber-800 mb-0"><strong>⚠️ Penting:</strong> Selain DB, backup juga folder <code>storage/app/public</code> (foto-foto upload).</p>
+    </div>
+</section>
+
+<!-- ═════════ PLUGIN & THEME ═════════ -->
+<section id="plugin-theme">
+    <h2>🧩 Plugin & Theme</h2>
+
+    <h3>Plugin Management</h3>
+    <p>Buka <a href="/admin/plugin-management"><code>/admin/plugin-management</code></a>. Plugin di folder <code>plugins/</code> akan otomatis terdeteksi.</p>
+    <table>
+        <thead><tr><th>Aksi</th><th>Tombol / CLI</th></tr></thead>
+        <tbody>
+            <tr><td>Install</td><td>Tombol "Install" / <code>php artisan plugin:install slug</code></td></tr>
+            <tr><td>Aktifkan</td><td>Tombol "Aktifkan" / <code>php artisan plugin:activate slug</code></td></tr>
+            <tr><td>Nonaktifkan</td><td>Tombol "Nonaktifkan" / <code>php artisan plugin:deactivate slug</code></td></tr>
+            <tr><td>Uninstall</td><td>Tombol "Uninstall" / <code>php artisan plugin:uninstall slug</code></td></tr>
+            <tr><td>List</td><td><code>php artisan plugin:list</code></td></tr>
+        </tbody>
+    </table>
+
+    <h3>Theme Management</h3>
+    <p>Buka <a href="/admin/theme-management"><code>/admin/theme-management</code></a>. Ada 3 area theme:</p>
+    <ul>
+        <li><strong>Admin Panel</strong> — tampilan dashboard admin</li>
+        <li><strong>Portal Penyewa</strong> — tampilan portal user</li>
+        <li><strong>Landing Page</strong> — halaman publik</li>
+    </ul>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan theme:list
+php artisan theme:activate admin theme-slug</code></pre>
+
+    <h3>Buat Plugin / Theme Baru</h3>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan make:plugin payment-extra
+php artisan make:theme dark-mode admin</code></pre>
+</section>
+
+<!-- ═════════ CLI REFERENCE ═════════ -->
+<section id="cli-reference">
+    <h2>⚡ CLI Reference</h2>
+
+    <h3>License</h3>
+    <table>
+        <thead><tr><th>Command</th><th>Fungsi</th></tr></thead>
+        <tbody>
+            <tr><td><code>php artisan license:activate KEY</code></td><td>Aktifkan lisensi</td></tr>
+            <tr><td><code>php artisan license:validate</code></td><td>Cek ulang ke server</td></tr>
+            <tr><td><code>php artisan license:info</code></td><td>Info lisensi aktif</td></tr>
+            <tr><td><code>php artisan license:revoke</code></td><td>Cabut lisensi</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Invoice & Reminder</h3>
+    <table>
+        <thead><tr><th>Command</th><th>Fungsi</th></tr></thead>
+        <tbody>
+            <tr><td><code>php artisan invoice:generate-monthly</code></td><td>Generate tagihan bulan ini</td></tr>
+            <tr><td><code>php artisan reminders:send</code></td><td>Kirim reminder H-3 via WA</td></tr>
+            <tr><td><code>php artisan invoices:mark-overdue</code></td><td>Tandai overdue + denda</td></tr>
+            <tr><td><code>php artisan lease:check-expiring [days]</code></td><td>Cek kontrak hampir habis</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Plugin & Theme</h3>
+    <table>
+        <thead><tr><th>Command</th><th>Fungsi</th></tr></thead>
+        <tbody>
+            <tr><td><code>php artisan plugin:list</code></td><td>List semua plugin</td></tr>
+            <tr><td><code>php artisan plugin:install SLUG</code></td><td>Install plugin</td></tr>
+            <tr><td><code>php artisan plugin:activate SLUG</code></td><td>Aktifkan plugin</td></tr>
+            <tr><td><code>php artisan plugin:deactivate SLUG</code></td><td>Nonaktifkan plugin</td></tr>
+            <tr><td><code>php artisan plugin:uninstall SLUG</code></td><td>Uninstall plugin</td></tr>
+            <tr><td><code>php artisan theme:list</code></td><td>List semua theme</td></tr>
+            <tr><td><code>php artisan theme:activate AREA SLUG</code></td><td>Aktifkan theme per area</td></tr>
+            <tr><td><code>php artisan make:plugin NAME</code></td><td>Generate plugin skeleton</td></tr>
+            <tr><td><code>php artisan make:theme NAME AREA</code></td><td>Generate theme skeleton</td></tr>
+        </tbody>
+    </table>
+
+    <h3>User & Portal</h3>
+    <table>
+        <thead><tr><th>Command</th><th>Fungsi</th></tr></thead>
+        <tbody>
+            <tr><td><code>php artisan create:owner</code></td><td>Buat akun owner baru (interaktif)</td></tr>
+            <tr><td><code>php artisan portal:set-password HP PASSWORD</code></td><td>Reset password portal penyewa</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Database & Maintenance</h3>
+    <table>
+        <thead><tr><th>Command</th><th>Fungsi</th></tr></thead>
+        <tbody>
+            <tr><td><code>php artisan backup:database</code></td><td>Backup MySQL ke storage/app/backups</td></tr>
+            <tr><td><code>php artisan migrate --force</code></td><td>Run migration di production</td></tr>
+            <tr><td><code>php artisan db:seed --class=MassDataSeeder</code></td><td>Seed data demo (10K kamar, 1K user)</td></tr>
+            <tr><td><code>php artisan optimize:clear</code></td><td>Clear semua cache (config/route/view)</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ═════════ SMOKE TEST ═════════ -->
+<section id="smoke-test">
+    <h2>🧪 Smoke Test Tool</h2>
+    <p>Tool internal untuk cek otomatis semua page admin/portal/landing:</p>
+    <pre class="bg-slate-900 text-slate-100 rounded-lg p-4 text-sm overflow-x-auto"><code>php artisan app:smoke-test                    # tes semua
+php artisan app:smoke-test --only=admin       # admin only
+php artisan app:smoke-test --only=portal      # portal only
+php artisan app:smoke-test --only=public      # landing only
+php artisan app:smoke-test --verbose-errors   # + stack trace</code></pre>
+
+    <p>Output: tabel HTTP status untuk setiap URL (61 URL total). Jika ada yang error 500 atau exception, akan muncul di section "Masalah Ditemukan" dengan lokasi error & pesan.</p>
+
+    <div class="bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded my-4">
+        <p class="text-sm text-emerald-800 mb-0"><strong>✓ Tip:</strong> Jalankan smoke-test setelah deploy / update untuk pastikan semua menu masih sehat.</p>
+    </div>
+</section>
+
+<!-- ═════════ TROUBLESHOOTING ═════════ -->
+<section id="troubleshooting">
+    <h2>🆘 Troubleshooting</h2>
+
+    <div class="space-y-4 my-6">
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">"Lisensi Tidak Valid" muncul terus</summary>
+            <div class="mt-3 text-sm text-slate-600 space-y-2">
+                <p>Pastikan:</p>
+                <ul>
+                    <li>Server bisa konek internet ke <code>whitelabel.co.id</code></li>
+                    <li>Domain di .env <code>APP_URL</code> sama dengan domain yang Anda akses</li>
+                    <li>Cache lisensi di-clear: <code>php artisan cache:forget license_valid</code></li>
+                    <li>Jalankan ulang: <code>php artisan license:validate</code></li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Foto upload tidak tampil di landing</summary>
+            <div class="mt-3 text-sm text-slate-600">
+                <p>Buat symlink storage:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>php artisan storage:link</code></pre>
+                <p class="mt-2">Pastikan folder <code>public/storage</code> mengarah ke <code>storage/app/public</code>.</p>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Webhook Midtrans / Tripay tidak masuk</summary>
+            <div class="mt-3 text-sm text-slate-600 space-y-2">
+                <ul>
+                    <li>URL webhook harus public (bukan localhost) — pakai ngrok untuk testing</li>
+                    <li>Pastikan Server Key di settings admin sama dengan dashboard provider</li>
+                    <li>Cek log: <code>storage/logs/laravel.log</code></li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Penyewa lupa password portal</summary>
+            <div class="mt-3 text-sm text-slate-600">
+                <p>Reset dari CLI:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>php artisan portal:set-password 081234567890 password_baru</code></pre>
+                <p class="mt-2">Atau dari admin: <code>/admin/occupants/{id}/edit</code> → field Password Portal.</p>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Error 500 di admin / portal setelah update</summary>
+            <div class="mt-3 text-sm text-slate-600">
+                <p>Clear cache & cek log:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>php artisan optimize:clear
+tail -50 storage/logs/laravel.log
+php artisan app:smoke-test --verbose-errors</code></pre>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Tagihan tidak ter-generate otomatis</summary>
+            <div class="mt-3 text-sm text-slate-600 space-y-2">
+                <p>Pastikan cron jalan:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>* * * * * cd /var/www/kos && php artisan schedule:run >> /dev/null 2>&1</code></pre>
+                <p>Cek: <code>php artisan schedule:list</code></p>
+                <p>Manual generate: <code>php artisan invoice:generate-monthly</code></p>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Plugin error → seluruh aplikasi tidak bisa diakses</summary>
+            <div class="mt-3 text-sm text-slate-600 space-y-2">
+                <p>Plugin yang rusak (config hilang, syntax error) akan crash seluruh app. Solusi:</p>
+                <ol class="list-decimal list-inside">
+                    <li>Cek log: <code>tail -50 storage/logs/laravel.log</code></li>
+                    <li>Nonaktifkan plugin via DB langsung:
+                        <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs mt-1"><code>UPDATE installed_plugins SET is_active = 0 WHERE plugin_slug = 'finance';</code></pre>
+                    </li>
+                    <li>Atau perbaiki file plugin lalu <code>php artisan optimize:clear</code></li>
+                </ol>
+            </div>
+        </details>
+
+        <details class="bg-white border border-slate-200 rounded-xl p-5">
+            <summary class="font-semibold text-slate-800 cursor-pointer">Cara menghilangkan popup "Pembelian Aplikasi" di landing page</summary>
+            <div class="mt-3 text-sm text-slate-600 space-y-3">
+                <p>Popup di pojok kanan bawah landing page (<code>/</code> dan halaman properti) bisa dihilangkan dengan beberapa cara:</p>
+
+                <p class="font-semibold text-slate-700 mb-1">Cara 1: Tutup sementara (klik tombol X)</p>
+                <p>Klik tombol <strong>×</strong> di pojok kanan atas popup. Pilihan disimpan di <code>localStorage</code> browser dan popup tidak muncul lagi selama <strong>7 hari</strong> di browser yang sama.</p>
+
+                <p class="font-semibold text-slate-700 mb-1 mt-3">Cara 2: Hilangkan untuk satu browser saja (DevTools)</p>
+                <p>Buka DevTools (F12) → tab Console → jalankan:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>localStorage.setItem('purchasePopupDismissed', '9999999999999')</code></pre>
+
+                <p class="font-semibold text-slate-700 mb-1 mt-3">Cara 3: Hilangkan permanen untuk semua pengunjung</p>
+                <p>Edit file <code>resources/views/landing/layouts/app.blade.php</code>, hapus seluruh blok yang ditandai dengan komentar Blade <code>{{-- PURCHASE POPUP --}}</code> sampai <code>{{-- /PURCHASE POPUP --}}</code> (di dekat akhir file, sebelum <code>&lt;/body&gt;</code>). Setelah itu jalankan:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>php artisan view:clear</code></pre>
+
+                <p class="font-semibold text-slate-700 mb-1 mt-3">Cara 4: Sembunyikan via CSS (cepat, tanpa edit blok)</p>
+                <p>Tambahkan rule ini di file <code>resources/views/landing/layouts/app.blade.php</code> di dalam <code>&lt;style&gt;</code> manapun:</p>
+                <pre class="bg-slate-900 text-slate-100 rounded p-3 text-xs"><code>#purchase-popup { display: none !important; }</code></pre>
+            </div>
+        </details>
+    </div>
+</section>
+
+<!-- ═════════ PEMBELIAN APLIKASI ═════════ -->
+<section id="pembelian">
+    <h2>🛒 Pembelian Aplikasi</h2>
+    <p>Tertarik untuk membeli aplikasi <strong>Kos Manager</strong> ini untuk bisnis kos Anda? Hubungi pemilik untuk info harga, demo, dan setup.</p>
+
+    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-8 my-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div class="flex-shrink-0 w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center text-4xl">
+                💬
+            </div>
+            <div class="flex-1">
+                <div class="text-xs uppercase font-bold tracking-wider text-emerald-100 mb-1">Hubungi via WhatsApp</div>
+                <div class="text-3xl font-extrabold mb-1">081286052010</div>
+                <p class="text-emerald-100 text-sm mb-4">Konsultasi & pembelian aplikasi · respon cepat di jam kerja</p>
+                <a href="https://wa.me/6281286052010?text=Halo%2C%20saya%20tertarik%20untuk%20membeli%20aplikasi%20Kos%20Manager"
+                   target="_blank"
+                   class="inline-flex items-center gap-2 bg-white text-emerald-700 font-bold px-5 py-2.5 rounded-xl hover:bg-emerald-50 transition shadow-md">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Chat WhatsApp Sekarang
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <h3>Yang Anda Dapat</h3>
+    <div class="grid md:grid-cols-2 gap-3 my-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+            <div class="font-semibold text-slate-800 mb-1">📦 Source code lengkap</div>
+            <p class="text-sm text-slate-500 mb-0">Laravel 13 + Filament v5, termasuk seluruh modul yang ada di dokumentasi ini.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+            <div class="font-semibold text-slate-800 mb-1">🔑 Lisensi aktif</div>
+            <p class="text-sm text-slate-500 mb-0">Activation key untuk 1 domain (atau multi-domain sesuai paket).</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+            <div class="font-semibold text-slate-800 mb-1">🛠️ Bantuan instalasi</div>
+            <p class="text-sm text-slate-500 mb-0">Setup di server Anda atau hosting yang Anda pilih.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+            <div class="font-semibold text-slate-800 mb-1">📚 Update & support</div>
+            <p class="text-sm text-slate-500 mb-0">Update versi aplikasi & dukungan teknis sesuai paket.</p>
+        </div>
+    </div>
+
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+        <p class="text-sm text-blue-700 mb-0"><strong>💡 Catatan:</strong> Popup pembelian di pojok kanan bawah halaman ini bisa dihilangkan kapan saja — lihat section <a href="#troubleshooting">Troubleshooting</a> → "Cara menghilangkan popup Pembelian Aplikasi".</p>
+    </div>
+</section>
+
+<!-- ═════════ MARKETING / SHOPEE ═════════ -->
+<section id="marketing">
+    <h2>📋 Materi Marketing (Listing Shopee/Tokopedia/dll)</h2>
+    <p>Section ini berisi <strong>copy-paste material</strong> untuk Anda pasang di marketplace digital. Semua klaim sudah disesuaikan dengan fitur yang benar-benar ada di aplikasi — aman secara etis, tidak overclaim.</p>
+
+    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-5 my-6">
+        <h3 class="text-indigo-700 mt-0 mb-2">💡 Etika listing</h3>
+        <ul class="text-sm text-indigo-900 mb-0">
+            <li><strong>Jujur</strong> tentang requirement (PHP hosting, bukan static)</li>
+            <li><strong>Transparan</strong> bahwa ini lisensi terikat domain via whitelabel.co.id</li>
+            <li><strong>Sebut tech stack</strong> (Laravel + Filament) supaya pembeli teknis bisa validasi</li>
+            <li><strong>Jangan klaim</strong> fitur yang masih "Next Update" (mis. WhatsApp Blast — masih placeholder)</li>
+            <li><strong>Sediakan demo</strong>: arahkan pembeli ke <a href="/admin/login">/admin/login</a> dengan kredensial demo, atau video screen-recording</li>
+        </ul>
+    </div>
+
+    <h3>🏷️ Judul Listing (pilih salah satu)</h3>
+    <div class="space-y-2 my-3">
+        <div class="bg-slate-50 border-l-4 border-indigo-400 px-4 py-2 font-mono text-sm">Aplikasi Manajemen Kos-Kosan / Boarding House — Web App Multi Properti</div>
+        <div class="bg-slate-50 border-l-4 border-indigo-400 px-4 py-2 font-mono text-sm">Kos Manager Pro — Sistem Pengelolaan Kos Online + Portal Penyewa + Landing Page</div>
+        <div class="bg-slate-50 border-l-4 border-indigo-400 px-4 py-2 font-mono text-sm">Software Kos-Kosan All-in-One: Tagihan Otomatis, Booking Online, WhatsApp Reminder</div>
+    </div>
+
+    <h3>📝 Deskripsi Produk (siap copy-paste)</h3>
+    <div class="bg-slate-900 text-slate-100 rounded-lg p-5 text-sm leading-relaxed whitespace-pre-wrap font-mono overflow-x-auto" id="shopee-desc">🏠 KOS MANAGER — APLIKASI MANAJEMEN KOS-KOSAN LENGKAP
+
+Bingung kelola tagihan kos manual? Penyewa sering lupa bayar? Mau punya website kos sendiri? Aplikasi ini solusi lengkap untuk pemilik kos & boarding house.
+
+✨ FITUR UNGGULAN
+
+🏢 Manajemen Multi Properti
+- Kelola banyak gedung kos dari 1 dashboard
+- Tipe kamar berbeda per properti (Standar/Deluxe/VIP)
+- Tracking status tiap kamar (tersedia/terisi/maintenance)
+- Upload foto kamar & properti unlimited
+
+📄 Tagihan Otomatis
+- Generate invoice bulanan otomatis dengan satu klik
+- Reminder WhatsApp H-3 sebelum jatuh tempo
+- Notifikasi tagihan jatuh tempo (overdue)
+- Hitung denda keterlambatan otomatis
+- Cetak Tagihan & Kwitansi PDF (siap print)
+- Export laporan ke Excel & PDF
+
+💳 Pembayaran Online
+- Integrasi Midtrans (VA, GoPay, Shopee Pay, QRIS)
+- Integrasi Tripay (semua bank VA + QRIS)
+- Mode manual transfer bank (untuk kos kecil)
+- Penyewa bayar langsung dari HP
+
+📱 Portal Penyewa (akses dari HP)
+- Login pakai nomor HP (mudah untuk penyewa)
+- Lihat tagihan & riwayat pembayaran
+- Bayar online instant
+- Lapor kerusakan kamar dengan foto
+- Edit data profil sendiri
+
+🌐 Landing Page Publik
+- Website kos otomatis (dapat domain Anda sendiri)
+- Tampilkan kamar tersedia + harga real-time
+- Form booking online
+- Form kontak terhubung ke admin
+- Testimoni & FAQ landing
+
+📊 Laporan Lengkap
+- Grafik pendapatan 12 bulan terakhir
+- Tingkat hunian per properti (occupancy rate)
+- Laporan tunggakan
+- Export semua ke PDF/Excel
+
+🔧 Operasional Harian
+- Tracking maintenance request dari penyewa
+- E-Contract / kontrak digital
+- Catatan meter air/listrik per kamar
+- Checklist serah terima kamar
+- Booking request dari calon penyewa
+
+🎨 Customization
+- System tema: ganti tampilan admin/portal/landing terpisah
+- Plugin system untuk extend fitur
+- Logo & nama aplikasi sesuai brand Anda
+- Multi-bahasa siap pakai
+
+🛠️ TECH STACK (untuk pembeli teknis)
+- Backend: Laravel 13 (PHP 8.3+)
+- Admin Panel: Filament v5
+- Database: MySQL 8 / MariaDB / PostgreSQL
+- Asset: Vite + Tailwind CSS
+- PDF: DomPDF · Excel: Maatwebsite Excel
+- WhatsApp Gateway: Fonnte (opsional)
+
+📦 YANG ANDA DAPAT
+✅ Source code lengkap (full akses, bisa custom)
+✅ Activation key 1 domain (multi-domain available)
+✅ Dokumentasi lengkap step-by-step (akses /docs.html)
+✅ Bantuan instalasi awal di server Anda
+✅ Update versi & support sesuai paket
+
+🌐 PERSYARATAN HOSTING
+- PHP 8.3+ dengan extension standar (curl, gd, mbstring, zip)
+- MySQL 5.7+ / MariaDB 10.3+ / PostgreSQL 13+
+- Min RAM 1GB (rekomendasi 2GB)
+- Web server: Apache / Nginx
+- Bisa di shared hosting cPanel atau VPS
+
+✅ Cocok untuk: pemilik kos kecil-besar, agent property, manager boarding house, developer yang mau custom lebih lanjut.
+
+💬 KONTAK & PEMBELIAN
+WhatsApp: 081286052010
+Konsultasi gratis · respon cepat di jam kerja
+
+#kosmanager #aplikasikos #softwarekos #manajemenkos #boardinghouse #kosanapp #aplikasimanajemenkost</div>
+
+    <button onclick="navigator.clipboard.writeText(document.getElementById('shopee-desc').textContent).then(() => this.textContent='&#10003; Tersalin!')" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition no-print">📋 Copy ke clipboard</button>
+
+    <h3 class="mt-8">⭐ Bullet Points Pendek (untuk listing kotak fitur)</h3>
+    <p class="text-sm text-slate-500">Cocok untuk kolom "Spesifikasi" / "Highlights" di Shopee.</p>
+    <div class="bg-slate-900 text-slate-100 rounded-lg p-5 text-sm font-mono whitespace-pre-wrap" id="shopee-bullets">✓ Manajemen multi properti & multi kamar (unlimited)
+✓ Tagihan bulanan otomatis + reminder WhatsApp
+✓ Payment gateway Midtrans, Tripay, atau manual
+✓ Portal penyewa via HP (login dengan nomor)
+✓ Landing page publik + booking online
+✓ Cetak Tagihan & Kwitansi PDF (terbilang otomatis)
+✓ Export laporan Excel & PDF
+✓ Grafik pendapatan & occupancy rate
+✓ E-Contract / kontrak digital
+✓ Maintenance request dari penyewa
+✓ Source code Laravel 13 + Filament v5
+✓ Lisensi 1 domain
+✓ Bisa shared hosting / VPS
+✓ Dokumentasi lengkap step-by-step
+✓ Bantuan instalasi & support</div>
+
+    <button onclick="navigator.clipboard.writeText(document.getElementById('shopee-bullets').textContent).then(() => this.textContent='&#10003; Tersalin!')" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition no-print">📋 Copy bullet points</button>
+
+    <h3 class="mt-8">🏷️ Hashtag & Kata Kunci</h3>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm font-mono">
+        <p class="font-semibold mb-1">Hashtag (Instagram/TikTok ad):</p>
+        <p class="text-slate-700 mb-3">#kosmanager #aplikasikos #softwarekos #manajemenkos #boardinghouse #kosanapp #aplikasimanajemenkost #aplikasilaravel #filamentphp #saaskos</p>
+
+        <p class="font-semibold mb-1">SEO keywords (Shopee/Tokopedia search):</p>
+        <p class="text-slate-700 mb-0">aplikasi kos kosan, software manajemen kost, sistem kos online, aplikasi tagihan kos, web app kos, software boarding house, aplikasi sewa kamar, manajemen properti kos, sistem booking kos, kos manager indonesia</p>
+    </div>
+
+    <h3 class="mt-8">📸 Saran Konten Foto/Screenshot Listing</h3>
+    <ol class="list-decimal list-inside">
+        <li><strong>Foto utama</strong>: hero landing page (paling cantik, ada gambar kamar + tombol booking)</li>
+        <li><strong>Foto 2</strong>: dashboard admin dengan stats & grafik pendapatan terisi</li>
+        <li><strong>Foto 3</strong>: portal penyewa di HP (mock-up dalam frame iPhone/Android)</li>
+        <li><strong>Foto 4</strong>: contoh PDF tagihan & kwitansi (lebih meyakinkan kalau real)</li>
+        <li><strong>Foto 5</strong>: list kamar dengan tab Tersedia/Terisi (10K data dummy)</li>
+        <li><strong>Foto 6</strong>: bullet point fitur dengan icon (gunakan Canva)</li>
+        <li><strong>Video</strong> (opsional): screen recording 30-60 detik tour fitur utama</li>
+    </ol>
+
+    <h3 class="mt-8">💰 Saran Pricing Tier (referensi)</h3>
+    <table>
+        <thead><tr><th>Paket</th><th>Harga (Rp)</th><th>Yang dapat</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Starter</strong></td><td>500rb &mdash; 1jt</td><td>Source + lisensi 1 domain + dokumentasi</td></tr>
+            <tr><td><strong>Standard</strong></td><td>1,5jt &mdash; 2,5jt</td><td>+ bantuan instalasi remote (TeamViewer/AnyDesk)</td></tr>
+            <tr><td><strong>Premium</strong></td><td>3,5jt &mdash; 6jt</td><td>+ custom branding, logo, theme + 3 bulan support</td></tr>
+            <tr><td><strong>Enterprise</strong></td><td>negotiable</td><td>+ multi-tenant, custom feature, SLA support</td></tr>
+        </tbody>
+    </table>
+    <p class="text-xs text-slate-500">Harga di atas <strong>hanya sebagai referensi</strong> — sesuaikan dengan strategi pricing Anda dan pasar.</p>
+
+    <h3 class="mt-8">🎯 Target Pembeli (Audience)</h3>
+    <ul>
+        <li><strong>Pemilik kos langsung</strong> — yang mau kelola sendiri tanpa Excel</li>
+        <li><strong>Agent property</strong> — yang manage banyak kos pemilik</li>
+        <li><strong>Developer freelance</strong> — yang mau jual ulang ke client kos (resell)</li>
+        <li><strong>Mahasiswa IT / startup</strong> — sebagai base project untuk dikembangkan</li>
+    </ul>
+
+    <h3 class="mt-8">🚫 Hal yang sebaiknya TIDAK diklaim</h3>
+    <div class="bg-rose-50 border-l-4 border-rose-400 p-4 rounded">
+        <ul class="text-sm text-rose-700 mb-0">
+            <li><strong>"WhatsApp Blast"</strong> — fitur masih placeholder "Next Update", jangan jual sebagai working feature</li>
+            <li><strong>"Multi-tenant SaaS"</strong> — kolom <code>tenant_id</code> ada di DB tapi belum aktif. Klaim "SaaS-ready" boleh, tapi bukan "working SaaS".</li>
+            <li><strong>"Mobile App native"</strong> — tidak ada APK Android/iOS. Yang ada portal mobile-friendly via browser.</li>
+            <li><strong>"Free updates lifetime"</strong> — sesuaikan dengan model lisensi Anda. Lebih aman: "update sesuai paket / 1 tahun".</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ═════════ FOOTER ═════════ -->
+<footer class="mt-20 pt-10 border-t border-slate-200 text-center text-sm text-slate-500">
+    <p class="mb-2">📚 Kos Manager v1.0.0 — Dokumentasi</p>
+    <p class="mb-0">
+        <a href="https://whitelabel.co.id" target="_blank">whitelabel.co.id</a> ·
+        Built with Laravel 13 + Filament v5
+    </p>
+</footer>
+
+</main>
+</div>
+
+</body>
+</html>

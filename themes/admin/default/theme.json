@@ -1,0 +1,13 @@
+{
+  "name": "Default",
+  "slug": "default",
+  "area": "admin",
+  "version": "1.0.0",
+  "description": "Default admin theme untuk Filament",
+  "author": "Kos Manager",
+  "primary_color": "#f59e0b",
+  "settings": {
+    "sidebar_collapsed": false,
+    "compact_mode": false
+  }
+}

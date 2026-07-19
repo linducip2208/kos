@@ -1,0 +1,27 @@
+{
+  "name": "Finance Plugin",
+  "slug": "finance",
+  "version": "1.0.0",
+  "description": "Invoice PDF, payment tracking, laporan keuangan detail, biaya tambahan",
+  "author": "Kos Manager",
+  "requires_app": "1.0.0",
+  "requires_php": "8.2",
+  "license_required": false,
+  "main": "src/FinanceServiceProvider.php",
+  "migrations": true,
+  "assets": false,
+  "hooks": {
+    "on_install": "Plugins\\Finance\\Hooks\\InstallHook",
+    "on_activate": null,
+    "on_deactivate": null,
+    "on_uninstall": "Plugins\\Finance\\Hooks\\UninstallHook"
+  },
+  "menu_items": [
+    {
+      "label": "Laporan Keuangan",
+      "route": "finance.reports.index",
+      "icon": "heroicon-o-chart-bar",
+      "position": 30
+    }
+  ]
+}
