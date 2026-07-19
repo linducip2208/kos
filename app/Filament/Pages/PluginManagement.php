@@ -14,7 +14,7 @@ class PluginManagement extends Page
     protected static ?int    $navigationSort = 20;
     protected string $view = 'filament.pages.plugin-management';
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_settings'); }
+    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
     public static function getNavigationLabel(): string  { return 'Plugin Management'; }
 
     public function getPlugins(): array

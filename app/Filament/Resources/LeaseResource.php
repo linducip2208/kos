@@ -28,7 +28,7 @@ class LeaseResource extends Resource
     protected static string|\BackedEnum|null  $navigationIcon  = 'heroicon-o-document-text';
     protected static ?int    $navigationSort  = 20;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_tenant_contract'); }
+    public static function getNavigationGroup(): ?string { return '?? Penghuni & Sewa'; }
     public static function getLabel(): ?string            { return __('navigation.lease'); }
     public static function getPluralLabel(): ?string      { return __('navigation.leases'); }
 

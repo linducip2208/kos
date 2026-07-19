@@ -30,7 +30,7 @@ class RoomChecklistResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?int    $navigationSort = 35;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_property_room'); }
+    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
     public static function getLabel(): ?string           { return 'Checklist Kamar'; }
     public static function getPluralLabel(): ?string     { return 'Checklist Kamar'; }
 

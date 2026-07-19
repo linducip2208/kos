@@ -25,7 +25,7 @@ class PropertyResource extends Resource
     protected static string|\BackedEnum|null  $navigationIcon  = 'heroicon-o-building-office-2';
     protected static ?int    $navigationSort  = 10;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_property_room'); }
+    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
     public static function getLabel(): ?string            { return __('navigation.property'); }
     public static function getPluralLabel(): ?string      { return __('navigation.properties'); }
 

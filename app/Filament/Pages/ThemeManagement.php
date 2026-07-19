@@ -12,7 +12,7 @@ class ThemeManagement extends Page
     protected static ?int    $navigationSort = 21;
     protected string $view = 'filament.pages.theme-management';
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_settings'); }
+    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
     public static function getNavigationLabel(): string  { return 'Theme Management'; }
 
     public function getThemes(): array

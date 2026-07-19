@@ -28,10 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\Login::class)
-            ->colors([
-                'primary' => Color::Blue,
-            ])
-            ->brandName(setting('app_name', 'Kos Manager'))
+            ->colors(['primary' => Color::Blue])
+            ->brandName(setting('app_name', 'Kos Kosan Pro'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->darkMode(false)
             ->sidebarCollapsibleOnDesktop()
@@ -39,13 +37,14 @@ class AdminPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('4rem')
             ->topbar(true)
             ->navigationGroups([
-                NavigationGroup::make('🏠 ' . __('navigation.group_property_room'))->collapsed(false),
-                NavigationGroup::make('👤 ' . __('navigation.group_tenant_contract'))->collapsed(false),
-                NavigationGroup::make('💰 ' . __('navigation.group_finance'))->collapsed(false),
-                NavigationGroup::make('📊 ' . __('navigation.group_reports'))->collapsed(false),
+                NavigationGroup::make('🏠 Properti & Kamar')->collapsed(false),
+                NavigationGroup::make('👤 Penghuni & Sewa')->collapsed(false),
+                NavigationGroup::make('💰 Keuangan')->collapsed(false),
+                NavigationGroup::make('📊 Laporan')->collapsed(false),
                 NavigationGroup::make('📝 Marketing')->collapsed(true),
                 NavigationGroup::make('📄 Konten Landing')->collapsed(true),
-                NavigationGroup::make('⚙️ ' . __('navigation.group_settings'))->collapsed(true),
+                NavigationGroup::make('🔌 Integrasi')->collapsed(true),
+                NavigationGroup::make('⚙️ Sistem')->collapsed(true),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

@@ -16,7 +16,7 @@ class FinancialReport extends Page
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?int $navigationSort = 10;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_reports'); }
+    public static function getNavigationGroup(): ?string { return '?? Laporan'; }
     public static function getNavigationLabel(): string  { return 'Laporan Keuangan'; }
 
     public function getTitle(): string { return 'Laporan Keuangan'; }

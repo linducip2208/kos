@@ -21,7 +21,7 @@ class PaymentGatewaySettings extends Page implements HasForms
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-credit-card';
     protected static ?int    $navigationSort  = 20;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_settings'); }
+    public static function getNavigationGroup(): ?string { return '🔌 Integrasi'; }
     public static function getNavigationLabel(): string  { return __('navigation.payment_gateway_settings'); }
     protected string  $view            = 'filament.pages.payment-gateway-settings';
 

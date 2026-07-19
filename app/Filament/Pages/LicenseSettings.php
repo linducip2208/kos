@@ -12,7 +12,7 @@ class LicenseSettings extends Page
     protected static ?int    $navigationSort = 30;
     protected string $view = 'filament.pages.license-settings';
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_settings'); }
+    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
     public static function getNavigationLabel(): string  { return 'Lisensi'; }
 
     public string $activationKey = '';

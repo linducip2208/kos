@@ -30,7 +30,7 @@ class UtilityReadingResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bolt';
     protected static ?int    $navigationSort = 20;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_finance'); }
+    public static function getNavigationGroup(): ?string { return '?? Keuangan'; }
     public static function getLabel(): ?string           { return 'Meteran'; }
     public static function getPluralLabel(): ?string     { return 'Meteran Utilitas'; }
 

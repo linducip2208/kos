@@ -10,7 +10,7 @@ class WhatsAppBlast extends Page
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-megaphone';
     protected static ?int $navigationSort = 20;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_tenant_contract'); }
+    public static function getNavigationGroup(): ?string { return '🔌 Integrasi'; }
     public static function getNavigationLabel(): string  { return 'WhatsApp Blast'; }
     public function getTitle(): string { return 'WhatsApp Blast'; }
 

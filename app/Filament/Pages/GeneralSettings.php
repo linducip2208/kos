@@ -22,7 +22,7 @@ class GeneralSettings extends Page implements HasForms
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-cog-6-tooth';
     protected static ?int    $navigationSort  = 10;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_settings'); }
+    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
     public static function getNavigationLabel(): string  { return __('navigation.general_settings'); }
     protected string  $view            = 'filament.pages.general-settings';
 

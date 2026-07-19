@@ -27,7 +27,7 @@ class RoomTypeResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-squares-2x2';
     protected static ?int    $navigationSort = 20;
 
-    public static function getNavigationGroup(): ?string { return __('navigation.group_property_room'); }
+    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
     public static function getLabel(): ?string            { return __('navigation.room_type'); }
     public static function getPluralLabel(): ?string      { return __('navigation.room_types'); }
 
