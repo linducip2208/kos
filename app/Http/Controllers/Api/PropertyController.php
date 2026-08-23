@@ -25,9 +25,15 @@ class PropertyController extends Controller
         ]));
     }
 
-    public function show(Property $property)
+    public function show($key)
     {
-        $property->load(['rooms' => fn ($q) => $q->where('status', 'available')->with('roomType')]);
+        // Terima slug maupun ID (backward compat dengan mobile client lama).
+        $property = Property::query()
+            ->where('slug', $key)
+            ->orWhere(fn ($q) => $q->whereKey($key)->where('is_active', true))
+            ->with(['rooms' => fn ($q) => $q->where('status', 'available')->with('roomType')])
+            ->active()
+            ->firstOrFail();
 
         return response()->json([
             'id'          => $property->id,

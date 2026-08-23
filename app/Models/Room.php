@@ -2,20 +2,35 @@
 
 namespace App\Models;
 
+use App\Services\RoomStatusService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Validation\ValidationException;
 
 class Room extends Model
 {
     use HasFactory;
+
+    public const STATUSES = [
+        'available'   => 'Tersedia',
+        'reserved'    => 'Dipesan',
+        'occupied'    => 'Terisi',
+        'notice_given'=> 'Notice Given',
+        'cleaning'    => 'Dibersihkan',
+        'inspection'  => 'Inspeksi',
+        'maintenance' => 'Maintenance',
+        'blocked'     => 'Diblokir',
+        'inactive'    => 'Nonaktif',
+    ];
+
     protected $fillable = [
         'property_id', 'room_type_id', 'room_number', 'name', 'floor',
         'description', 'facilities', 'photos',
         'price_daily', 'price_weekly', 'price_monthly', 'price_quarterly', 'price_yearly',
-        'size_sqm', 'status', 'last_cleaned_at', 'notes', 'is_active',
+        'size_sqm', 'status', 'last_cleaned_at', 'notes', 'blocked_reason', 'is_active',
     ];
 
     protected $casts = [
@@ -30,6 +45,8 @@ class Room extends Model
         'is_active'        => 'boolean',
         'last_cleaned_at'  => 'date',
     ];
+
+    // ── Relations ────────────────────────────────────────────────────────
 
     public function property(): BelongsTo
     {
@@ -48,8 +65,35 @@ class Room extends Model
 
     public function activeLease(): HasOne
     {
-        return $this->hasOne(Lease::class)->where('status', 'active');
+        return $this->hasOne(Lease::class)->whereIn('status', ['active', 'expiring_soon']);
     }
+
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(RoomInventoryItem::class);
+    }
+
+    public function checkinRecords(): HasMany
+    {
+        return $this->hasMany(CheckinRecord::class);
+    }
+
+    public function utilityRates(): HasMany
+    {
+        return $this->hasMany(UtilityRate::class);
+    }
+
+    public function maintenanceRequests(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class);
+    }
+
+    public function utilityReadings(): HasMany
+    {
+        return $this->hasMany(UtilityReading::class);
+    }
+
+    // ── Effective attributes (room overrides room type) ──────────────────
 
     public function getEffectivePriceDailyAttribute(): float
     {
@@ -76,39 +120,50 @@ class Room extends Model
         return $this->price_yearly ?? $this->roomType?->base_price_yearly ?? 0;
     }
 
-    // Deskripsi efektif: pakai deskripsi kamar jika ada, fallback ke tipe kamar
     public function getEffectiveDescriptionAttribute(): ?string
     {
         return $this->description ?? $this->roomType?->description;
     }
 
-    // Fasilitas efektif: merge fasilitas tipe + override kamar
     public function getEffectiveFacilitiesAttribute(): array
     {
         $typeFacilities = $this->roomType?->facilities ?? [];
         $roomFacilities = $this->facilities ?? [];
+
         return array_unique(array_merge($typeFacilities, $roomFacilities));
+    }
+
+    // ── Status helpers ───────────────────────────────────────────────────
+
+    public static function statusLabel(string $status): string
+    {
+        return self::STATUSES[$status] ?? $status;
     }
 
     public function getStatusColorAttribute(): string
     {
-        return match ($this->status) {
-            'available'   => 'success',
-            'occupied'    => 'danger',
-            'maintenance' => 'warning',
-            'reserved'    => 'info',
-            default       => 'gray',
-        };
+        return RoomStatusService::color($this->status);
     }
 
     public function getStatusLabelAttribute(): string
     {
-        return match ($this->status) {
-            'available'   => 'Tersedia',
-            'occupied'    => 'Terisi',
-            'maintenance' => 'Maintenance',
-            'reserved'    => 'Dipesan',
-            default       => $this->status,
-        };
+        return self::statusLabel($this->status);
+    }
+
+    public function isOccupiable(): bool
+    {
+        return in_array($this->status, ['available'], true)
+            || ($this->status === 'cleaning'); // boleh langsung di-assign setelah cleaning selesai
+    }
+
+    /**
+     * Transisi status dengan validasi workflow.
+     * Lemparkan ValidationException bila transisi tidak logis.
+     */
+    public function transitionTo(string $newStatus, ?string $reason = null): static
+    {
+        app(RoomStatusService::class)->transition($this, $newStatus, $reason);
+
+        return $this;
     }
 }

@@ -174,7 +174,18 @@ class ModelTest extends TestCase
 
         $room->status = 'maintenance';
         $this->assertEquals('Maintenance', $room->status_label);
-        $this->assertEquals('warning',     $room->status_color);
+
+        $room->status = 'notice_given';
+        $this->assertEquals('Notice Given', $room->status_label);
+
+        $room->status = 'cleaning';
+        $this->assertEquals('Dibersihkan', $room->status_label);
+
+        $room->status = 'inspection';
+        $this->assertEquals('Inspeksi', $room->status_label);
+
+        $room->status = 'blocked';
+        $this->assertEquals('Diblokir', $room->status_label);
     }
 
     public function test_room_has_active_lease(): void
@@ -299,16 +310,20 @@ class ModelTest extends TestCase
         $this->assertEquals('occupied', $room->fresh()->status);
     }
 
-    public function test_lease_expired_sets_room_to_available(): void
+    public function test_lease_expired_puts_room_into_inspection(): void
     {
+        // Workflow baru: lease berakhir → kamar masuk tahap inspeksi (bukan langsung available)
         $room = Room::factory()->occupied()->create();
         $occupant = Occupant::factory()->create();
-        Lease::factory()->expired()->create([
+        $lease = Lease::factory()->create([
             'room_id'     => $room->id,
             'occupant_id' => $occupant->id,
         ]);
 
-        $this->assertEquals('available', $room->fresh()->status);
+        app(\App\Services\LeaseWorkflowService::class)->end($lease);
+
+        $this->assertEquals('ended', $lease->fresh()->status);
+        $this->assertEquals('cleaning', $room->fresh()->status);
     }
 
     public function test_lease_has_invoices(): void

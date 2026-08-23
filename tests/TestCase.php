@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Core\License\LicenseService;
+use App\Services\LicenseClient;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -30,6 +31,19 @@ abstract class TestCase extends BaseTestCase
                 'activated_at' => now()->toISOString(),
                 'expires_at'   => now()->addYear()->toDateString(),
             ]);
+        });
+
+        // RequirePair middleware memakai LicenseClient — pastikan terverifikasi.
+        $this->mock(LicenseClient::class, function ($mock) {
+            $mock->shouldReceive('verify')->andReturnUsing(function ($domain) {
+                return [
+                    'domain'     => strtolower($domain),
+                    'product'    => 'koskosan',
+                    'status'     => 'active',
+                    'expires_at' => now()->addYear()->toDateString(),
+                ];
+            });
+            $mock->shouldReceive('isPaired')->andReturnTrue();
         });
     }
 }
