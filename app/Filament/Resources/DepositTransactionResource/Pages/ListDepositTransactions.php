@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\DepositTransactionResource\Pages; use App\Filament\Resources\DepositTransactionResource; use Filament\Resources\Pages\ListRecords; class ListDepositTransactions extends ListRecords { protected static string $resource = DepositTransactionResource::class; }

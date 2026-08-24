@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\RoomTransferResource\Pages; use App\Filament\Resources\RoomTransferResource; use Filament\Resources\Pages\ViewRecord; class ViewRoomTransfer extends ViewRecord { protected static string $resource = RoomTransferResource::class; }

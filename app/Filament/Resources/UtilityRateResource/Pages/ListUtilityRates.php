@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\UtilityRateResource\Pages; use App\Filament\Resources\UtilityRateResource; use Filament\Actions\CreateAction; use Filament\Resources\Pages\ListRecords; class ListUtilityRates extends ListRecords { protected static string $resource = UtilityRateResource::class; protected function getHeaderActions(): array { return [CreateAction::make()]; } }

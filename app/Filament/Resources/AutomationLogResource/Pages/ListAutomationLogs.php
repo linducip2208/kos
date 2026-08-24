@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\AutomationLogResource\Pages; use App\Filament\Resources\AutomationLogResource; use Filament\Resources\Pages\ListRecords; class ListAutomationLogs extends ListRecords { protected static string $resource = AutomationLogResource::class; }

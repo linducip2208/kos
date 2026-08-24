@@ -105,7 +105,7 @@ class MaintenanceRequest extends Model
             'assigned'            => 'info',
             'in_progress'         => 'warning',
             'waiting_parts'       => 'purple',
-            'completed'           => 'success',
+            'completed', 'resolved' => 'success',
             'tenant_confirmation' => 'amber',
             'closed'              => 'slate',
             'cancelled'           => 'slate',
@@ -115,7 +115,8 @@ class MaintenanceRequest extends Model
 
     public function getStatusLabelAttribute(): string
     {
-        return self::STATUSES[$this->status] ?? $this->status;
+        // 'resolved' = alias legacy dari 'completed'
+        return self::STATUSES[$this->status === 'resolved' ? 'completed' : $this->status] ?? $this->status;
     }
 
     public function getCategoryLabelAttribute(): string

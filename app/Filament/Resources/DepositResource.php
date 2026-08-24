@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\DepositResource\Pages;
 use App\Models\Deposit;
 use App\Models\Occupant;
+use App\Services\DepositService;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -32,19 +34,16 @@ class DepositResource extends Resource
             Section::make('Detail Deposit')->schema([
                 Grid::make(2)->schema([
                     Forms\Components\Select::make('tenant_id')->label('Penyewa')->options(Occupant::pluck('name', 'id'))->required()->searchable(),
-                    Forms\Components\Select::make('lease_id')->label('Kontrak Sewa')->relationship('lease', 'id')->nullable()->searchable(),
+                    Forms\Components\Select::make('lease_id')->label('Kontrak Sewa')
+                        ->options(fn () => \App\Models\Lease::with('occupant')->get()->mapWithKeys(
+                            fn ($l) => [$l->id => ($l->occupant?->name ?? 'Tenant #'.$l->occupant_id).' — '.$l->lease_number]
+                        ))->searchable()->nullable(),
                     Forms\Components\TextInput::make('amount')->label('Jumlah')->numeric()->prefix('Rp')->required(),
                     Forms\Components\Select::make('type')->label('Jenis')->options([
                         'security' => 'Jaminan Keamanan', 'utility' => 'Jaminan Utilitas', 'key' => 'Kunci', 'other' => 'Lainnya',
                     ])->default('security')->required(),
                     Forms\Components\DatePicker::make('paid_at')->label('Tanggal Bayar'),
-                    Forms\Components\Select::make('status')->label('Status')->options([
-                        'held' => 'Ditahan', 'refunded_partial' => 'Refund Sebagian', 'refunded_full' => 'Refund Penuh', 'forfeited' => 'Disita',
-                    ])->default('held')->required(),
-                ]),
-                Grid::make(2)->schema([
-                    Forms\Components\TextInput::make('refunded_amount')->label('Jumlah Refund')->numeric()->prefix('Rp')->nullable(),
-                    Forms\Components\DatePicker::make('refunded_at')->label('Tanggal Refund'),
+                    Forms\Components\Select::make('status')->label('Status')->options(Deposit::STATUSES)->default('pending')->required(),
                 ]),
                 Forms\Components\Textarea::make('notes')->label('Catatan')->rows(2)->columnSpanFull(),
             ]),
@@ -56,16 +55,85 @@ class DepositResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('tenant.name')->label('Penyewa')->searchable()->sortable(),
+                TextColumn::make('lease.lease_number')->label('Kontrak')->default('-'),
                 TextColumn::make('amount')->label('Jumlah')->money('IDR')->sortable(),
-                TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) { 'security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci', default => $s }),
-                TextColumn::make('status')->label('Status')->badge()->color(fn ($s) => match ($s) { 'held' => 'warning', 'refunded_full' => 'success', 'refunded_partial' => 'info', 'forfeited' => 'danger', default => 'gray' }),
+                TextColumn::make('balance')->label('Saldo')->weight('bold')
+                    ->color(fn (Deposit $r) => $r->balance <= 0 ? 'danger' : 'success')
+                    ->formatStateUsing(fn (Deposit $r) => 'Rp '.number_format($r->balance, 0, ',', '.')),
+                TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) { 'security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci', default => 'Lainnya' }),
+                TextColumn::make('status')->label('Status')->badge()
+                    ->color(fn (Deposit $r) => $r->status_color)
+                    ->formatStateUsing(fn ($s) => Deposit::STATUSES[$s] ?? $s),
                 TextColumn::make('paid_at')->label('Dibayar')->date('d M Y')->sortable(),
             ])
             ->filters([
-                SelectFilter::make('status')->options(['held' => 'Ditahan', 'refunded_full' => 'Refund', 'forfeited' => 'Disita']),
-                SelectFilter::make('type')->options(['security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci']),
+                SelectFilter::make('status')->label('Status')->options(Deposit::STATUSES),
+                SelectFilter::make('type')->label('Jenis')->options(['security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci']),
             ])
-            ->actions([Actions\EditAction::make(), Actions\DeleteAction::make()])
+            ->actions([
+                Actions\EditAction::make(),
+
+                Actions\ActionGroup::make([
+                    Actions\Action::make('mark_received')
+                        ->label('Tandai Diterima')->icon('heroicon-o-check-circle')->color('success')
+                        ->visible(fn (Deposit $r) => in_array($r->status, ['pending'], true))
+                        ->form([
+                            Forms\Components\Select::make('method')->label('Metode Bayar')->options(InvoicePayment::METHODS)->default('cash'),
+                            Forms\Components\TextInput::make('reference')->label('Referensi'),
+                        ])
+                        ->action(function (Deposit $record, array $data) {
+                            app(DepositService::class)->markReceived($record, $data['method'] ?? 'cash', $data['reference'] ?? null);
+                            Notification::make()->title('Deposit diterima & tercatat di ledger.')->success()->send();
+                        }),
+
+                    Actions\Action::make('deduct')
+                        ->label('Potong Deposit')->icon('heroicon-o-scissors')->color('danger')
+                        ->visible(fn (Deposit $r) => !$r->is_settled && $r->balance > 0)
+                        ->form([
+                            Grid::make(2)->schema([
+                                Forms\Components\TextInput::make('amount')->label('Nominal Potong')->numeric()->prefix('Rp')->required(),
+                                Forms\Components\TextInput::make('reason')->label('Alasan')->required()
+                                    ->placeholder('Kerusakan, cleaning, tunggakan...'),
+                            ]),
+                        ])
+                        ->action(function (Deposit $record, array $data) {
+                            app(DepositService::class)->deduct($record, (float) $data['amount'], $data['reason']);
+                            Notification::make()->title('Deposit dipotong. Saldo: Rp '.number_format($record->refresh()->balance, 0, ',', '.'))->warning()->send();
+                        }),
+
+                    Actions\Action::make('refund')
+                        ->label('Refund Sisa Deposit')->icon('heroicon-o-arrow-uturn-left')->color('info')
+                        ->visible(fn (Deposit $r) => !in_array($r->status, ['refunded', 'forfeited'], true))
+                        ->form([
+                            Grid::make(2)->schema([
+                                Forms\Components\TextInput::make('amount')->label('Nominal Refund')->numeric()->prefix('Rp')
+                                    ->default(fn (Deposit $r) => max(0, $r->balance))->required(),
+                                Forms\Components\Select::make('method')->label('Metode')->options(InvoicePayment::METHODS)->default('transfer'),
+                            ]),
+                            Forms\Components\TextInput::make('reason')->label('Alasan')->default('Refund deposit akhir sewa'),
+                        ])
+                        ->action(function (Deposit $record, array $data) {
+                            app(DepositService::class)->refund($record, (float) $data['amount'], $data['method'] ?? 'transfer', $data['reason'] ?? 'Refund deposit');
+                            Notification::make()->title('Refund deposit tercatat.')->success()->send();
+                        }),
+
+                    Actions\Action::make('forfeit')
+                        ->label('Hanguskan')->icon('heroicon-o-fire')->color('danger')
+                        ->visible(fn (Deposit $r) => !in_array($r->status, ['refunded', 'forfeited'], true))
+                        ->requiresConfirmation()
+                        ->form([
+                            Forms\Components\Textarea::make('reason')->label('Alasan Hangus')->required()->rows(2),
+                        ])
+                        ->action(function (Deposit $record, array $data) {
+                            app(DepositService::class)->forfeit($record, $data['reason']);
+                            Notification::make()->title('Deposit dihanguskan.')->warning()->send();
+                        }),
+                ])->label('Ledger')->icon('heroicon-o-ellipsis-vertical')->color('gray'),
+
+                Actions\Action::make('ledger')
+                    ->label('Mutasi')->icon('heroicon-o-receipt-percent')
+                    ->url(fn (Deposit $r) => DepositTransactionResource::getUrl('index').'?tableFilters[deposit_id][value]='.$r->id),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 

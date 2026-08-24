@@ -147,16 +147,17 @@ class Lease extends Model
                 $lease->syncRoomStatus();
             }
 
-            // Lease berakhir → kamar masuk tahap inspeksi/cleaning
-            if ($lease->wasChanged('status')
+            // Lease berakhir → kamar langsung tersedia kembali (checkout instan).
+            // Alur penuh cleaning/inspection ditangani CheckInOutService / LeaseWorkflowService.
+            if (($lease->wasChanged('status') || $lease->wasRecentlyCreated)
                 && in_array($lease->status, ['ended', 'expired', 'terminated'], true)
                 && !in_array($lease->getOriginal('status'), ['ended', 'expired', 'terminated'], true)) {
                 $room = $lease->room;
                 if ($room && in_array($room->status, ['occupied', 'notice_given'], true)) {
                     try {
-                        $room->transitionTo('inspection', 'Kontrak berakhir — menunggu inspeksi.');
+                        app(\App\Services\RoomStatusService::class)->transition($room, 'available');
                     } catch (\Throwable) {
-                        // room mungkin sudah dipindahkan; abaikan
+                        $room->forceFill(['status' => 'available'])->saveQuietly();
                     }
                 }
             }

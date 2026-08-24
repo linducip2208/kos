@@ -96,6 +96,15 @@ class LeaseWorkflowService
             'termination_reason' => $reason ?? $lease->termination_reason,
         ])->save();
 
+        // Alur checkout: kamar masuk tahap cleaning sebelum inspeksi.
+        if ($room = $lease->fresh()->room) {
+            try {
+                app(RoomStatusService::class)->transition($room, 'cleaning');
+            } catch (ValidationException) {
+                // kamar mungkin sudah available/dipindahkan
+            }
+        }
+
         return $lease;
     }
 
@@ -222,7 +231,7 @@ class LeaseWorkflowService
 
         do {
             $number = $prefix.'-'.now()->format('ym').'-'.strtoupper(\Illuminate\Support\Str::random(4));
-        } while (Lease::where('lease_number', $number')->exists());
+        } while (Lease::where('lease_number', $number)->exists());
 
         return $number;
     }

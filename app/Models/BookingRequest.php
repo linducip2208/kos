@@ -126,4 +126,16 @@ class BookingRequest extends Model
             'converted' => 'Jadi Penyewa', default => $this->status,
         };
     }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'pending'   => 'warning',
+            'contacted' => 'info',
+            'approved'  => 'success',
+            'rejected'  => 'danger',
+            'converted' => 'success',
+            default     => 'gray',
+        };
+    }
 }

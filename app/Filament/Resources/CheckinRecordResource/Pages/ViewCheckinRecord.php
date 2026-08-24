@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\CheckinRecordResource\Pages; use App\Filament\Resources\CheckinRecordResource; use Filament\Resources\Pages\ViewRecord; class ViewCheckinRecord extends ViewRecord { protected static string $resource = CheckinRecordResource::class; }

@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\UtilityRateResource\Pages; use App\Filament\Resources\UtilityRateResource; use Filament\Actions; use Filament\Resources\Pages\EditRecord; class EditUtilityRate extends EditRecord { protected static string $resource = UtilityRateResource::class; protected function getHeaderActions(): array { return [Actions\DeleteAction::make()]; } }

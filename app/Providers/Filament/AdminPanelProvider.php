@@ -55,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\StatsOverviewWidget::class,
                 \App\Filament\Widgets\RoomStatusWidget::class,
                 \App\Filament\Widgets\RecentPaymentsWidget::class,
+                \App\Filament\Widgets\PendingVerificationsWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\UtilityRateResource\Pages; use App\Filament\Resources\UtilityRateResource; use Filament\Resources\Pages\CreateRecord; class CreateUtilityRate extends CreateRecord { protected static string $resource = UtilityRateResource::class; }

@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\AutomationLogResource\Pages; use App\Filament\Resources\AutomationLogResource; use Filament\Resources\Pages\ViewRecord; class ViewAutomationLog extends ViewRecord { protected static string $resource = AutomationLogResource::class; }

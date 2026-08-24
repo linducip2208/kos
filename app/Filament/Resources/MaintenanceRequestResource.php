@@ -6,6 +6,8 @@ use App\Filament\Resources\MaintenanceRequestResource\Pages;
 use App\Models\MaintenanceRequest;
 use App\Models\Room;
 use App\Models\User;
+use App\Models\Vendor;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -55,15 +57,33 @@ class MaintenanceRequestResource extends Resource
                     Select::make('status')->label('Status')
                         ->options([
                             'open' => 'Terbuka', 'in_progress' => 'Dikerjakan',
-                            'waiting_parts' => 'Tunggu Part', 'resolved' => 'Selesai',
+                            'waiting_parts' => 'Tunggu Part', 'completed' => 'Selesai',
                             'cancelled' => 'Dibatalkan',
                         ])->default('open')->required(),
                     Select::make('assigned_to')->label('Ditugaskan ke')
                         ->options(User::pluck('name', 'id'))->searchable()->nullable(),
                 ]),
                 Grid::make(2)->schema([
+                    Select::make('vendor_id')->label('Vendor Eksternal')
+                        ->options(fn () => Vendor::where('is_active', true)->orderBy('name')->pluck('name', 'id'))
+                        ->searchable()->nullable()
+                        ->createOptionForm([
+                            Grid::make(2)->schema([
+                                TextInput::make('name')->label('Nama Vendor')->required(),
+                                TextInput::make('phone')->label('No. HP'),
+                                TextInput::make('contact_person')->label('Narahubung'),
+                            ]),
+                        ])
+                        ->createOptionUsing(fn (array $data) => Vendor::create(['name' => $data['name'], 'phone' => $data['phone'] ?? null, 'contact_person' => $data['contact_person'] ?? null, 'is_active' => true])->id),
+                    Select::make('category')->label('Kategori')->options([
+                        'general' => 'Umum', 'plumbing' => 'Perpipaan/Air', 'electrical' => 'Kelistrikan',
+                        'ac' => 'AC', 'cleaning' => 'Cleaning', 'furniture' => 'Furniture',
+                    ])->default('general'),
+                ]),
+                Grid::make(3)->schema([
                     TextInput::make('estimated_cost')->label('Estimasi Biaya')->numeric()->prefix('Rp'),
                     TextInput::make('actual_cost')->label('Biaya Aktual')->numeric()->prefix('Rp'),
+                    DateTimePicker::make('sla_due_at')->label('Batas SLA'),
                 ]),
                 Textarea::make('resolution_notes')->label('Catatan Penyelesaian')->rows(2),
                 FileUpload::make('resolution_photos')->label('Foto Sesudah')->image()->multiple()->maxFiles(5)
@@ -90,21 +110,24 @@ class MaintenanceRequestResource extends Resource
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn ($state) => match ($state) {
                         'open' => 'danger', 'in_progress' => 'warning', 'waiting_parts' => 'info',
-                        'resolved' => 'success', default => 'gray',
+                        'completed' => 'success', default => 'gray',
                     })
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'open' => 'Terbuka', 'in_progress' => 'Dikerjakan', 'waiting_parts' => 'Tunggu Part',
-                        'resolved' => 'Selesai', 'cancelled' => 'Batal', default => $state,
+                        'completed' => 'Selesai', 'cancelled' => 'Batal', default => $state,
                     }),
                 TextColumn::make('assignedTo.name')->label('Teknisi')->default('-'),
+                TextColumn::make('vendor.name')->label('Vendor')->default('-'),
                 TextColumn::make('actual_cost')->label('Biaya')->money('IDR')->default('—'),
                 TextColumn::make('created_at')->label('Dilaporkan')->since()->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')->options([
                     'open' => 'Terbuka', 'in_progress' => 'Dikerjakan',
-                    'waiting_parts' => 'Tunggu Part', 'resolved' => 'Selesai',
+                    'waiting_parts' => 'Tunggu Part', 'completed' => 'Selesai',
                 ]),
+                SelectFilter::make('vendor_id')->label('Vendor')
+                    ->options(fn () => Vendor::pluck('name', 'id'))->searchable(),
                 SelectFilter::make('priority')->options([
                     'urgent' => 'Urgent', 'high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah',
                 ]),

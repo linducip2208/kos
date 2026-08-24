@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\CheckinRecordResource\Pages; use App\Filament\Resources\CheckinRecordResource; use Filament\Resources\Pages\ListRecords; class ListCheckinRecords extends ListRecords { protected static string $resource = CheckinRecordResource::class; }

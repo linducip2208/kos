@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\Lease;
 use App\Services\PaymentGatewayService;
+use App\Services\PaymentService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -155,10 +157,46 @@ class InvoiceResource extends Resource
                         }
                     }),
                 Actions\Action::make('mark_paid')
-                    ->label('Tandai Lunas')->icon('heroicon-o-check-circle')->color('success')
-                    ->visible(fn (Invoice $r) => in_array($r->status, ['sent', 'overdue']))
-                    ->requiresConfirmation()
-                    ->action(fn (Invoice $r) => $r->update(['status' => 'paid', 'paid_at' => now(), 'payment_channel' => 'manual'])),
+                    ->label('Catat Pembayaran')->icon('heroicon-o-currency-dollar')->color('success')
+                    ->visible(fn (Invoice $r) => in_array($r->status, ['sent', 'overdue', 'partial']) && $r->balance_due > 0)
+                    ->form([
+                        Grid::make(2)->schema([
+                            TextInput::make('amount')->label('Nominal')->numeric()->prefix('Rp')
+                                ->default(fn (Invoice $r) => $r->balance_due)->required(),
+                            Select::make('method')->label('Metode')
+                                ->options(InvoicePayment::METHODS)->default('cash')->required(),
+                            DatePicker::make('paid_at')->label('Tanggal Bayar')->default(now()),
+                            TextInput::make('reference')->label('Referensi (No. transfer/dll)'),
+                        ]),
+                        Textarea::make('notes')->label('Catatan')->rows(2),
+                    ])
+                    ->action(function (Invoice $record, array $data) {
+                        app(PaymentService::class)->recordPayment($record, [
+                            'amount'    => (float) $data['amount'],
+                            'method'    => $data['method'],
+                            'paid_at'   => $data['paid_at'] ?? now(),
+                            'reference' => $data['reference'] ?? null,
+                            'notes'     => $data['notes'] ?? null,
+                        ]);
+                        Notification::make()->title('Pembayaran tercatat & status invoice diperbarui.')->success()->send();
+                    }),
+                Actions\Action::make('refund')
+                    ->label('Refund')->icon('heroicon-o-arrow-uturn-left')->color('warning')
+                    ->visible(fn (Invoice $r) => $r->paid_amount > 0)
+                    ->form([
+                        Grid::make(2)->schema([
+                            TextInput::make('amount')->label('Nominal Refund')->numeric()->prefix('Rp')
+                                ->default(fn (Invoice $r) => $r->paid_amount)->required(),
+                            TextInput::make('reason')->label('Alasan Refund')->required(),
+                        ]),
+                    ])
+                    ->action(function (Invoice $record, array $data) {
+                        app(PaymentService::class)->refund($record, (float) $data['amount'], $data['reason'], auth()->user());
+                        Notification::make()->title('Refund tercatat.')->success()->send();
+                    }),
+                Actions\Action::make('payments_history')
+                    ->label('Riwayat Bayar')->icon('heroicon-o-list-bullet')->color('gray')
+                    ->url(fn (Invoice $r) => InvoicePaymentResource::getUrl('index').'?tableFilters[invoice_id][value]='.$r->id),
             ])
             ->defaultSort('created_at', 'desc');
     }
