@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
 
 /**
@@ -24,6 +25,7 @@ class PrintController extends Controller
         $invoice->load(['lease.occupant', 'lease.room.property']);
 
         $pdf = Pdf::loadView('pdf.invoice', compact('invoice'));
+
         return $request->boolean('download')
             ? $pdf->download("invoice-{$invoice->invoice_number}.pdf")
             : $pdf->stream("invoice-{$invoice->invoice_number}.pdf");
@@ -38,6 +40,7 @@ class PrintController extends Controller
         $invoice->load(['lease.occupant', 'lease.room.property']);
 
         $pdf = Pdf::loadView('pdf.kwitansi', compact('invoice'));
+
         return $request->boolean('download')
             ? $pdf->download("kwitansi-{$invoice->invoice_number}.pdf")
             : $pdf->stream("kwitansi-{$invoice->invoice_number}.pdf");
@@ -46,34 +49,40 @@ class PrintController extends Controller
     /** Laporan tagihan periode (filter status, from, to). */
     public function reportInvoices(Request $request)
     {
-        abort_unless(Auth::check(), 403);
+        abort_unless(Auth::check() && Gate::allows('report.view'), 403);
 
+        $user = Auth::user();
+        $propertyIds = $user->scopedPropertyIds();
         $invoices = Invoice::with(['lease.occupant', 'lease.room.property'])
+            ->when($propertyIds !== null, fn ($query) => $query->whereHas('lease.room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0])))
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
-            ->when($request->from,   fn ($q) => $q->where('due_date', '>=', $request->from))
-            ->when($request->to,     fn ($q) => $q->where('due_date', '<=', $request->to))
+            ->when($request->from, fn ($q) => $q->where('due_date', '>=', $request->from))
+            ->when($request->to, fn ($q) => $q->where('due_date', '<=', $request->to))
             ->orderBy('due_date')
             ->get();
 
         $pdf = Pdf::loadView('pdf.report-invoices', compact('invoices'));
+
         return $request->boolean('download')
-            ? $pdf->download('laporan-tagihan-' . now()->format('Ymd') . '.pdf')
-            : $pdf->stream('laporan-tagihan-' . now()->format('Ymd') . '.pdf');
+            ? $pdf->download('laporan-tagihan-'.now()->format('Ymd').'.pdf')
+            : $pdf->stream('laporan-tagihan-'.now()->format('Ymd').'.pdf');
     }
 
     /** Excel export tagihan dengan filter status / from / to. */
     public function excelInvoices(Request $request)
     {
-        abort_unless(Auth::guard('web')->check(), 403);
-        $filename = 'tagihan-' . now()->format('Ymd-His') . '.xlsx';
+        abort_unless(Auth::guard('web')->check() && Gate::allows('report.view'), 403);
+        $filename = 'tagihan-'.now()->format('Ymd-His').'.xlsx';
+
         return Excel::download(new InvoicesExport($request->status, $request->from, $request->to), $filename);
     }
 
     /** Excel export occupancy/kontrak dengan filter from / to. */
     public function excelOccupancy(Request $request)
     {
-        abort_unless(Auth::guard('web')->check(), 403);
-        $filename = 'occupancy-' . now()->format('Ymd-His') . '.xlsx';
+        abort_unless(Auth::guard('web')->check() && Gate::allows('report.view'), 403);
+        $filename = 'occupancy-'.now()->format('Ymd-His').'.xlsx';
+
         return Excel::download(new OccupancyExport($request->from, $request->to), $filename);
     }
 
@@ -81,7 +90,11 @@ class PrintController extends Controller
     private function authorizeAccess(Invoice $invoice): void
     {
         if (Auth::guard('web')->check()) {
-            return; // admin
+            $user = Auth::guard('web')->user();
+            abort_unless(Gate::forUser($user)->allows('invoice.view'), 403);
+            abort_unless($user->scopedPropertyIds() === null || in_array($invoice->lease?->room?->property_id, $user->scopedPropertyIds(), true), 403);
+
+            return;
         }
         $occupant = Auth::guard('portal')->user();
         abort_unless($occupant && $invoice->lease?->occupant_id === $occupant->id, 403);
