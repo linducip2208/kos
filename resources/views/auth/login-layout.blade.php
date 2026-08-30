@@ -112,6 +112,18 @@
                         <span class="bg-primary-100 text-primary-700 px-2 py-0.5 rounded text-[10px] font-bold">ADMIN</span>
                         <span>admin@kos.test / password</span>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">OWNER</span>
+                        <span>owner@kos.test / password</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold">MANAGER</span>
+                        <span>manager@kos.test / password</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[10px] font-bold">AUDITOR</span>
+                        <span>auditor@kos.test / password</span>
+                    </div>
                 </div>
                 <p class="text-[10px] text-slate-400 mt-3">Hubungi WA 0812-9605-2010 untuk bantuan akses.</p>
             </div>
