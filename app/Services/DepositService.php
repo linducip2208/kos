@@ -26,9 +26,9 @@ class DepositService
                 $balance = round((float) $deposit->balance, 2);
 
                 $this->addTransaction($deposit, 'receipt', (float) $deposit->amount, [
-                    'method'        => $method,
-                    'reference'     => $reference,
-                    'reason'        => 'Penerimaan deposit',
+                    'method' => $method,
+                    'reference' => $reference,
+                    'reason' => 'Penerimaan deposit',
                     'balance_after' => round($balance + (float) $deposit->amount, 2),
                 ]);
 
@@ -49,28 +49,32 @@ class DepositService
         return DB::transaction(function () use ($deposit, $amount, $reason, $options) {
             $deposit = Deposit::lockForUpdate()->find($deposit->id);
 
-            if ($deposit->isSettled()) {
+            if ($deposit->is_settled) {
                 abort(422, 'Deposit sudah diselesaikan.');
             }
 
             $this->seedLedgerIfNeeded($deposit);
 
-            $amount = round(min(max(round($amount, 2), 0), (float) $deposit->balance), 2);
+            $amount = round($amount, 2);
 
             if ($amount <= 0) {
-                abort(422, 'Saldo deposit tidak cukup untuk dipotong.');
+                abort(422, 'Nominal potongan harus lebih besar dari nol.');
+            }
+
+            if ($amount > (float) $deposit->balance + 0.009) {
+                abort(422, 'Nominal potongan melebihi saldo deposit.');
             }
 
             $tx = $this->addTransaction($deposit, 'deduction', $amount, [
-                'reason'        => $reason,
-                'source_type'   => $options['source_type'] ?? null,
-                'source_id'     => $options['source_id'] ?? null,
+                'reason' => $reason,
+                'source_type' => $options['source_type'] ?? null,
+                'source_id' => $options['source_id'] ?? null,
                 'balance_after' => round((float) $deposit->balance - $amount, 2),
             ]);
 
             $remaining = round((float) $deposit->refresh()->balance, 2);
 
-            if (!in_array($deposit->status, ['refunded', 'forfeited'], true)) {
+            if (! in_array($deposit->status, ['refunded', 'forfeited'], true)) {
                 $deposit->update([
                     'status' => $remaining <= 0.009 ? 'partially_used' : 'partially_used',
                 ]);
@@ -90,7 +94,7 @@ class DepositService
 
             $this->seedLedgerIfNeeded($deposit);
 
-            $balance      = round((float) $deposit->balance, 2);
+            $balance = round((float) $deposit->balance, 2);
             $refundAmount = round($amount ?? $balance, 2);
 
             if ($refundAmount <= 0 || $refundAmount > $balance + 0.009) {
@@ -98,15 +102,15 @@ class DepositService
             }
 
             $this->addTransaction($deposit, 'refund', $refundAmount, [
-                'reason'        => $reason,
-                'method'        => $method,
+                'reason' => $reason,
+                'method' => $method,
                 'balance_after' => round($balance - $refundAmount, 2),
             ]);
 
             $deposit->forceFill([
-                'status'          => 'refunded',
+                'status' => 'refunded',
                 'refunded_amount' => (float) $deposit->refunded_amount + $refundAmount,
-                'refunded_at'     => today(),
+                'refunded_at' => today(),
             ])->save();
 
             return $deposit->refresh();
@@ -127,7 +131,7 @@ class DepositService
 
             if ($balance > 0) {
                 $this->addTransaction($deposit, 'forfeit', $balance, [
-                    'reason'        => $reason,
+                    'reason' => $reason,
                     'balance_after' => 0,
                 ]);
             }
@@ -146,7 +150,7 @@ class DepositService
         $lease = $deposit->lease;
 
         $outstandingRent = 0.0;
-        $penalty         = 0.0;
+        $penalty = 0.0;
 
         if ($lease) {
             $lease->invoices()
@@ -154,32 +158,32 @@ class DepositService
                 ->get()
                 ->each(function (Invoice $inv) use (&$outstandingRent, &$penalty) {
                     $outstandingRent += max(0, $inv->balance_due);
-                    $penalty         += (float) $inv->calculatePenalty();
+                    $penalty += (float) $inv->calculatePenalty();
                 });
         }
 
         $utility = (float) ($lease?->utilityReadings()->where('added_to_invoice', false)->sum('amount') ?? 0);
 
         $checkout = $lease?->checkinRecords()->where('type', 'check_out')->orderByDesc('id')->first();
-        $damage   = (float) ($checkout?->damage_amount ?? 0);
+        $damage = (float) ($checkout?->damage_amount ?? 0);
         $cleaning = (float) ($checkout?->cleaning_amount ?? 0);
 
-        $totalDue       = round($outstandingRent + $utility + $damage + $cleaning + $penalty, 2);
+        $totalDue = round($outstandingRent + $utility + $damage + $cleaning + $penalty, 2);
         $depositBalance = round((float) $deposit->balance, 2);
-        $deduction      = min($depositBalance, $totalDue);
-        $netDue         = round($totalDue - $deduction, 2);
+        $deduction = min($depositBalance, $totalDue);
+        $netDue = round($totalDue - $deduction, 2);
 
         return [
             'outstanding_rent' => $outstandingRent,
-            'utility'          => $utility,
-            'damage'           => $damage,
-            'cleaning'         => $cleaning,
-            'penalty'          => $penalty,
-            'total_due'        => $totalDue,
-            'deposit_balance'  => $depositBalance,
-            'deduction'        => $deduction,
-            'tenant_payable'   => max(0, $netDue),
-            'tenant_refund'    => round(max(0, $depositBalance - $deduction), 2),
+            'utility' => $utility,
+            'damage' => $damage,
+            'cleaning' => $cleaning,
+            'penalty' => $penalty,
+            'total_due' => $totalDue,
+            'deposit_balance' => $depositBalance,
+            'deduction' => $deduction,
+            'tenant_payable' => max(0, $netDue),
+            'tenant_refund' => round(max(0, $depositBalance - $deduction), 2),
         ];
     }
 
@@ -207,7 +211,7 @@ class DepositService
             if ($refund > 0) {
                 $this->refund($deposit, $refund, reason: 'Settlement checkout');
             } elseif (round((float) $deposit->refresh()->balance, 2) <= 0.009
-                && !in_array($deposit->status, ['forfeited'], true)) {
+                && ! in_array($deposit->status, ['forfeited'], true)) {
                 $deposit->forceFill(['status' => 'partially_used'])->save();
             }
         });
@@ -235,12 +239,12 @@ class DepositService
         }
 
         DepositTransaction::create([
-            'deposit_id'    => $deposit->id,
-            'type'          => 'receipt',
-            'amount'        => $legacyBalance,
-            'reason'        => 'Saldo awal (data lama)',
-            'recorded_by'   => auth()->id(),
-            'occurred_at'   => ($deposit->paid_at ?? today())->toDateString(),
+            'deposit_id' => $deposit->id,
+            'type' => 'receipt',
+            'amount' => $legacyBalance,
+            'reason' => 'Saldo awal (data lama)',
+            'recorded_by' => auth()->id(),
+            'occurred_at' => ($deposit->paid_at ?? today())->toDateString(),
             'balance_after' => $legacyBalance,
         ]);
     }
@@ -248,16 +252,16 @@ class DepositService
     protected function addTransaction(Deposit $deposit, string $type, float $amount, array $data = []): DepositTransaction
     {
         return DepositTransaction::create([
-            'deposit_id'    => $deposit->id,
-            'type'          => $type,
-            'amount'        => round($amount, 2),
-            'reason'        => $data['reason'] ?? null,
-            'method'        => $data['method'] ?? null,
-            'reference'     => $data['reference'] ?? null,
-            'source_type'   => $data['source_type'] ?? null,
-            'source_id'     => $data['source_id'] ?? null,
-            'recorded_by'   => auth()->id(),
-            'occurred_at'   => today(),
+            'deposit_id' => $deposit->id,
+            'type' => $type,
+            'amount' => round($amount, 2),
+            'reason' => $data['reason'] ?? null,
+            'method' => $data['method'] ?? null,
+            'reference' => $data['reference'] ?? null,
+            'source_type' => $data['source_type'] ?? null,
+            'source_id' => $data['source_id'] ?? null,
+            'recorded_by' => auth()->id(),
+            'occurred_at' => today(),
             'balance_after' => $data['balance_after'] ?? round($deposit->balance, 2),
         ]);
     }

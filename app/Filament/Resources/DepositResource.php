@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\DepositResource\Pages;
 use App\Models\Deposit;
+use App\Models\InvoicePayment;
 use App\Models\Lease;
 use App\Models\Occupant;
 use App\Services\DepositService;
