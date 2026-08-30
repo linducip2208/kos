@@ -108,8 +108,8 @@
                 <div class="font-semibold text-slate-800 mb-2">Akun Demo</div>
                 <div class="space-y-1 text-slate-600 text-xs font-mono">
                     <div><span class="font-bold">Owner:</span> owner@kos.test / password</div>
-                    <div><span class="font-bold">Staff:</span> staff@kos.test / password</div>
-                    <div><span class="font-bold">Viewer:</span> viewer@kos.test / password</div>
+                    <div><span class="font-bold">Property Manager:</span> manager@kos.test / password</div>
+                    <div><span class="font-bold">Auditor:</span> auditor@kos.test / password</div>
                 </div>
             </div>
         </div>

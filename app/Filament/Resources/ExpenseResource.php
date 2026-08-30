@@ -2,29 +2,45 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\ExpenseResource\Pages;
 use App\Models\Expense;
 use App\Models\Property;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class ExpenseResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = Expense::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-down';
+
     protected static ?int $navigationSort = 30;
 
-    public static function getNavigationGroup(): ?string { return '💰 Keuangan'; }
-    public static function getLabel(): ?string { return 'Pengeluaran'; }
-    public static function getPluralLabel(): ?string { return 'Pengeluaran'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::FINANCE;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Pengeluaran';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Pengeluaran';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -54,7 +70,9 @@ class ExpenseResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('expense_date')->label('Tgl')->date('d M Y')->sortable(),
-                TextColumn::make('category')->label('Kategori')->badge()->formatStateUsing(fn ($s) => match ($s) { 'maintenance' => 'Perbaikan', 'utility' => 'Utilitas', 'salary' => 'Gaji', 'cleaning' => 'Kebersihan', 'supplies' => 'Perlengkapan', default => $s }),
+                TextColumn::make('category')->label('Kategori')->badge()->formatStateUsing(fn ($s) => match ($s) {
+                    'maintenance' => 'Perbaikan', 'utility' => 'Utilitas', 'salary' => 'Gaji', 'cleaning' => 'Kebersihan', 'supplies' => 'Perlengkapan', default => $s
+                }),
                 TextColumn::make('description')->label('Keterangan')->searchable()->limit(40),
                 TextColumn::make('amount')->label('Jumlah')->money('IDR')->sortable(),
                 TextColumn::make('property.name')->label('Properti')->default('-'),

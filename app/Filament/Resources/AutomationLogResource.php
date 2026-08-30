@@ -2,29 +2,56 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\AutomationLogResource\Pages;
 use App\Models\AutomationLog;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class AutomationLogResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = AutomationLog::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
     protected static ?int $navigationSort = 85;
 
-    public static function getNavigationGroup(): ?string { return '⚙️ Sistem'; }
-    public static function getLabel(): ?string { return 'Log Otomatis'; }
-    public static function getPluralLabel(): ?string { return 'Log Otomatisasi'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
 
-    public static function canCreate(): bool { return false; }
-    public static function canEdit($record): bool { return false; }
-    public static function canDelete($record): bool { return false; }
+    public static function getLabel(): ?string
+    {
+        return 'Log Otomatis';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Log Otomatisasi';
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

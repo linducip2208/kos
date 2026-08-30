@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\RoomTransferResource\Pages;
 use App\Models\RoomTransfer;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -14,15 +16,33 @@ use Filament\Tables\Table;
 
 class RoomTransferResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = RoomTransfer::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
+
     protected static ?int $navigationSort = 42;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string { return 'Pindah Kamar'; }
-    public static function getPluralLabel(): ?string { return 'Riwayat Pindah Kamar'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::TENANCY;
+    }
 
-    public static function canCreate(): bool { return false; }
+    public static function getLabel(): ?string
+    {
+        return 'Pindah Kamar';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Riwayat Pindah Kamar';
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

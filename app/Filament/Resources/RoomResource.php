@@ -2,23 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\RoomResource\Pages;
-use App\Models\Room;
 use App\Models\Property;
+use App\Models\Room;
 use App\Models\RoomType;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -26,13 +28,28 @@ use Filament\Tables\Table;
 
 class RoomResource extends Resource
 {
-    protected static ?string $model           = Room::class;
-    protected static string|\BackedEnum|null  $navigationIcon  = 'heroicon-o-home';
-    protected static ?int    $navigationSort  = 20;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
-    public static function getLabel(): ?string            { return __('navigation.room'); }
-    public static function getPluralLabel(): ?string      { return __('navigation.rooms'); }
+    protected static ?string $model = Room::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
+
+    protected static ?int $navigationSort = 20;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('navigation.room');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('navigation.rooms');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -55,16 +72,34 @@ class RoomResource extends Resource
                             ->live()
                             ->helperText('Pilih tipe untuk mengisi harga & deskripsi otomatis')
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
-                                if (!$state) return;
+                                if (! $state) {
+                                    return;
+                                }
                                 $type = RoomType::find($state);
-                                if (!$type) return;
-                                if (!$get('price_daily'))     $set('price_daily', $type->base_price_daily);
-                                if (!$get('price_weekly'))    $set('price_weekly', $type->base_price_weekly);
-                                if (!$get('price_monthly'))   $set('price_monthly', $type->base_price_monthly);
-                                if (!$get('price_quarterly')) $set('price_quarterly', $type->base_price_quarterly);
-                                if (!$get('price_yearly'))    $set('price_yearly', $type->base_price_yearly);
-                                if (!$get('description'))     $set('description', $type->description);
-                                if (!$get('size_sqm'))        $set('size_sqm', $type->size_sqm);
+                                if (! $type) {
+                                    return;
+                                }
+                                if (! $get('price_daily')) {
+                                    $set('price_daily', $type->base_price_daily);
+                                }
+                                if (! $get('price_weekly')) {
+                                    $set('price_weekly', $type->base_price_weekly);
+                                }
+                                if (! $get('price_monthly')) {
+                                    $set('price_monthly', $type->base_price_monthly);
+                                }
+                                if (! $get('price_quarterly')) {
+                                    $set('price_quarterly', $type->base_price_quarterly);
+                                }
+                                if (! $get('price_yearly')) {
+                                    $set('price_yearly', $type->base_price_yearly);
+                                }
+                                if (! $get('description')) {
+                                    $set('description', $type->description);
+                                }
+                                if (! $get('size_sqm')) {
+                                    $set('size_sqm', $type->size_sqm);
+                                }
                             }),
 
                         TextInput::make('room_number')
@@ -128,10 +163,10 @@ class RoomResource extends Resource
             Section::make('Status & Catatan')->schema([
                 Grid::make(2)->schema([
                     Select::make('status')->label('Status')->options([
-                        'available'   => 'Tersedia',
-                        'occupied'    => 'Terisi',
+                        'available' => 'Tersedia',
+                        'occupied' => 'Terisi',
                         'maintenance' => 'Maintenance',
-                        'reserved'    => 'Dipesan',
+                        'reserved' => 'Dipesan',
                     ])->required(),
                     Toggle::make('is_active')->label('Aktif')->default(true),
                 ]),
@@ -155,18 +190,18 @@ class RoomResource extends Resource
                     ->money('IDR'),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn (string $state) => match ($state) {
-                        'available'   => 'success',
-                        'occupied'    => 'danger',
+                        'available' => 'success',
+                        'occupied' => 'danger',
                         'maintenance' => 'warning',
-                        'reserved'    => 'info',
-                        default       => 'gray',
+                        'reserved' => 'info',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state) => match ($state) {
-                        'available'   => 'Tersedia',
-                        'occupied'    => 'Terisi',
+                        'available' => 'Tersedia',
+                        'occupied' => 'Terisi',
                         'maintenance' => 'Maintenance',
-                        'reserved'    => 'Dipesan',
-                        default       => $state,
+                        'reserved' => 'Dipesan',
+                        default => $state,
                     }),
                 TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->label('Aktif')->boolean(),
@@ -177,10 +212,10 @@ class RoomResource extends Resource
                 SelectFilter::make('room_type_id')->label('Tipe Kamar')
                     ->options(RoomType::pluck('name', 'id'))->searchable(),
                 SelectFilter::make('status')->options([
-                    'available'   => 'Tersedia',
-                    'occupied'    => 'Terisi',
+                    'available' => 'Tersedia',
+                    'occupied' => 'Terisi',
                     'maintenance' => 'Maintenance',
-                    'reserved'    => 'Dipesan',
+                    'reserved' => 'Dipesan',
                 ]),
             ])
             ->actions([
@@ -201,9 +236,9 @@ class RoomResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListRooms::route('/'),
+            'index' => Pages\ListRooms::route('/'),
             'create' => Pages\CreateRoom::route('/create'),
-            'edit'   => Pages\EditRoom::route('/{record}/edit'),
+            'edit' => Pages\EditRoom::route('/{record}/edit'),
         ];
     }
 }

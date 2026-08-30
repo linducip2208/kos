@@ -9,7 +9,8 @@ use Illuminate\Console\Command;
 
 class LeaseCheckExpiringCommand extends Command
 {
-    protected $signature   = 'lease:check-expiring {--days=30 : Hari ke depan untuk dicek}';
+    protected $signature = 'lease:check-expiring {--days=30 : Hari ke depan untuk dicek}';
+
     protected $description = 'Tampilkan kontrak yang akan berakhir dalam N hari';
 
     public function handle(): int
@@ -24,6 +25,7 @@ class LeaseCheckExpiringCommand extends Command
 
         if ($leases->isEmpty()) {
             $this->info("Tidak ada kontrak yang berakhir dalam {$days} hari ke depan.");
+
             return Command::SUCCESS;
         }
 
@@ -32,7 +34,7 @@ class LeaseCheckExpiringCommand extends Command
         $rows = $leases->map(fn ($l) => [
             $l->lease_number,
             $l->occupant->name,
-            $l->room->property->name . ' - ' . $l->room->room_number,
+            $l->room->property->name.' - '.$l->room->room_number,
             $l->end_date->format('d/m/Y'),
             $l->end_date->diffForHumans(),
         ]);
@@ -40,7 +42,7 @@ class LeaseCheckExpiringCommand extends Command
         $this->table(['No. Kontrak', 'Penyewa', 'Kamar', 'Berakhir', 'Sisa'], $rows->toArray());
 
         // Kirim in-app notification ke semua admin/owner
-        $admins = User::whereIn('role', ['owner', 'staff'])->where('is_active', true)->get();
+        $admins = User::whereIn('role', ['owner', 'super_admin', 'property_manager'])->where('is_active', true)->get();
         foreach ($leases as $lease) {
             $daysLeft = (int) now()->diffInDays($lease->end_date, false);
             foreach ($admins as $admin) {

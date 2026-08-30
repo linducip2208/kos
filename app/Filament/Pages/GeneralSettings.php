@@ -2,11 +2,13 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\AuthorizesPageAccess;
 use App\Models\Setting;
+use App\Support\NavigationGroups;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -17,34 +19,46 @@ use Filament\Schemas\Schema;
 
 class GeneralSettings extends Page implements HasForms
 {
+    use AuthorizesPageAccess;
     use InteractsWithForms;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-cog-6-tooth';
-    protected static ?int    $navigationSort  = 10;
+    protected static ?string $permission = 'settings.manage';
 
-    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
-    public static function getNavigationLabel(): string  { return __('navigation.general_settings'); }
-    protected string  $view            = 'filament.pages.general-settings';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.general_settings');
+    }
+
+    protected string $view = 'filament.pages.general-settings';
 
     public ?array $data = [];
 
     public function mount(): void
     {
         $this->form->fill([
-            'app_name'          => setting('app_name', 'Kos Manager'),
-            'app_logo'          => setting('app_logo', ''),
-            'invoice_prefix'    => setting('invoice_prefix', 'INV'),
-            'lease_prefix'      => setting('lease_prefix', 'KTR'),
-            'reminder_days'     => setting('reminder_days', 3),
+            'app_name' => setting('app_name', 'Kos Manager'),
+            'app_logo' => setting('app_logo', ''),
+            'invoice_prefix' => setting('invoice_prefix', 'INV'),
+            'lease_prefix' => setting('lease_prefix', 'KTR'),
+            'reminder_days' => setting('reminder_days', 3),
             // Kontak untuk landing page & footer
-            'contact_whatsapp'  => setting('contact_whatsapp', ''),
-            'contact_phone'     => setting('contact_phone', ''),
-            'contact_email'     => setting('contact_email', ''),
-            'contact_address'   => setting('contact_address', ''),
+            'contact_whatsapp' => setting('contact_whatsapp', ''),
+            'contact_phone' => setting('contact_phone', ''),
+            'contact_email' => setting('contact_email', ''),
+            'contact_address' => setting('contact_address', ''),
             // Notifikasi WA
-            'whatsapp_enabled'  => setting('whatsapp_enabled', false, 'notif'),
-            'whatsapp_api_key'  => setting('whatsapp_api_key', '', 'notif'),
-            'whatsapp_sender'   => setting('whatsapp_sender', '', 'notif'),
+            'whatsapp_enabled' => setting('whatsapp_enabled', false, 'notif'),
+            'whatsapp_api_key' => setting('whatsapp_api_key', '', 'notif'),
+            'whatsapp_sender' => setting('whatsapp_sender', '', 'notif'),
         ]);
     }
 

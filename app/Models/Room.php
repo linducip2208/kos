@@ -15,15 +15,15 @@ class Room extends Model
     use HasFactory;
 
     public const STATUSES = [
-        'available'   => 'Tersedia',
-        'reserved'    => 'Dipesan',
-        'occupied'    => 'Terisi',
-        'notice_given'=> 'Notice Given',
-        'cleaning'    => 'Dibersihkan',
-        'inspection'  => 'Inspeksi',
+        'available' => 'Tersedia',
+        'reserved' => 'Dipesan',
+        'occupied' => 'Terisi',
+        'notice_given' => 'Notice Given',
+        'cleaning' => 'Dibersihkan',
+        'inspection' => 'Inspeksi',
         'maintenance' => 'Maintenance',
-        'blocked'     => 'Diblokir',
-        'inactive'    => 'Nonaktif',
+        'blocked' => 'Diblokir',
+        'inactive' => 'Nonaktif',
     ];
 
     protected $fillable = [
@@ -34,16 +34,16 @@ class Room extends Model
     ];
 
     protected $casts = [
-        'facilities'       => 'array',
-        'photos'           => 'array',
-        'price_daily'      => 'float',
-        'price_weekly'     => 'float',
-        'price_monthly'    => 'float',
-        'price_quarterly'  => 'float',
-        'price_yearly'     => 'float',
-        'size_sqm'         => 'float',
-        'is_active'        => 'boolean',
-        'last_cleaned_at'  => 'date',
+        'facilities' => 'array',
+        'photos' => 'array',
+        'price_daily' => 'float',
+        'price_weekly' => 'float',
+        'price_monthly' => 'float',
+        'price_quarterly' => 'float',
+        'price_yearly' => 'float',
+        'size_sqm' => 'float',
+        'is_active' => 'boolean',
+        'last_cleaned_at' => 'date',
     ];
 
     // ── Relations ────────────────────────────────────────────────────────
@@ -61,6 +61,11 @@ class Room extends Model
     public function leases(): HasMany
     {
         return $this->hasMany(Lease::class);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(BookingRequest::class);
     }
 
     public function activeLease(): HasOne

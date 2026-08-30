@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Models\Lease;
 use App\Models\Room;
-use App\Models\RoomTransfer;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -18,15 +19,15 @@ use Illuminate\Validation\ValidationException;
 class LeaseWorkflowService
 {
     public const TRANSITIONS = [
-        'draft'              => ['pending_approval', 'active', 'cancelled'],
-        'pending_approval'   => ['awaiting_signature', 'draft'],
+        'draft' => ['pending_approval', 'active', 'cancelled'],
+        'pending_approval' => ['awaiting_signature', 'draft'],
         'awaiting_signature' => ['active', 'draft', 'pending_approval'],
-        'active'             => ['ended', 'terminated', 'renewed', 'expiring_soon'],
-        'expiring_soon'      => ['ended', 'terminated', 'renewed', 'active'],
-        'renewed'            => [],
-        'ended'              => [],
-        'expired'            => [],
-        'terminated'         => [],
+        'active' => ['ended', 'terminated', 'renewed', 'expiring_soon'],
+        'expiring_soon' => ['ended', 'terminated', 'renewed', 'active'],
+        'renewed' => [],
+        'ended' => [],
+        'expired' => [],
+        'terminated' => [],
     ];
 
     /**
@@ -52,9 +53,9 @@ class LeaseWorkflowService
         $this->ensureTransition($lease, 'awaiting_signature');
 
         $lease->update([
-            'status'       => 'awaiting_signature',
-            'approved_by'  => $approver->id,
-            'approved_at'  => now(),
+            'status' => 'awaiting_signature',
+            'approved_by' => $approver->id,
+            'approved_at' => now(),
         ]);
 
         return $lease;
@@ -65,22 +66,21 @@ class LeaseWorkflowService
      */
     public function activate(Lease $lease, bool $tenantSigned = true): Lease
     {
-        if ($lease->status === 'draft') {
-            // Aktivasi langsung dari draft dianggap sudah disetujui sistem
-            $lease->approved_at = $lease->approved_at ?? now();
-        }
+        return DB::transaction(function () use ($lease, $tenantSigned) {
+            $lease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            $room = Room::query()->lockForUpdate()->findOrFail($lease->room_id);
+            app(RoomAvailabilityService::class)->assertAssignable($room, $lease);
+            $this->ensureTransition($lease, 'active');
+            $lease->forceFill([
+                'status' => 'active',
+                'approved_at' => $lease->approved_at ?? now(),
+                'tenant_signed_at' => $tenantSigned ? ($lease->tenant_signed_at ?? now()) : $lease->tenant_signed_at,
+                'owner_signed_at' => $lease->owner_signed_at ?? now(),
+            ])->save();
+            app(RoomStatusService::class)->transition($room, 'occupied');
 
-        $this->ensureTransition($lease, 'active');
-
-        $lease->forceFill([
-            'status'           => 'active',
-            'tenant_signed_at' => $tenantSigned ? ($lease->tenant_signed_at ?? now()) : $lease->tenant_signed_at,
-            'owner_signed_at'  => $lease->owner_signed_at ?? now(),
-        ])->save();
-
-        app(RoomStatusService::class)->transition($lease->room, 'occupied');
-
-        return $lease;
+            return $lease;
+        });
     }
 
     /**
@@ -91,8 +91,8 @@ class LeaseWorkflowService
         $this->ensureTransition($lease, 'ended');
 
         $lease->forceFill([
-            'status'         => 'ended',
-            'moved_out_at'   => today(),
+            'status' => 'ended',
+            'moved_out_at' => today(),
             'termination_reason' => $reason ?? $lease->termination_reason,
         ])->save();
 
@@ -118,8 +118,8 @@ class LeaseWorkflowService
             : 'ended';
 
         $lease->forceFill([
-            'status'             => $target,
-            'terminated_at'      => today(),
+            'status' => $target,
+            'terminated_at' => today(),
             'termination_reason' => $reason,
         ])->save();
 
@@ -130,13 +130,13 @@ class LeaseWorkflowService
      * Renewal: buat LEASE BARU ter-link ke lease lama.
      * Lease lama statusnya menjadi 'renewed'.
      *
-     * @param array{start_date?:string,end_date?:string,price?:float,billing_cycle?:string} $overrides
+     * @param  array{start_date?:string,end_date?:string,price?:float,billing_cycle?:string}  $overrides
      */
     public function renew(Lease $lease, array $overrides = [], ?User $by = null): Lease
     {
         $room = $lease->room;
 
-        if (!$room) {
+        if (! $room) {
             throw ValidationException::withMessages(['room' => 'Lease tidak punya kamar.']);
         }
 
@@ -144,29 +144,29 @@ class LeaseWorkflowService
             throw ValidationException::withMessages(['room' => 'Kamar masih dipegang lease aktif lain.']);
         }
 
-        $newStart = \Carbon\Carbon::parse($overrides['start_date'] ?? $lease->end_date->copy()->addDay());
-        $newEnd   = \Carbon\Carbon::parse(
+        $newStart = Carbon::parse($overrides['start_date'] ?? $lease->end_date->copy()->addDay());
+        $newEnd = Carbon::parse(
             $overrides['end_date'] ?? $newStart->copy()->addMonthsNoOverflow(12)->subDay()
         );
 
         DB::beginTransaction();
         try {
             $newLease = Lease::create([
-                'room_id'               => $room->id,
-                'occupant_id'           => $lease->occupant_id,
-                'lease_number'          => $this->generateLeaseNumber(),
+                'room_id' => $room->id,
+                'occupant_id' => $lease->occupant_id,
+                'lease_number' => $this->generateLeaseNumber(),
                 'renewed_from_lease_id' => $lease->id,
-                'start_date'            => $newStart->toDateString(),
-                'end_date'              => $newEnd->toDateString(),
-                'price'                 => $overrides['price'] ?? $lease->price,
-                'deposit'               => $overrides['deposit'] ?? 0, // deposit tetap di ledger lama
-                'billing_cycle'         => $overrides['billing_cycle'] ?? $lease->billing_cycle,
-                'billing_date'          => $lease->billing_date,
-                'status'                => 'awaiting_signature',
-                'approved_by'           => $by?->id ?? auth()->id(),
-                'approved_at'           => now(),
-                'notes'                 => "Perpanjangan dari {$lease->lease_number}",
-                'created_by'            => $by?->id ?? auth()->id(),
+                'start_date' => $newStart->toDateString(),
+                'end_date' => $newEnd->toDateString(),
+                'price' => $overrides['price'] ?? $lease->price,
+                'deposit' => $overrides['deposit'] ?? 0, // deposit tetap di ledger lama
+                'billing_cycle' => $overrides['billing_cycle'] ?? $lease->billing_cycle,
+                'billing_date' => $lease->billing_date,
+                'status' => 'awaiting_signature',
+                'approved_by' => $by?->id ?? auth()->id(),
+                'approved_at' => now(),
+                'notes' => "Perpanjangan dari {$lease->lease_number}",
+                'created_by' => $by?->id ?? auth()->id(),
             ]);
 
             // Lease lama → renewed (riwayat utuh, tidak dioverwrite)
@@ -184,11 +184,11 @@ class LeaseWorkflowService
     /**
      * Tandai tenant memberi notice akan keluar.
      */
-    public function giveNotice(Lease $lease, ?\Carbon\Carbon $effectiveDate = null): Lease
+    public function giveNotice(Lease $lease, ?Carbon $effectiveDate = null): Lease
     {
         $lease->forceFill([
             'notice_given_at' => today(),
-            'end_date'        => $effectiveDate?->toDateString() ?? $lease->end_date,
+            'end_date' => $effectiveDate?->toDateString() ?? $lease->end_date,
         ])->save();
 
         try {
@@ -218,7 +218,7 @@ class LeaseWorkflowService
 
         $allowed = self::TRANSITIONS[$from] ?? [];
 
-        if (!in_array($to, $allowed, true)) {
+        if (! in_array($to, $allowed, true)) {
             throw ValidationException::withMessages([
                 'status' => 'Transisi kontrak tidak valid: '.Lease::statusLabel($from).' → '.Lease::statusLabel($to).'.',
             ]);
@@ -230,7 +230,7 @@ class LeaseWorkflowService
         $prefix = config('koskosan.lease_prefix', 'LSE');
 
         do {
-            $number = $prefix.'-'.now()->format('ym').'-'.strtoupper(\Illuminate\Support\Str::random(4));
+            $number = $prefix.'-'.now()->format('ym').'-'.strtoupper(Str::random(4));
         } while (Lease::where('lease_number', $number)->exists());
 
         return $number;

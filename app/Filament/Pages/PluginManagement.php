@@ -3,46 +3,67 @@
 namespace App\Filament\Pages;
 
 use App\Core\Plugin\PluginManager;
+use App\Filament\Concerns\AuthorizesPageAccess;
 use App\Models\InstalledPlugin;
+use App\Support\NavigationGroups;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\File;
 
 class PluginManagement extends Page
 {
+    use AuthorizesPageAccess;
+
+    protected static ?string $permission = 'plugin.manage';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';
-    protected static ?int    $navigationSort = 20;
+
+    protected static ?int $navigationSort = 20;
+
     protected string $view = 'filament.pages.plugin-management';
 
-    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
-    public static function getNavigationLabel(): string  { return 'Plugin Management'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Plugin Management';
+    }
 
     public function getPlugins(): array
     {
         $plugins = [];
         $pluginsDir = base_path('plugins');
 
-        if (!File::isDirectory($pluginsDir)) return [];
+        if (! File::isDirectory($pluginsDir)) {
+            return [];
+        }
 
         foreach (File::directories($pluginsDir) as $dir) {
-            $manifestPath = $dir . '/plugin.json';
-            if (!File::exists($manifestPath)) continue;
+            $manifestPath = $dir.'/plugin.json';
+            if (! File::exists($manifestPath)) {
+                continue;
+            }
 
             $manifest = json_decode(File::get($manifestPath), true);
-            if (!$manifest) continue;
+            if (! $manifest) {
+                continue;
+            }
 
-            $slug      = $manifest['slug'] ?? basename($dir);
+            $slug = $manifest['slug'] ?? basename($dir);
             $installed = InstalledPlugin::where('plugin_slug', $slug)->first();
 
             $plugins[] = [
-                'slug'        => $slug,
-                'name'        => $manifest['name'] ?? $slug,
+                'slug' => $slug,
+                'name' => $manifest['name'] ?? $slug,
                 'description' => $manifest['description'] ?? '',
-                'version'     => $manifest['version'] ?? '1.0.0',
-                'author'      => $manifest['author'] ?? '-',
-                'is_installed'=> (bool) $installed,
-                'is_active'   => (bool) $installed?->is_active,
-                'installed_at'=> $installed?->installed_at,
+                'version' => $manifest['version'] ?? '1.0.0',
+                'author' => $manifest['author'] ?? '-',
+                'is_installed' => (bool) $installed,
+                'is_active' => (bool) $installed?->is_active,
+                'installed_at' => $installed?->installed_at,
                 'license_required' => $manifest['license_required'] ?? false,
             ];
         }
@@ -53,7 +74,7 @@ class PluginManagement extends Page
     public function install(string $slug): void
     {
         $manager = app(PluginManager::class);
-        $result  = $manager->install($slug);
+        $result = $manager->install($slug);
 
         if ($result['success']) {
             Notification::make()->title($result['message'])->success()->send();
@@ -65,7 +86,7 @@ class PluginManagement extends Page
     public function activate(string $slug): void
     {
         $manager = app(PluginManager::class);
-        $result  = $manager->activate($slug);
+        $result = $manager->activate($slug);
 
         if ($result['success']) {
             Notification::make()->title($result['message'])->success()->send();
@@ -77,7 +98,7 @@ class PluginManagement extends Page
     public function deactivate(string $slug): void
     {
         $manager = app(PluginManager::class);
-        $result  = $manager->deactivate($slug);
+        $result = $manager->deactivate($slug);
 
         if ($result['success']) {
             Notification::make()->title($result['message'])->warning()->send();
@@ -89,7 +110,7 @@ class PluginManagement extends Page
     public function uninstall(string $slug): void
     {
         $manager = app(PluginManager::class);
-        $result  = $manager->uninstall($slug);
+        $result = $manager->uninstall($slug);
 
         if ($result['success']) {
             Notification::make()->title($result['message'])->warning()->send();

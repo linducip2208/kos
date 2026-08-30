@@ -2,18 +2,35 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\AuthorizesPageAccess;
 use App\Models\Lease;
-use App\Models\Occupant;
+use App\Support\NavigationGroups;
 use Filament\Pages\Page;
 
 class LeaseRenewalReport extends Page
 {
+    use AuthorizesPageAccess;
+
+    protected static ?string $permission = 'report.view';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
     protected static ?int $navigationSort = 30;
 
-    public static function getNavigationGroup(): ?string { return '📊 Laporan'; }
-    public static function getNavigationLabel(): string { return 'Perpanjangan Kontrak'; }
-    public function getTitle(): string { return 'Laporan Perpanjangan Kontrak'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::REPORTS;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Perpanjangan Kontrak';
+    }
+
+    public function getTitle(): string
+    {
+        return 'Laporan Perpanjangan Kontrak';
+    }
 
     protected string $view = 'filament.pages.lease-renewal-report';
 

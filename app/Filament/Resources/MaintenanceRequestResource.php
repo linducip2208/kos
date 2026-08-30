@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\MaintenanceRequestResource\Pages;
 use App\Models\MaintenanceRequest;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -16,22 +19,34 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class MaintenanceRequestResource extends Resource
 {
-    protected static ?string $model         = MaintenanceRequest::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
-    protected static ?int    $navigationSort = 10;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
-    public static function getLabel(): ?string           { return 'Permintaan Maintenance'; }
-    public static function getPluralLabel(): ?string     { return 'Maintenance'; }
+    protected static ?string $model = MaintenanceRequest::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Permintaan Maintenance';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Maintenance';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -40,7 +55,7 @@ class MaintenanceRequestResource extends Resource
                 Grid::make(2)->schema([
                     Select::make('room_id')->label('Kamar')
                         ->options(Room::with('property')->get()->mapWithKeys(
-                            fn ($r) => [$r->id => $r->property->name . ' - ' . $r->room_number]
+                            fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
                         ))->searchable()->required(),
                     Select::make('priority')->label('Prioritas')
                         ->options(['low' => 'Rendah', 'medium' => 'Sedang', 'high' => 'Tinggi', 'urgent' => 'Urgent'])
@@ -97,7 +112,7 @@ class MaintenanceRequestResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => $record->room->property->name . ' - ' . $record->room->room_number)
+                    ->formatStateUsing(fn ($record) => $record->room->property->name.' - '.$record->room->room_number)
                     ->searchable()->sortable(),
                 TextColumn::make('title')->label('Kerusakan')->searchable()->limit(40),
                 TextColumn::make('priority')->label('Prioritas')->badge()
@@ -139,9 +154,9 @@ class MaintenanceRequestResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMaintenanceRequests::route('/'),
+            'index' => Pages\ListMaintenanceRequests::route('/'),
             'create' => Pages\CreateMaintenanceRequest::route('/create'),
-            'edit'   => Pages\EditMaintenanceRequest::route('/{record}/edit'),
+            'edit' => Pages\EditMaintenanceRequest::route('/{record}/edit'),
         ];
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\AuthorizesPageAccess;
 use App\Models\Setting;
+use App\Support\NavigationGroups;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -16,30 +18,43 @@ use Filament\Schemas\Schema;
 
 class PaymentGatewaySettings extends Page implements HasForms
 {
+    use AuthorizesPageAccess;
+
+    protected static ?string $permission = 'settings.manage';
+
     use InteractsWithForms;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-credit-card';
-    protected static ?int    $navigationSort  = 20;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-credit-card';
 
-    public static function getNavigationGroup(): ?string { return '🔌 Integrasi'; }
-    public static function getNavigationLabel(): string  { return __('navigation.payment_gateway_settings'); }
-    protected string  $view            = 'filament.pages.payment-gateway-settings';
+    protected static ?int $navigationSort = 20;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.payment_gateway_settings');
+    }
+
+    protected string $view = 'filament.pages.payment-gateway-settings';
 
     public ?array $data = [];
 
     public function mount(): void
     {
         $this->form->fill([
-            'payment_gateway_active'  => setting('payment_gateway_active', 'manual'),
-            'midtrans_server_key'     => setting('midtrans_server_key', '', 'payment'),
-            'midtrans_client_key'     => setting('midtrans_client_key', '', 'payment'),
-            'midtrans_production'     => setting('midtrans_production', false, 'payment'),
-            'tripay_api_key'          => setting('tripay_api_key', '', 'payment'),
-            'tripay_private_key'      => setting('tripay_private_key', '', 'payment'),
-            'tripay_merchant_code'    => setting('tripay_merchant_code', '', 'payment'),
-            'tripay_production'       => setting('tripay_production', false, 'payment'),
-            'tripay_default_channel'  => setting('tripay_default_channel', 'BRIVA', 'payment'),
-            'manual_bank_info'        => setting('manual_bank_info', '', 'payment'),
+            'payment_gateway_active' => setting('payment_gateway_active', 'manual'),
+            'midtrans_server_key' => setting('midtrans_server_key', '', 'payment'),
+            'midtrans_client_key' => setting('midtrans_client_key', '', 'payment'),
+            'midtrans_production' => setting('midtrans_production', false, 'payment'),
+            'tripay_api_key' => setting('tripay_api_key', '', 'payment'),
+            'tripay_private_key' => setting('tripay_private_key', '', 'payment'),
+            'tripay_merchant_code' => setting('tripay_merchant_code', '', 'payment'),
+            'tripay_production' => setting('tripay_production', false, 'payment'),
+            'tripay_default_channel' => setting('tripay_default_channel', 'BRIVA', 'payment'),
+            'manual_bank_info' => setting('manual_bank_info', '', 'payment'),
             'invoice_penalty_percent' => setting('invoice_penalty_percent', 2),
         ]);
     }
@@ -54,9 +69,9 @@ class PaymentGatewaySettings extends Page implements HasForms
                         Select::make('payment_gateway_active')
                             ->label('Gateway Pembayaran')
                             ->options([
-                                'manual'   => 'Manual (Transfer Bank / Tunai)',
+                                'manual' => 'Manual (Transfer Bank / Tunai)',
                                 'midtrans' => 'Midtrans (Snap)',
-                                'tripay'   => 'Tripay',
+                                'tripay' => 'Tripay',
                             ])
                             ->required()->live(),
                     ]),

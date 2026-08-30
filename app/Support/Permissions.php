@@ -21,30 +21,30 @@ namespace App\Support;
 class Permissions
 {
     public const ROLES = [
-        'super_admin'      => 'Super Admin',
-        'owner'            => 'Owner',
+        'super_admin' => 'Super Admin',
+        'owner' => 'Owner',
         'property_manager' => 'Property Manager',
-        'finance'          => 'Finance',
-        'cashier'          => 'Cashier',
+        'finance' => 'Finance',
+        'cashier' => 'Cashier',
         'customer_service' => 'Customer Service',
-        'marketing'        => 'Marketing',
-        'maintenance'      => 'Maintenance',
-        'security'         => 'Security',
-        'auditor'          => 'Auditor / Viewer',
+        'marketing' => 'Marketing',
+        'maintenance' => 'Maintenance',
+        'security' => 'Security',
+        'auditor' => 'Auditor / Viewer',
     ];
 
     /** Deskripsi role untuk UI manajemen pengguna. */
     public const ROLE_DESCRIPTIONS = [
-        'super_admin'      => 'Akses teknis penuh tanpa batas termasuk sistem & plugin.',
-        'owner'            => 'Pemilik bisnis — semua data bisnis, semua properti.',
+        'super_admin' => 'Akses teknis penuh tanpa batas termasuk sistem & plugin.',
+        'owner' => 'Pemilik bisnis — semua data bisnis, semua properti.',
         'property_manager' => 'Operasional harian properti yang ditugaskan.',
-        'finance'          => 'Tagihan, pembayaran, deposit, refund, dan laporan keuangan.',
-        'cashier'          => 'Terima pembayaran dan verifikasi bukti transfer.',
+        'finance' => 'Tagihan, pembayaran, deposit, refund, dan laporan keuangan.',
+        'cashier' => 'Terima pembayaran dan verifikasi bukti transfer.',
         'customer_service' => 'Keluhan penyewa, intake perbaikan, dan tamu.',
-        'marketing'        => 'Booking, leads, follow-up, promo, dan konten website.',
-        'maintenance'      => 'Work order teknis — tanpa akses data keuangan.',
-        'security'         => 'Buku tamu dan verifikasi check-in/out.',
-        'auditor'          => 'Akses baca seluruh modul + audit log (read-only).',
+        'marketing' => 'Booking, leads, follow-up, promo, dan konten website.',
+        'maintenance' => 'Work order teknis — tanpa akses data keuangan.',
+        'security' => 'Buku tamu dan verifikasi check-in/out.',
+        'auditor' => 'Akses baca seluruh modul + audit log (read-only).',
     ];
 
     public const PERMISSIONS = [
@@ -96,6 +96,7 @@ class Permissions
         'settings.manage',
         'audit.view',
         'system.plugins',
+        'plugin.manage', 'theme.manage', 'print.report', 'pdf.report',
     ];
 
     /** role => permissions */
@@ -181,5 +182,25 @@ class Permissions
     public static function exists(string $role): bool
     {
         return isset(self::ROLES[$role]);
+    }
+
+    public static function normalizeRole(?string $role): ?string
+    {
+        return match ($role) {
+            'staff' => 'property_manager',
+            'viewer' => 'auditor',
+            default => self::exists((string) $role) ? $role : null,
+        };
+    }
+
+    public static function roleColor(string $role): string
+    {
+        return match ($role) {
+            'super_admin', 'owner' => 'success',
+            'finance', 'cashier' => 'warning',
+            'maintenance', 'security' => 'info',
+            'auditor' => 'gray',
+            default => 'primary',
+        };
     }
 }

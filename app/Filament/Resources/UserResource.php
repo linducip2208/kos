@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Support\NavigationGroups;
+use App\Support\Permissions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -11,7 +14,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -20,13 +22,28 @@ use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = User::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
     protected static ?int $navigationSort = 80;
 
-    public static function getNavigationGroup(): ?string { return '⚙️ Sistem'; }
-    public static function getLabel(): ?string { return 'Pengguna'; }
-    public static function getPluralLabel(): ?string { return 'Manajemen Pengguna'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Pengguna';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Manajemen Pengguna';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -36,9 +53,9 @@ class UserResource extends Resource
                     TextInput::make('name')->label('Nama')->required(),
                     TextInput::make('email')->label('Email')->email()->required()->unique(ignoreRecord: true),
                     TextInput::make('phone')->label('Telepon')->nullable(),
-                    Select::make('role')->label('Role')->options([
-                        'owner' => 'Owner', 'staff' => 'Staff', 'viewer' => 'Viewer',
-                    ])->required(),
+                    Select::make('role')->label('Role')->options(Permissions::ROLES)
+                        ->helperText('Pilih role sesuai cakupan akses. Role legacy staff/viewer tidak lagi tersedia.')
+                        ->required(),
                 ]),
                 TextInput::make('password')->label('Password')->password()
                     ->dehydrateStateUsing(fn ($s) => $s ? Hash::make($s) : null)
@@ -56,7 +73,8 @@ class UserResource extends Resource
                 TextColumn::make('name')->label('Nama')->searchable()->sortable(),
                 TextColumn::make('email')->label('Email')->searchable(),
                 TextColumn::make('role')->label('Role')->badge()
-                    ->color(fn ($s) => match ($s) { 'owner' => 'success', 'staff' => 'primary', 'viewer' => 'gray', default => 'gray' }),
+                    ->formatStateUsing(fn ($s) => Permissions::ROLES[$s] ?? $s)
+                    ->color(fn ($s) => Permissions::roleColor($s)),
                 TextColumn::make('phone')->label('Telepon'),
                 IconColumn::make('is_active')->label('Aktif')->boolean(),
                 TextColumn::make('created_at')->label('Dibuat')->date('d M Y'),
@@ -71,9 +89,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUsers::route('/'),
+            'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit'   => Pages\EditUser::route('/{record}/edit'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

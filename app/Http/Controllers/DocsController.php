@@ -8,8 +8,8 @@ class DocsController extends Controller
     {
         return [
             ['role' => 'Owner', 'email' => 'owner@kos.test', 'password' => 'password', 'scope' => 'Semua akses penuh'],
-            ['role' => 'Staff', 'email' => 'staff@kos.test', 'password' => 'password', 'scope' => 'Kelola properti, kamar, penghuni'],
-            ['role' => 'Viewer', 'email' => 'viewer@kos.test', 'password' => 'password', 'scope' => 'Lihat laporan saja'],
+            ['role' => 'Property Manager', 'email' => 'manager@kos.test', 'password' => 'password', 'scope' => 'Kelola operasional properti, kamar, penghuni'],
+            ['role' => 'Auditor', 'email' => 'auditor@kos.test', 'password' => 'password', 'scope' => 'Lihat data dan audit log tanpa mengubah data'],
         ];
     }
 

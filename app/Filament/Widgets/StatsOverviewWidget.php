@@ -2,61 +2,72 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Invoice;
-use App\Models\Lease;
-use App\Models\Room;
+use App\Services\DashboardMetricsService;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Carbon;
 
 class StatsOverviewWidget extends BaseWidget
 {
+    use InteractsWithPageFilters;
+
     protected static ?int $sort = 1;
+
+    protected ?string $pollingInterval = '60s';
 
     protected function getStats(): array
     {
-        $totalRooms     = Room::where('is_active', true)->count();
-        $occupiedRooms  = Room::where('status', 'occupied')->count();
-        $availableRooms = Room::where('status', 'available')->count();
-        $occupancyRate  = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100, 1) : 0;
+        $user = auth()->user();
+        if (! $user) {
+            return [];
+        }
 
-        $revenueThisMonth = Invoice::where('status', 'paid')
-            ->whereMonth('paid_at', now()->month)
-            ->whereYear('paid_at', now()->year)
-            ->sum('total');
+        $filters = $this->pageFilters ?? [];
+        $period = $filters['period'] ?? 'month';
+        [$from, $to] = match ($period) {
+            'today' => [now()->startOfDay(), now()->endOfDay()],
+            '7d' => [now()->subDays(6)->startOfDay(), now()->endOfDay()],
+            'last_month' => [now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->endOfMonth()],
+            'year' => [now()->startOfYear(), now()->endOfDay()],
+            'custom' => [Carbon::parse($filters['from'] ?? now()->startOfMonth()), Carbon::parse($filters['to'] ?? now()->endOfDay())->endOfDay()],
+            default => [now()->startOfMonth(), now()->endOfMonth()],
+        };
+        $metrics = app(DashboardMetricsService::class)->for($user, $from, $to, isset($filters['property_id']) ? (int) $filters['property_id'] : null);
+        $money = fn (float $value): string => 'Rp '.number_format($value, 0, ',', '.');
+        $financeVisible = in_array($user->role, ['super_admin', 'owner', 'finance', 'cashier', 'auditor'], true);
 
-        $overdueTotal = Invoice::whereIn('status', ['sent', 'overdue'])
-            ->where('due_date', '<', now())
-            ->count();
-
-        $expiringSoon = Lease::where('status', 'active')
-            ->whereBetween('end_date', [now(), now()->addDays(30)])
-            ->count();
-
-        return [
-            Stat::make('Total Kamar', $totalRooms)
-                ->description("{$availableRooms} tersedia • {$occupiedRooms} terisi")
-                ->descriptionIcon('heroicon-m-home')
-                ->color('primary'),
-
-            Stat::make('Occupancy Rate', $occupancyRate . '%')
-                ->description('Tingkat hunian')
+        $stats = [
+            Stat::make('Total Kamar', $metrics['total_rooms'])
+                ->description($metrics['available_rooms'].' tersedia • '.$metrics['occupied_rooms'].' terisi')
+                ->descriptionIcon('heroicon-m-home')->color('primary'),
+            Stat::make('Tingkat Hunian', $metrics['occupancy_rate'].'%')
+                ->description('Kamar aktif yang sedang dihuni')
                 ->descriptionIcon('heroicon-m-chart-bar')
-                ->color($occupancyRate >= 80 ? 'success' : ($occupancyRate >= 50 ? 'warning' : 'danger')),
-
-            Stat::make('Pendapatan Bulan Ini', 'Rp ' . number_format($revenueThisMonth, 0, ',', '.'))
-                ->description('Tagihan lunas bulan ini')
-                ->descriptionIcon('heroicon-m-banknotes')
-                ->color('success'),
-
-            Stat::make('Tunggakan', $overdueTotal)
-                ->description('Tagihan melewati jatuh tempo')
-                ->descriptionIcon('heroicon-m-exclamation-circle')
-                ->color($overdueTotal > 0 ? 'danger' : 'success'),
-
-            Stat::make('Kontrak Hampir Berakhir', $expiringSoon)
-                ->description('Dalam 30 hari ke depan')
-                ->descriptionIcon('heroicon-m-calendar')
-                ->color($expiringSoon > 0 ? 'warning' : 'success'),
+                ->color($metrics['occupancy_rate'] >= 80 ? 'success' : ($metrics['occupancy_rate'] >= 50 ? 'warning' : 'danger')),
+            Stat::make('Kamar Maintenance', $metrics['maintenance_rooms'])
+                ->description($metrics['open_maintenance'].' pekerjaan terbuka')
+                ->descriptionIcon('heroicon-m-wrench-screwdriver')->color($metrics['maintenance_rooms'] ? 'warning' : 'success'),
+            Stat::make('Penyewa Aktif', $metrics['active_tenants'])
+                ->description('Kontrak aktif / segera berakhir')
+                ->descriptionIcon('heroicon-m-users')->color('info'),
+            Stat::make('Kontrak ≤ 30 Hari', $metrics['expiring_leases'])
+                ->description('Perlu follow-up perpanjangan')
+                ->descriptionIcon('heroicon-m-calendar-days')->color($metrics['expiring_leases'] ? 'warning' : 'success'),
+            Stat::make('Booking Menunggu', $metrics['pending_bookings'])
+                ->description('Prospek perlu respons')
+                ->descriptionIcon('heroicon-m-clock')->color($metrics['pending_bookings'] ? 'warning' : 'success'),
         ];
+
+        if ($financeVisible) {
+            array_splice($stats, 2, 0, [
+                Stat::make('Ditagihkan', $money($metrics['billed'] ?? 0))->description('Nilai invoice periode berjalan')->descriptionIcon('heroicon-m-document-text')->color('info'),
+                Stat::make('Kas Diterima', $money($metrics['collected'] ?? 0))->description('Pembayaran terverifikasi')->descriptionIcon('heroicon-m-arrow-down-circle')->color('success'),
+                Stat::make('Piutang Berjalan', $money($metrics['receivable'] ?? 0))->description(($metrics['overdue_invoices'] ?? 0).' invoice overdue')->descriptionIcon('heroicon-m-exclamation-triangle')->color(($metrics['overdue_invoices'] ?? 0) ? 'danger' : 'success'),
+                Stat::make('Pengeluaran', $money($metrics['expenses'] ?? 0))->description('Pada periode berjalan')->descriptionIcon('heroicon-m-arrow-trending-down')->color('warning'),
+            ]);
+        }
+
+        return $stats;
     }
 }

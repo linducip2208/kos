@@ -2,14 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\VendorResource\Pages;
 use App\Models\Vendor;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -18,13 +20,28 @@ use Filament\Tables\Table;
 
 class VendorResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = Vendor::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
     protected static ?int $navigationSort = 40;
 
-    public static function getNavigationGroup(): ?string { return '🏢 Properti & Kamar'; }
-    public static function getLabel(): ?string { return 'Vendor'; }
-    public static function getPluralLabel(): ?string { return 'Vendor Maintenance'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Vendor';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Vendor Maintenance';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -33,14 +50,14 @@ class VendorResource extends Resource
                 Grid::make(2)->schema([
                     Forms\Components\TextInput::make('name')->label('Nama Vendor')->required()->maxLength(255),
                     Forms\Components\Select::make('category')->label('Kategori')->options([
-                        'plumbing'   => 'Perpipaan/Air',
+                        'plumbing' => 'Perpipaan/Air',
                         'electrical' => 'Kelistrikan',
-                        'ac'         => 'AC & Pendingin',
-                        'cleaning'   => 'Cleaning Service',
-                        'carpentry'  => 'Kayu/Furniture',
-                        'internet'   => 'Internet/Network',
-                        'security'   => 'Keamanan',
-                        'general'    => 'Umum',
+                        'ac' => 'AC & Pendingin',
+                        'cleaning' => 'Cleaning Service',
+                        'carpentry' => 'Kayu/Furniture',
+                        'internet' => 'Internet/Network',
+                        'security' => 'Keamanan',
+                        'general' => 'Umum',
                     ])->default('general')->required(),
                     Forms\Components\TextInput::make('contact_person')->label('Narahubung'),
                     Forms\Components\TextInput::make('phone')->label('No. HP')->tel(),

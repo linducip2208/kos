@@ -288,3 +288,26 @@ php artisan invoices:send-reminders
 ## Lisensi
 
 Untuk penggunaan pribadi / internal.
+
+---
+
+## Arsitektur Operasional Terbaru
+
+- Role canonical dikelola dari `App\Support\Permissions`; role lama `staff` dan `viewer` dinormalisasi oleh migration ke `property_manager` dan `auditor`.
+- Semua resource Filament memakai `AuthorizesAccess` dengan pemetaan model-ke-permission terpusat. Auditor read-only; role teknis dan finance tidak dibuka ke security/maintenance.
+- Dashboard memakai `DashboardMetricsService`, filter properti/periode, widget KPI role-aware, pusat tindakan, dan chart tagihan vs kas diterima.
+- Aktivasi lease dan booking kamar melewati `RoomAvailabilityService` dengan row lock pada aktivasi lease untuk menghindari alokasi ganda.
+- Pembayaran invoice menggunakan transaksi database, idempotency reference, row lock, validasi saldo, dan menolak overpayment yang tidak memiliki ledger alokasi.
+- Navigation admin dikonsolidasikan ke: Operasional, Penyewa & Sewa, Keuangan, Booking & Layanan, Laporan & Analitik, dan Pengaturan.
+
+Verifikasi lokal:
+
+```bash
+composer validate --no-check-publish
+php artisan optimize:clear
+php artisan route:list --except-vendor
+php artisan migrate --pretend
+php artisan test
+vendor/bin/pint --dirty
+npm run build
+```

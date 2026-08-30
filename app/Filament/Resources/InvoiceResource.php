@@ -2,39 +2,55 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Lease;
 use App\Services\PaymentGatewayService;
 use App\Services\PaymentService;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class InvoiceResource extends Resource
 {
-    protected static ?string $model           = Invoice::class;
-    protected static string|\BackedEnum|null  $navigationIcon  = 'heroicon-o-banknotes';
-    protected static ?int    $navigationSort  = 10;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Keuangan'; }
-    public static function getLabel(): ?string            { return __('navigation.invoice'); }
-    public static function getPluralLabel(): ?string      { return __('navigation.invoices'); }
+    protected static ?string $model = Invoice::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::FINANCE;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('navigation.invoice');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('navigation.invoices');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -47,15 +63,19 @@ class InvoiceResource extends Resource
                             Lease::with(['occupant', 'room'])
                                 ->where('status', 'active')
                                 ->get()
-                                ->mapWithKeys(fn ($l) => [$l->id => $l->occupant->name . ' - ' . $l->room->room_number . ' (' . $l->lease_number . ')'])
+                                ->mapWithKeys(fn ($l) => [$l->id => $l->occupant->name.' - '.$l->room->room_number.' ('.$l->lease_number.')'])
                         )
                         ->searchable()
                         ->required()
                         ->live()
                         ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
-                            if (!$state) return;
+                            if (! $state) {
+                                return;
+                            }
                             $lease = Lease::find($state);
-                            if ($lease) $set('base_amount', $lease->price);
+                            if ($lease) {
+                                $set('base_amount', $lease->price);
+                            }
                         }),
                     TextInput::make('invoice_number')->label('No. Invoice')->disabled()->dehydrated(),
                 ]),
@@ -98,9 +118,9 @@ class InvoiceResource extends Resource
 
     private static function recalcTotal(Get $get, Set $set): void
     {
-        $base       = (float) ($get('base_amount') ?? 0);
+        $base = (float) ($get('base_amount') ?? 0);
         $additional = collect($get('additional_charges') ?? [])->sum(fn ($i) => (float) ($i['amount'] ?? 0));
-        $discount   = (float) ($get('discount') ?? 0);
+        $discount = (float) ($get('discount') ?? 0);
         $set('total', $base + $additional - $discount);
     }
 
@@ -127,7 +147,7 @@ class InvoiceResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('lease_id')->label('Kontrak')
-                    ->options(fn () => \App\Models\Lease::with('occupant')
+                    ->options(fn () => Lease::with('occupant')
                         ->get()->pluck('lease_number', 'id'))->searchable(),
                 SelectFilter::make('status')->options([
                     'draft' => 'Draft', 'sent' => 'Terkirim', 'paid' => 'Lunas',
@@ -153,7 +173,7 @@ class InvoiceResource extends Resource
                         if ($result['success']) {
                             Notification::make()->title('Link pembayaran dibuat.')->success()->send();
                         } else {
-                            Notification::make()->title('Gagal: ' . ($result['message'] ?? 'Error'))->danger()->send();
+                            Notification::make()->title('Gagal: '.($result['message'] ?? 'Error'))->danger()->send();
                         }
                     }),
                 Actions\Action::make('mark_paid')
@@ -172,11 +192,11 @@ class InvoiceResource extends Resource
                     ])
                     ->action(function (Invoice $record, array $data) {
                         app(PaymentService::class)->recordPayment($record, [
-                            'amount'    => (float) $data['amount'],
-                            'method'    => $data['method'],
-                            'paid_at'   => $data['paid_at'] ?? now(),
+                            'amount' => (float) $data['amount'],
+                            'method' => $data['method'],
+                            'paid_at' => $data['paid_at'] ?? now(),
                             'reference' => $data['reference'] ?? null,
-                            'notes'     => $data['notes'] ?? null,
+                            'notes' => $data['notes'] ?? null,
                         ]);
                         Notification::make()->title('Pembayaran tercatat & status invoice diperbarui.')->success()->send();
                     }),
@@ -204,9 +224,9 @@ class InvoiceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListInvoices::route('/'),
+            'index' => Pages\ListInvoices::route('/'),
             'create' => Pages\CreateInvoice::route('/create'),
-            'edit'   => Pages\EditInvoice::route('/{record}/edit'),
+            'edit' => Pages\EditInvoice::route('/{record}/edit'),
         ];
     }
 }

@@ -2,27 +2,43 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\MessageTemplateResource\Pages;
 use App\Models\MessageTemplate;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class MessageTemplateResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = MessageTemplate::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
+
     protected static ?int $navigationSort = 30;
 
-    public static function getNavigationGroup(): ?string { return '🔌 Integrasi'; }
-    public static function getLabel(): ?string { return 'Template Pesan'; }
-    public static function getPluralLabel(): ?string { return 'Template Pesan'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Template Pesan';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Template Pesan';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -45,7 +61,9 @@ class MessageTemplateResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->label('Template')->searchable()->sortable(),
-                TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) { 'invoice' => 'Tagihan', 'reminder' => 'Pengingat', 'overdue' => 'Jatuh Tempo', 'welcome' => 'Welcome', 'lease_renewal' => 'Kontrak', default => $s }),
+                TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) {
+                    'invoice' => 'Tagihan', 'reminder' => 'Pengingat', 'overdue' => 'Jatuh Tempo', 'welcome' => 'Welcome', 'lease_renewal' => 'Kontrak', default => $s
+                }),
                 TextColumn::make('message')->label('Pesan')->limit(50),
                 IconColumn::make('is_active')->label('Aktif')->boolean(),
             ])

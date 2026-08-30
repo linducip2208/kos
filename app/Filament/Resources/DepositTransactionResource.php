@@ -2,29 +2,48 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\DepositTransactionResource\Pages;
 use App\Models\Deposit;
 use App\Models\DepositTransaction;
 use App\Models\InvoicePayment;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class DepositTransactionResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = DepositTransaction::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-receipt-percent';
+
     protected static ?int $navigationSort = 26;
 
-    public static function getNavigationGroup(): ?string { return '💰 Keuangan'; }
-    public static function getLabel(): ?string { return 'Mutasi Deposit'; }
-    public static function getPluralLabel(): ?string { return 'Ledger Deposit'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::FINANCE;
+    }
 
-    public static function canCreate(): bool { return false; }
+    public static function getLabel(): ?string
+    {
+        return 'Mutasi Deposit';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Ledger Deposit';
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -45,8 +64,7 @@ class DepositTransactionResource extends Resource
                     ->formatStateUsing(fn ($s) => DepositTransaction::TYPES[$s] ?? $s),
                 TextColumn::make('amount')->label('Mutasi')->weight('bold')
                     ->color(fn (DepositTransaction $r) => $r->signed_amount >= 0 ? 'success' : 'danger')
-                    ->formatStateUsing(fn (DepositTransaction $r) =>
-                        ($r->signed_amount >= 0 ? '+' : '-').'Rp '.number_format(abs($r->signed_amount), 0, ',', '.')),
+                    ->formatStateUsing(fn (DepositTransaction $r) => ($r->signed_amount >= 0 ? '+' : '-').'Rp '.number_format(abs($r->signed_amount), 0, ',', '.')),
                 TextColumn::make('balance_after')->label('Saldo Akhir')->money('IDR'),
                 TextColumn::make('reason')->label('Alasan')->limit(40)->default('-'),
                 TextColumn::make('method')->label('Metode')->default('-')

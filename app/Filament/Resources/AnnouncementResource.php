@@ -2,15 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\AnnouncementResource\Pages;
 use App\Models\Announcement;
 use App\Models\Property;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
@@ -18,13 +20,28 @@ use Filament\Tables\Table;
 
 class AnnouncementResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = Announcement::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-megaphone';
+
     protected static ?int $navigationSort = 60;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string { return 'Pengumuman'; }
-    public static function getPluralLabel(): ?string { return 'Pengumuman Penghuni'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::BOOKINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Pengumuman';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Pengumuman Penghuni';
+    }
 
     public static function form(Schema $schema): Schema
     {

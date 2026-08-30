@@ -2,29 +2,48 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\OccupantResource\Pages;
 use App\Models\Occupant;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Hash;
 
 class OccupantResource extends Resource
 {
-    protected static ?string $model          = Occupant::class;
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-users';
-    protected static ?int    $navigationSort = 10;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string            { return 'Penyewa'; }
-    public static function getPluralLabel(): ?string      { return 'Penyewa'; }
+    protected static ?string $model = Occupant::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::TENANCY;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Penyewa';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Penyewa';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -85,20 +104,20 @@ class OccupantResource extends Resource
                 Actions\Action::make('leases')
                     ->label('Kontrak')
                     ->icon('heroicon-o-document-text')
-                    ->url(fn (Occupant $r) => LeaseResource::getUrl('index') . '?tableFilters[occupant_id][value]=' . $r->id),
+                    ->url(fn (Occupant $r) => LeaseResource::getUrl('index').'?tableFilters[occupant_id][value]='.$r->id),
                 Actions\Action::make('portal_access')
                     ->label('Set Password Portal')->icon('heroicon-o-key')->color('info')
                     ->form([
-                        \Filament\Forms\Components\TextInput::make('portal_password')
+                        TextInput::make('portal_password')
                             ->label('Password Baru')->required()->minLength(6)->password()->revealable(),
-                        \Filament\Forms\Components\Toggle::make('portal_active')->label('Aktifkan Akses Portal')->default(true),
+                        Toggle::make('portal_active')->label('Aktifkan Akses Portal')->default(true),
                     ])
                     ->action(function (Occupant $record, array $data) {
                         $record->update([
-                            'portal_password' => \Illuminate\Support\Facades\Hash::make($data['portal_password']),
-                            'portal_active'   => $data['portal_active'],
+                            'portal_password' => Hash::make($data['portal_password']),
+                            'portal_active' => $data['portal_active'],
                         ]);
-                        \Filament\Notifications\Notification::make()->title('Akses portal diperbarui.')->success()->send();
+                        Notification::make()->title('Akses portal diperbarui.')->success()->send();
                     }),
             ])
             ->defaultSort('name');
@@ -107,9 +126,9 @@ class OccupantResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListOccupants::route('/'),
+            'index' => Pages\ListOccupants::route('/'),
             'create' => Pages\CreateOccupant::route('/create'),
-            'edit'   => Pages\EditOccupant::route('/{record}/edit'),
+            'edit' => Pages\EditOccupant::route('/{record}/edit'),
         ];
     }
 }

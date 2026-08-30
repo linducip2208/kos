@@ -2,34 +2,49 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\RoomTypeResource\Pages;
 use App\Models\Property;
 use App\Models\RoomType;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class RoomTypeResource extends Resource
 {
-    protected static ?string $model          = RoomType::class;
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-squares-2x2';
-    protected static ?int    $navigationSort = 20;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
-    public static function getLabel(): ?string            { return __('navigation.room_type'); }
-    public static function getPluralLabel(): ?string      { return __('navigation.room_types'); }
+    protected static ?string $model = RoomType::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
+
+    protected static ?int $navigationSort = 20;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('navigation.room_type');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('navigation.room_types');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -48,7 +63,7 @@ class RoomTypeResource extends Resource
                 ]),
                 RichEditor::make('description')
                     ->label('Deskripsi Tipe Kamar')
-                    ->toolbarButtons(['bold','italic','bulletList','orderedList'])
+                    ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList'])
                     ->columnSpanFull(),
             ]),
 
@@ -111,7 +126,7 @@ class RoomTypeResource extends Resource
                 Actions\Action::make('rooms')
                     ->label('Lihat Kamar')
                     ->icon('heroicon-o-home')
-                    ->url(fn (RoomType $r) => RoomResource::getUrl('index') . '?tableFilters[room_type_id][value]=' . $r->id),
+                    ->url(fn (RoomType $r) => RoomResource::getUrl('index').'?tableFilters[room_type_id][value]='.$r->id),
             ])
             ->defaultSort('property_id');
     }
@@ -119,9 +134,9 @@ class RoomTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListRoomTypes::route('/'),
+            'index' => Pages\ListRoomTypes::route('/'),
             'create' => Pages\CreateRoomType::route('/create'),
-            'edit'   => Pages\EditRoomType::route('/{record}/edit'),
+            'edit' => Pages\EditRoomType::route('/{record}/edit'),
         ];
     }
 }

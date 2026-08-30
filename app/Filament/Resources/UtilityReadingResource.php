@@ -2,23 +2,24 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\UtilityReadingResource\Pages;
 use App\Models\Room;
 use App\Models\UtilityReading;
 use App\Services\UtilityService;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -26,13 +27,28 @@ use Filament\Tables\Table;
 
 class UtilityReadingResource extends Resource
 {
-    protected static ?string $model         = UtilityReading::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bolt';
-    protected static ?int    $navigationSort = 20;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Keuangan'; }
-    public static function getLabel(): ?string           { return 'Meteran'; }
-    public static function getPluralLabel(): ?string     { return 'Meteran Utilitas'; }
+    protected static ?string $model = UtilityReading::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bolt';
+
+    protected static ?int $navigationSort = 20;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Meteran';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Meteran Utilitas';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -41,7 +57,7 @@ class UtilityReadingResource extends Resource
                 Grid::make(3)->schema([
                     Select::make('room_id')->label('Kamar')
                         ->options(Room::with('property')->get()->mapWithKeys(
-                            fn ($r) => [$r->id => $r->property->name . ' - ' . $r->room_number]
+                            fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
                         ))->searchable()->required()->live()
                         ->afterStateUpdated(fn (Set $set, Get $get) => static::fillPreviousReading($set, $get)),
                     Select::make('type')->label('Jenis')
@@ -74,7 +90,7 @@ class UtilityReadingResource extends Resource
     private static function fillPreviousReading(Set $set, Get $get): void
     {
         $roomId = $get('room_id');
-        $type   = $get('type');
+        $type = $get('type');
         if ($roomId && $type) {
             $prev = UtilityReading::where('room_id', $roomId)->where('type', $type)
                 ->orderByDesc('billing_period')->value('current_reading') ?? 0;
@@ -84,8 +100,8 @@ class UtilityReadingResource extends Resource
 
     private static function calcAmount(Get $get, Set $set): void
     {
-        $usage  = max(0, (float)($get('current_reading') ?? 0) - (float)($get('previous_reading') ?? 0));
-        $rate   = (float)($get('rate_per_unit') ?? 0);
+        $usage = max(0, (float) ($get('current_reading') ?? 0) - (float) ($get('previous_reading') ?? 0));
+        $rate = (float) ($get('rate_per_unit') ?? 0);
         $set('amount', $usage * $rate);
     }
 
@@ -94,10 +110,14 @@ class UtilityReadingResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => $record->room->property->name . ' - ' . $record->room->room_number),
+                    ->formatStateUsing(fn ($record) => $record->room->property->name.' - '.$record->room->room_number),
                 TextColumn::make('type')->label('Jenis')->badge()
-                    ->color(fn ($state) => match ($state) { 'electricity' => 'warning', 'water' => 'info', default => 'success' })
-                    ->formatStateUsing(fn ($state) => match ($state) { 'electricity' => 'Listrik', 'water' => 'Air', default => 'Gas' }),
+                    ->color(fn ($state) => match ($state) {
+                        'electricity' => 'warning', 'water' => 'info', default => 'success'
+                    })
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'electricity' => 'Listrik', 'water' => 'Air', default => 'Gas'
+                    }),
                 TextColumn::make('billing_period')->label('Periode')->date('M Y')->sortable(),
                 TextColumn::make('previous_reading')->label('Sebelumnya')->numeric(1),
                 TextColumn::make('current_reading')->label('Sekarang')->numeric(1),
@@ -114,14 +134,15 @@ class UtilityReadingResource extends Resource
                 Actions\EditAction::make(),
                 Actions\Action::make('add_to_invoice')
                     ->label('Tambah ke Invoice')->icon('heroicon-o-plus-circle')->color('success')
-                    ->visible(fn (UtilityReading $r) => !$r->added_to_invoice && $r->lease_id)
+                    ->visible(fn (UtilityReading $r) => ! $r->added_to_invoice && $r->lease_id)
                     ->action(function (UtilityReading $record) {
-                        $invoice = $record->lease->invoices()->whereIn('status', ['draft','sent'])->latest()->first();
-                        if (!$invoice) {
+                        $invoice = $record->lease->invoices()->whereIn('status', ['draft', 'sent'])->latest()->first();
+                        if (! $invoice) {
                             Notification::make()->title('Tidak ada invoice aktif untuk kontrak ini.')->warning()->send();
+
                             return;
                         }
-                        app(\App\Services\UtilityService::class)->addToInvoice($record, $invoice);
+                        app(UtilityService::class)->addToInvoice($record, $invoice);
                         Notification::make()->title('Tagihan utilitas ditambahkan ke invoice.')->success()->send();
                     }),
             ])
@@ -131,9 +152,9 @@ class UtilityReadingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUtilityReadings::route('/'),
+            'index' => Pages\ListUtilityReadings::route('/'),
             'create' => Pages\CreateUtilityReading::route('/create'),
-            'edit'   => Pages\EditUtilityReading::route('/{record}/edit'),
+            'edit' => Pages\EditUtilityReading::route('/{record}/edit'),
         ];
     }
 }

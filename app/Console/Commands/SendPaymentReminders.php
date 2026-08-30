@@ -11,18 +11,20 @@ use Illuminate\Support\Facades\Http;
 
 class SendPaymentReminders extends Command
 {
-    protected $signature   = 'invoices:send-reminders';
+    protected $signature = 'invoices:send-reminders';
+
     protected $description = 'Kirim reminder WhatsApp untuk tagihan yang akan jatuh tempo';
 
     public function handle(): int
     {
-        if (!setting('whatsapp_enabled', false, 'notif')) {
+        if (! setting('whatsapp_enabled', false, 'notif')) {
             $this->warn('WhatsApp notif tidak aktif. Aktifkan di Pengaturan Umum.');
+
             return self::SUCCESS;
         }
 
         $reminderDays = (int) setting('reminder_days', 3);
-        $targetDate   = Carbon::today()->addDays($reminderDays)->toDateString();
+        $targetDate = Carbon::today()->addDays($reminderDays)->toDateString();
 
         $invoices = Invoice::with(['lease.occupant', 'lease.room'])
             ->whereIn('status', ['sent'])
@@ -31,7 +33,7 @@ class SendPaymentReminders extends Command
             ->get();
 
         // Kirim in-app notification ke semua admin/owner
-        $admins = User::whereIn('role', ['owner', 'staff'])->where('is_active', true)->get();
+        $admins = User::whereIn('role', ['owner', 'super_admin', 'finance', 'cashier', 'property_manager'])->where('is_active', true)->get();
 
         $sent = 0;
         foreach ($invoices as $invoice) {
@@ -41,8 +43,8 @@ class SendPaymentReminders extends Command
             }
 
             $occupant = $invoice->lease->occupant;
-            $phone    = $occupant->whatsapp_number ?? $occupant->whatsapp ?? $occupant->phone;
-            $message  = $this->buildMessage($invoice);
+            $phone = $occupant->whatsapp_number ?? $occupant->whatsapp ?? $occupant->phone;
+            $message = $this->buildMessage($invoice);
 
             if ($this->sendWhatsApp($phone, $message)) {
                 $invoice->update(['reminder_sent_at' => now()]);
@@ -52,43 +54,48 @@ class SendPaymentReminders extends Command
         }
 
         $this->info("Reminder terkirim: {$sent}");
+
         return self::SUCCESS;
     }
 
     private function buildMessage(Invoice $invoice): string
     {
-        $occupant  = $invoice->lease->occupant;
-        $room      = $invoice->lease->room;
-        $dueDate   = $invoice->due_date->format('d/m/Y');
-        $total     = 'Rp ' . number_format($invoice->total, 0, ',', '.');
-        $appName   = setting('app_name', 'Kos Manager');
+        $occupant = $invoice->lease->occupant;
+        $room = $invoice->lease->room;
+        $dueDate = $invoice->due_date->format('d/m/Y');
+        $total = 'Rp '.number_format($invoice->total, 0, ',', '.');
+        $appName = setting('app_name', 'Kos Manager');
 
         return "Halo *{$occupant->name}*,\n\n"
-            . "Ini adalah pengingat bahwa tagihan sewa kamar *{$room->room_number}* akan jatuh tempo pada *{$dueDate}*.\n\n"
-            . "Total Tagihan: *{$total}*\n"
-            . "No. Invoice: {$invoice->invoice_number}\n\n"
-            . "Mohon segera lakukan pembayaran. Terima kasih.\n\n"
-            . "— {$appName}";
+            ."Ini adalah pengingat bahwa tagihan sewa kamar *{$room->room_number}* akan jatuh tempo pada *{$dueDate}*.\n\n"
+            ."Total Tagihan: *{$total}*\n"
+            ."No. Invoice: {$invoice->invoice_number}\n\n"
+            ."Mohon segera lakukan pembayaran. Terima kasih.\n\n"
+            ."— {$appName}";
     }
 
     private function sendWhatsApp(string $phone, string $message): bool
     {
-        $apiKey  = setting('whatsapp_api_key', '', 'notif');
-        $sender  = setting('whatsapp_sender', '', 'notif');
+        $apiKey = setting('whatsapp_api_key', '', 'notif');
+        $sender = setting('whatsapp_sender', '', 'notif');
 
-        if (empty($apiKey) || empty($sender)) return false;
+        if (empty($apiKey) || empty($sender)) {
+            return false;
+        }
 
         try {
             $response = Http::withHeaders(['Authorization' => $apiKey])
                 ->asForm()
                 ->post('https://api.fonnte.com/send', [
-                    'target'  => $phone,
+                    'target' => $phone,
                     'message' => $message,
-                    'sender'  => $sender,
+                    'sender' => $sender,
                 ]);
+
             return $response->successful() && ($response->json('status') === true);
         } catch (\Exception $e) {
-            $this->error("Gagal kirim ke {$phone}: " . $e->getMessage());
+            $this->error("Gagal kirim ke {$phone}: ".$e->getMessage());
+
             return false;
         }
     }

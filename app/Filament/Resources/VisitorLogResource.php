@@ -2,30 +2,46 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\VisitorLogResource\Pages;
-use App\Models\VisitorLog;
 use App\Models\Occupant;
 use App\Models\Property;
+use App\Models\VisitorLog;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class VisitorLogResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = VisitorLog::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-identification';
+
     protected static ?int $navigationSort = 50;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string { return 'Tamu'; }
-    public static function getPluralLabel(): ?string { return 'Buku Tamu'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::BOOKINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Tamu';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Buku Tamu';
+    }
 
     public static function form(Schema $schema): Schema
     {

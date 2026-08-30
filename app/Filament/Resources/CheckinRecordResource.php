@@ -2,27 +2,46 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\CheckinRecordResource\Pages;
 use App\Models\CheckinRecord;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class CheckinRecordResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = CheckinRecord::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-key';
+
     protected static ?int $navigationSort = 40;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string { return 'Check-in/out'; }
-    public static function getPluralLabel(): ?string { return 'Riwayat Check-in/out'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
 
-    public static function canCreate(): bool { return false; }
+    public static function getLabel(): ?string
+    {
+        return 'Check-in/out';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Riwayat Check-in/out';
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

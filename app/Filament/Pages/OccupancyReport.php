@@ -2,19 +2,31 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\AuthorizesPageAccess;
 use App\Models\Property;
 use App\Models\Room;
+use App\Support\NavigationGroups;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
 
 class OccupancyReport extends Page
 {
+    use AuthorizesPageAccess;
+
+    protected static ?string $permission = 'report.view';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-pie';
+
     protected static ?int $navigationSort = 10;
 
-    public static function getNavigationGroup(): ?string { return '📊 Laporan'; }
-    public static function getNavigationLabel(): string { return 'Okupansi Kamar'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::REPORTS;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Okupansi Kamar';
+    }
 
     protected string $view = 'filament.pages.occupancy-report';
 

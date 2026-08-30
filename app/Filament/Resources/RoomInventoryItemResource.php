@@ -2,29 +2,45 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\RoomInventoryItemResource\Pages;
 use App\Models\Room;
 use App\Models\RoomInventoryItem;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class RoomInventoryItemResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = RoomInventoryItem::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?int $navigationSort = 45;
 
-    public static function getNavigationGroup(): ?string { return '🏢 Properti & Kamar'; }
-    public static function getLabel(): ?string { return 'Inventaris Kamar'; }
-    public static function getPluralLabel(): ?string { return 'Inventaris Kamar'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Inventaris Kamar';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Inventaris Kamar';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -38,11 +54,11 @@ class RoomInventoryItemResource extends Resource
                     Forms\Components\TextInput::make('name')->label('Nama Item')->required()->maxLength(255),
                     Forms\Components\Select::make('category')->label('Kategori')->options([
                         'furniture' => 'Furniture',
-                        'electronic'=> 'Elektronik',
-                        'bedding'   => 'Bedding',
-                        'kitchen'   => 'Dapur',
-                        'bathroom'  => 'Kamar Mandi',
-                        'other'     => 'Lainnya',
+                        'electronic' => 'Elektronik',
+                        'bedding' => 'Bedding',
+                        'kitchen' => 'Dapur',
+                        'bathroom' => 'Kamar Mandi',
+                        'other' => 'Lainnya',
                     ])->default('furniture')->required(),
                     Forms\Components\TextInput::make('serial_number')->label('No. Seri')->nullable(),
                     Forms\Components\TextInput::make('quantity')->label('Jumlah')->numeric()->minValue(1)->default(1)->required(),

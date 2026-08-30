@@ -2,34 +2,52 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\InvoicePaymentResource\Pages;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
-use App\Models\User;
 use App\Services\PaymentService;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class InvoicePaymentResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = InvoicePayment::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
+
     protected static ?int $navigationSort = 15;
 
-    public static function getNavigationGroup(): ?string { return '💰 Keuangan'; }
-    public static function getLabel(): ?string { return 'Pembayaran'; }
-    public static function getPluralLabel(): ?string { return 'Pembayaran Invoice'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::FINANCE;
+    }
 
-    public static function canCreate(): bool { return false; }
+    public static function getLabel(): ?string
+    {
+        return 'Pembayaran';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Pembayaran Invoice';
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

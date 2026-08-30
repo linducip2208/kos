@@ -2,32 +2,47 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\EContractResource\Pages;
 use App\Models\EContract;
 use App\Models\Lease;
 use App\Services\EContractService;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class EContractResource extends Resource
 {
-    protected static ?string $model         = EContract::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-check';
-    protected static ?int    $navigationSort = 25;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Penghuni & Sewa'; }
-    public static function getLabel(): ?string           { return 'Kontrak Digital'; }
-    public static function getPluralLabel(): ?string     { return 'Kontrak Digital'; }
+    protected static ?string $model = EContract::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-check';
+
+    protected static ?int $navigationSort = 25;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::TENANCY;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Kontrak Digital';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Kontrak Digital';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -36,7 +51,7 @@ class EContractResource extends Resource
                 Select::make('lease_id')->label('Kontrak Sewa')
                     ->options(
                         Lease::with(['occupant', 'room.property'])->get()
-                            ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant->name ?? '-') . ' — ' . ($l->room->property->name ?? '') . ' ' . ($l->room->room_number ?? '')])
+                            ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant->name ?? '-').' — '.($l->room->property->name ?? '').' '.($l->room->room_number ?? '')])
                     )->searchable()->required(),
                 Textarea::make('content_html')->label('Isi Kontrak (HTML)')->rows(10),
             ]),
@@ -50,7 +65,7 @@ class EContractResource extends Resource
                 TextColumn::make('contract_number')->label('No. Kontrak')->searchable()->weight('bold'),
                 TextColumn::make('lease.occupant.name')->label('Penyewa'),
                 TextColumn::make('lease.room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => optional($record->lease?->room?->property)->name . ' - ' . optional($record->lease?->room)->room_number),
+                    ->formatStateUsing(fn ($record) => optional($record->lease?->room?->property)->name.' - '.optional($record->lease?->room)->room_number),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn ($state) => match ($state) {
                         'draft' => 'gray', 'sent' => 'info',
@@ -86,7 +101,7 @@ class EContractResource extends Resource
                     }),
                 Actions\Action::make('send_link')
                     ->label('Kirim Link ke Penyewa')->icon('heroicon-o-paper-airplane')->color('success')
-                    ->visible(fn (EContract $r) => !empty($r->owner_signature))
+                    ->visible(fn (EContract $r) => ! empty($r->owner_signature))
                     ->action(function (EContract $record) {
                         app(EContractService::class)->sendSignLink($record);
                         Notification::make()->title('Link tanda tangan terkirim via WhatsApp.')->success()->send();
@@ -98,9 +113,9 @@ class EContractResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListEContracts::route('/'),
+            'index' => Pages\ListEContracts::route('/'),
             'create' => Pages\CreateEContract::route('/create'),
-            'edit'   => Pages\EditEContract::route('/{record}/edit'),
+            'edit' => Pages\EditEContract::route('/{record}/edit'),
         ];
     }
 }

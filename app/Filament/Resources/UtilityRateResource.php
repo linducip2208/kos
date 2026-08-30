@@ -2,17 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\UtilityRateResource\Pages;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\UtilityRate;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -21,13 +25,28 @@ use Filament\Tables\Table;
 
 class UtilityRateResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = UtilityRate::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bolt';
+
     protected static ?int $navigationSort = 22;
 
-    public static function getNavigationGroup(): ?string { return '💰 Keuangan'; }
-    public static function getLabel(): ?string { return 'Tarif Utilitas'; }
-    public static function getPluralLabel(): ?string { return 'Tarif Utilitas'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::FINANCE;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Tarif Utilitas';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Tarif Utilitas';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -38,27 +57,27 @@ class UtilityRateResource extends Resource
                         ->options(UtilityRate::UTILITY_TYPES)->default('electricity')->required(),
                     Forms\Components\Select::make('scope')->label('Cakupan')
                         ->options(UtilityRate::SCOPES)->default('global')->required()->live()
-                        ->afterStateUpdated(function (\Filament\Schemas\Components\Utilities\Set $set) {
+                        ->afterStateUpdated(function (Set $set) {
                             $set('property_id', null);
                             $set('room_type_id', null);
                             $set('room_id', null);
                         }),
                     Forms\Components\Select::make('property_id')->label('Properti')
                         ->options(Property::pluck('name', 'id'))->searchable()
-                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => in_array($get('scope'), ['property', 'room']))
+                        ->visible(fn (Get $get) => in_array($get('scope'), ['property', 'room']))
                         ->live()
-                        ->afterStateUpdated(fn (\Filament\Schemas\Components\Utilities\Set $set) => $set('room_id', null)),
+                        ->afterStateUpdated(fn (Set $set) => $set('room_id', null)),
                     Forms\Components\Select::make('room_type_id')->label('Tipe Kamar')
                         ->options(RoomType::pluck('name', 'id'))->searchable()
-                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('scope') === 'room_type'),
+                        ->visible(fn (Get $get) => $get('scope') === 'room_type'),
                     Forms\Components\Select::make('room_id')->label('Kamar')
-                        ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => Room::query()
+                        ->options(fn (Get $get) => Room::query()
                             ->when($get('property_id'), fn ($q, $pid) => $q->where('property_id', $pid))
                             ->with('property')->get()->mapWithKeys(
                                 fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
                             ))
                         ->searchable()
-                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('scope') === 'room'),
+                        ->visible(fn (Get $get) => $get('scope') === 'room'),
                 ]),
             ]),
 

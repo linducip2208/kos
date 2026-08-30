@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\BlogPostResource\Pages;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\User;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -17,30 +20,44 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class BlogPostResource extends Resource
 {
-    protected static ?string $model         = BlogPost::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
-    protected static ?int    $navigationSort = 10;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return 'Marketing'; }
-    public static function getLabel(): ?string           { return 'Artikel Blog'; }
-    public static function getPluralLabel(): ?string     { return 'Artikel Blog'; }
+    protected static ?string $model = BlogPost::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Artikel Blog';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Artikel Blog';
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Section::make('Konten')->schema([
                 TextInput::make('title')->label('Judul')->required()->columnSpanFull()->live(onBlur: true)
-                    ->afterStateUpdated(fn ($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state))),
                 TextInput::make('slug')->label('Slug')->required()->unique(ignoreRecord: true),
                 Textarea::make('excerpt')->label('Ringkasan')->rows(3)->columnSpanFull(),
                 RichEditor::make('content')->label('Isi Artikel')->required()->columnSpanFull()
@@ -97,9 +114,9 @@ class BlogPostResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBlogPosts::route('/'),
+            'index' => Pages\ListBlogPosts::route('/'),
             'create' => Pages\CreateBlogPost::route('/create'),
-            'edit'   => Pages\EditBlogPost::route('/{record}/edit'),
+            'edit' => Pages\EditBlogPost::route('/{record}/edit'),
         ];
     }
 }

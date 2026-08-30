@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\AuditLogResource\Pages;
 use App\Models\AuditLog;
+use App\Support\NavigationGroups;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -11,13 +13,28 @@ use Filament\Tables\Table;
 
 class AuditLogResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = AuditLog::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?int $navigationSort = 90;
 
-    public static function getNavigationGroup(): ?string { return '⚙️ Sistem'; }
-    public static function getLabel(): ?string { return 'Log Aktivitas'; }
-    public static function getPluralLabel(): ?string { return 'Log Aktivitas'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Log Aktivitas';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Log Aktivitas';
+    }
 
     public static function table(Table $table): Table
     {
@@ -40,7 +57,7 @@ class AuditLogResource extends Resource
     {
         return [
             'index' => Pages\ListAuditLogs::route('/'),
-            'view'  => Pages\ViewAuditLog::route('/{record}'),
+            'view' => Pages\ViewAuditLog::route('/{record}'),
         ];
     }
 }

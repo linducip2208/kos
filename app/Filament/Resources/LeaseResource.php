@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\LeaseResource\Pages;
 use App\Models\Lease;
 use App\Models\Occupant;
@@ -9,6 +10,9 @@ use App\Models\Room;
 use App\Services\CheckInOutService;
 use App\Services\LeaseWorkflowService;
 use App\Services\MoveRoomService;
+use App\Support\NavigationGroups;
+use Carbon\Carbon;
+use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -21,21 +25,34 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class LeaseResource extends Resource
 {
-    protected static ?string $model           = Lease::class;
-    protected static string|\BackedEnum|null  $navigationIcon  = 'heroicon-o-document-text';
-    protected static ?int    $navigationSort  = 20;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string            { return __('navigation.lease'); }
-    public static function getPluralLabel(): ?string      { return __('navigation.leases'); }
+    protected static ?string $model = Lease::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static ?int $navigationSort = 20;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::TENANCY;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('navigation.lease');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('navigation.leases');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -48,15 +65,19 @@ class LeaseResource extends Resource
                             Room::with('property')
                                 ->whereIn('status', ['available', 'reserved'])
                                 ->get()
-                                ->mapWithKeys(fn ($r) => [$r->id => $r->property->name . ' - ' . $r->room_number . ($r->name ? " ({$r->name})" : '')])
+                                ->mapWithKeys(fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number.($r->name ? " ({$r->name})" : '')])
                         )
                         ->searchable()
                         ->required()
                         ->live()
                         ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
-                            if (!$state) return;
+                            if (! $state) {
+                                return;
+                            }
                             $room = Room::find($state);
-                            if ($room) $set('price', $room->effective_price_monthly);
+                            if ($room) {
+                                $set('price', $room->effective_price_monthly);
+                            }
                         }),
 
                     Select::make('occupant_id')
@@ -82,11 +103,11 @@ class LeaseResource extends Resource
                     DatePicker::make('end_date')->label('Tanggal Keluar')->required(),
                     Select::make('billing_cycle')->label('Siklus Tagihan')
                         ->options([
-                            'daily'     => 'Harian',
-                            'weekly'    => 'Mingguan',
-                            'monthly'   => 'Bulanan',
+                            'daily' => 'Harian',
+                            'weekly' => 'Mingguan',
+                            'monthly' => 'Bulanan',
                             'quarterly' => 'Triwulan',
-                            'yearly'    => 'Tahunan',
+                            'yearly' => 'Tahunan',
                         ])
                         ->default('monthly')->required(),
                 ]),
@@ -117,7 +138,7 @@ class LeaseResource extends Resource
                 TextColumn::make('lease_number')->label('No. Kontrak')->searchable()->weight('bold'),
                 TextColumn::make('occupant.name')->label('Penyewa')->searchable()->sortable(),
                 TextColumn::make('room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => $record->room ? $record->room->property->name . ' - ' . $record->room->room_number : '-'),
+                    ->formatStateUsing(fn ($record) => $record->room ? $record->room->property->name.' - '.$record->room->room_number : '-'),
                 TextColumn::make('start_date')->label('Masuk')->date('d/m/Y')->sortable(),
                 TextColumn::make('end_date')->label('Keluar')->date('d/m/Y')->sortable()
                     ->color(fn (Lease $record) => $record->is_expiring_soon ? 'warning' : null),
@@ -141,7 +162,7 @@ class LeaseResource extends Resource
                 Actions\Action::make('invoices')
                     ->label('Tagihan')
                     ->icon('heroicon-o-banknotes')
-                    ->url(fn (Lease $r) => InvoiceResource::getUrl('index') . '?tableFilters[lease_id][value]=' . $r->id),
+                    ->url(fn (Lease $r) => InvoiceResource::getUrl('index').'?tableFilters[lease_id][value]='.$r->id),
 
                 Actions\ActionGroup::make([
                     Actions\Action::make('wf_submit')
@@ -185,9 +206,9 @@ class LeaseResource extends Resource
                         ])
                         ->action(function (Lease $record, array $data) {
                             $new = app(LeaseWorkflowService::class)->renew($record, array_filter([
-                                'start_date'    => $data['start_date'] ?? null,
-                                'end_date'      => $data['end_date'] ?? null,
-                                'price'         => isset($data['price']) && $data['price'] !== '' ? (float) $data['price'] : null,
+                                'start_date' => $data['start_date'] ?? null,
+                                'end_date' => $data['end_date'] ?? null,
+                                'price' => isset($data['price']) && $data['price'] !== '' ? (float) $data['price'] : null,
                                 'billing_cycle' => $data['billing_cycle'] ?? null,
                             ]), auth()->user());
                             Notification::make()->title("Kontrak diperpanjang — kontrak baru {$new->lease_number} dibuat.")->success()->send();
@@ -199,12 +220,12 @@ class LeaseResource extends Resource
                             DatePicker::make('effective_date')->label('Tanggal Keluar Efektif')->default(fn (Lease $r) => $r->end_date),
                         ])
                         ->action(function (Lease $record, array $data) {
-                            app(LeaseWorkflowService::class)->giveNotice($record, isset($data['effective_date']) ? \Carbon\Carbon::parse($data['effective_date']) : null);
+                            app(LeaseWorkflowService::class)->giveNotice($record, isset($data['effective_date']) ? Carbon::parse($data['effective_date']) : null);
                             Notification::make()->title('Notice keluar dicatat.')->success()->send();
                         }),
                     Actions\Action::make('wf_terminate')
                         ->label('Terminasi Dini')->icon('heroicon-o-x-circle')->color('danger')
-                        ->visible(fn (Lease $r) => !in_array($r->status, ['renewed', 'ended', 'terminated', 'cancelled'], true))
+                        ->visible(fn (Lease $r) => ! in_array($r->status, ['renewed', 'ended', 'terminated', 'cancelled'], true))
                         ->form([
                             Textarea::make('reason')->label('Alasan Terminasi')->required()->rows(3),
                         ])
@@ -240,17 +261,17 @@ class LeaseResource extends Resource
                         ->action(function (Lease $record, array $data) {
                             $toRoom = Room::findOrFail($data['to_room_id']);
                             $transfer = app(MoveRoomService::class)->transfer($record, $toRoom, [
-                                'effective_date'   => $data['effective_date'] ?? null,
-                                'prorate_amount'   => filled($data['prorate_amount'] ?? null) ? (float) $data['prorate_amount'] : null,
+                                'effective_date' => $data['effective_date'] ?? null,
+                                'prorate_amount' => filled($data['prorate_amount'] ?? null) ? (float) $data['prorate_amount'] : null,
                                 'transfer_deposit' => (bool) ($data['transfer_deposit'] ?? true),
-                                'notes'            => $data['notes'] ?? null,
+                                'notes' => $data['notes'] ?? null,
                             ]);
                             Notification::make()->title('Tenant dipindah ke kamar baru. Prorate: '.$transfer->prorate_label)->success()->send();
                         }),
 
                     Actions\Action::make('checkin')
                         ->label('Proses Check-in')->icon('heroicon-o-key')->color('success')
-                        ->visible(fn (Lease $r) => $r->isOperational() && !$r->checkinRecords()->where('type', 'check_in')->exists())
+                        ->visible(fn (Lease $r) => $r->isOperational() && ! $r->checkinRecords()->where('type', 'check_in')->exists())
                         ->form([
                             TextInput::make('meter_electric')->label('Meteran Listrik Awal')->numeric(),
                             TextInput::make('meter_water')->label('Meteran Air Awal')->numeric(),
@@ -260,9 +281,9 @@ class LeaseResource extends Resource
                         ])
                         ->action(function (Lease $record, array $data) {
                             app(CheckInOutService::class)->checkIn($record, [
-                                'meter_electric'  => filled($data['meter_electric'] ?? null) ? (float) $data['meter_electric'] : null,
-                                'meter_water'     => filled($data['meter_water'] ?? null) ? (float) $data['meter_water'] : null,
-                                'key_handover'    => (bool) ($data['key_handover'] ?? true),
+                                'meter_electric' => filled($data['meter_electric'] ?? null) ? (float) $data['meter_electric'] : null,
+                                'meter_water' => filled($data['meter_water'] ?? null) ? (float) $data['meter_water'] : null,
+                                'key_handover' => (bool) ($data['key_handover'] ?? true),
                                 'acknowledged_by' => $data['acknowledged_by'] ?? null,
                             ]);
                             Notification::make()->title('Check-in tercatat, kamar berstatus terisi.')->success()->send();
@@ -280,10 +301,10 @@ class LeaseResource extends Resource
                         ])
                         ->action(function (Lease $record, array $data) {
                             $out = app(CheckInOutService::class)->checkOut($record, [
-                                'meter_electric'     => filled($data['meter_electric'] ?? null) ? (float) $data['meter_electric'] : null,
-                                'meter_water'        => filled($data['meter_water'] ?? null) ? (float) $data['meter_water'] : null,
-                                'damage_amount'      => (float) ($data['damage_amount'] ?? 0),
-                                'cleaning_amount'    => (float) ($data['cleaning_amount'] ?? 0),
+                                'meter_electric' => filled($data['meter_electric'] ?? null) ? (float) $data['meter_electric'] : null,
+                                'meter_water' => filled($data['meter_water'] ?? null) ? (float) $data['meter_water'] : null,
+                                'damage_amount' => (float) ($data['damage_amount'] ?? 0),
+                                'cleaning_amount' => (float) ($data['cleaning_amount'] ?? 0),
                                 'execute_settlement' => (bool) ($data['execute_settlement'] ?? true),
                             ]);
                             Notification::make()
@@ -302,9 +323,9 @@ class LeaseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListLeases::route('/'),
+            'index' => Pages\ListLeases::route('/'),
             'create' => Pages\CreateLease::route('/create'),
-            'edit'   => Pages\EditLease::route('/{record}/edit'),
+            'edit' => Pages\EditLease::route('/{record}/edit'),
         ];
     }
 }

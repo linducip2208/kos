@@ -2,37 +2,50 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\RoomChecklistResource\Pages;
 use App\Models\Lease;
 use App\Models\Occupant;
 use App\Models\Room;
 use App\Models\RoomChecklist;
-use Filament\Forms\Components\DateTimePicker;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class RoomChecklistResource extends Resource
 {
-    protected static ?string $model         = RoomChecklist::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
-    protected static ?int    $navigationSort = 35;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
-    public static function getLabel(): ?string           { return 'Checklist Kamar'; }
-    public static function getPluralLabel(): ?string     { return 'Checklist Kamar'; }
+    protected static ?string $model = RoomChecklist::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
+
+    protected static ?int $navigationSort = 35;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Checklist Kamar';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Checklist Kamar';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -42,11 +55,11 @@ class RoomChecklistResource extends Resource
                     Select::make('lease_id')->label('Kontrak Sewa')
                         ->options(
                             Lease::with(['occupant', 'room'])->get()
-                                ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant->name ?? '-') . ' — Kamar ' . ($l->room->room_number ?? '')])
+                                ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant->name ?? '-').' — Kamar '.($l->room->room_number ?? '')])
                         )->searchable()->required(),
                     Select::make('room_id')->label('Kamar')
                         ->options(Room::with('property')->get()->mapWithKeys(
-                            fn ($r) => [$r->id => $r->property->name . ' - ' . $r->room_number]
+                            fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
                         ))->searchable()->required(),
                     Select::make('occupant_id')->label('Penyewa')
                         ->options(Occupant::pluck('name', 'id'))->searchable()->required(),
@@ -83,7 +96,7 @@ class RoomChecklistResource extends Resource
             ->columns([
                 TextColumn::make('lease.occupant.name')->label('Penyewa')->weight('bold'),
                 TextColumn::make('room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => optional($record->room?->property)->name . ' - ' . optional($record->room)->room_number),
+                    ->formatStateUsing(fn ($record) => optional($record->room?->property)->name.' - '.optional($record->room)->room_number),
                 TextColumn::make('type')->label('Jenis')->badge()
                     ->color(fn ($state) => $state === 'check_in' ? 'success' : 'warning')
                     ->formatStateUsing(fn ($state) => $state === 'check_in' ? 'Check In' : 'Check Out'),
@@ -104,9 +117,9 @@ class RoomChecklistResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListRoomChecklists::route('/'),
+            'index' => Pages\ListRoomChecklists::route('/'),
             'create' => Pages\CreateRoomChecklist::route('/create'),
-            'edit'   => Pages\EditRoomChecklist::route('/{record}/edit'),
+            'edit' => Pages\EditRoomChecklist::route('/{record}/edit'),
         ];
     }
 }

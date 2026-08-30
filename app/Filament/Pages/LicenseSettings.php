@@ -3,17 +3,33 @@
 namespace App\Filament\Pages;
 
 use App\Core\License\LicenseService;
+use App\Filament\Concerns\AuthorizesPageAccess;
+use App\Support\NavigationGroups;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Cache;
 
 class LicenseSettings extends Page
 {
+    use AuthorizesPageAccess;
+
+    protected static ?string $permission = 'settings.manage';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-key';
-    protected static ?int    $navigationSort = 30;
+
+    protected static ?int $navigationSort = 30;
+
     protected string $view = 'filament.pages.license-settings';
 
-    public static function getNavigationGroup(): ?string { return '?? Sistem'; }
-    public static function getNavigationLabel(): string  { return 'Lisensi'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Lisensi';
+    }
 
     public string $activationKey = '';
 
@@ -26,8 +42,9 @@ class LicenseSettings extends Page
     {
         $key = trim($this->activationKey);
 
-        if (!$key) {
+        if (! $key) {
             Notification::make()->title('Masukkan activation key terlebih dahulu.')->warning()->send();
+
             return;
         }
 
@@ -43,7 +60,7 @@ class LicenseSettings extends Page
 
     public function revalidate(): void
     {
-        \Illuminate\Support\Facades\Cache::forget('license_valid');
+        Cache::forget('license_valid');
         $result = app(LicenseService::class)->validate();
 
         if ($result['valid'] ?? false) {
@@ -57,8 +74,9 @@ class LicenseSettings extends Page
     {
         $result = app(LicenseService::class)->checkUpdate();
 
-        if (!($result['success'] ?? false)) {
+        if (! ($result['success'] ?? false)) {
             Notification::make()->title('Tidak dapat memeriksa pembaruan.')->warning()->send();
+
             return;
         }
 
@@ -76,10 +94,11 @@ class LicenseSettings extends Page
     public function revoke(): void
     {
         $info = $this->getLicenseInfo();
-        $key  = $info['key'];
+        $key = $info['key'];
 
-        if (!$key || $key === 'Belum diaktifkan') {
+        if (! $key || $key === 'Belum diaktifkan') {
             Notification::make()->title('Tidak ada lisensi aktif untuk di-revoke.')->warning()->send();
+
             return;
         }
 

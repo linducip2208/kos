@@ -2,32 +2,48 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\FacilityResource\Pages;
 use App\Models\Facility;
 use App\Models\Property;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class FacilityResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = Facility::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
+
     protected static ?int $navigationSort = 35;
 
-    public static function getNavigationGroup(): ?string { return '🏠 Properti & Kamar'; }
-    public static function getLabel(): ?string { return 'Fasilitas'; }
-    public static function getPluralLabel(): ?string { return 'Fasilitas'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Fasilitas';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Fasilitas';
+    }
 
     public static function form(Schema $schema): Schema
     {

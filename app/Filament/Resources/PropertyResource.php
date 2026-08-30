@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\PropertyResource\Pages;
 use App\Models\Property;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TagsInput;
@@ -14,20 +17,34 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class PropertyResource extends Resource
 {
-    protected static ?string $model           = Property::class;
-    protected static string|\BackedEnum|null  $navigationIcon  = 'heroicon-o-building-office-2';
-    protected static ?int    $navigationSort  = 10;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Properti & Kamar'; }
-    public static function getLabel(): ?string            { return __('navigation.property'); }
-    public static function getPluralLabel(): ?string      { return __('navigation.properties'); }
+    protected static ?string $model = Property::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::OPERATIONAL;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('navigation.property');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('navigation.properties');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -42,7 +59,7 @@ class PropertyResource extends Resource
                 Textarea::make('address')->label('Alamat Lengkap')->required()->rows(2)->columnSpanFull(),
                 RichEditor::make('description')
                     ->label('Deskripsi Properti')
-                    ->toolbarButtons(['bold','italic','bulletList','orderedList','h2','h3','link'])
+                    ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'h2', 'h3', 'link'])
                     ->columnSpanFull(),
             ]),
 
@@ -90,7 +107,7 @@ class PropertyResource extends Resource
                 Actions\Action::make('rooms')
                     ->label('Lihat Kamar')
                     ->icon('heroicon-o-home')
-                    ->url(fn (Property $record) => RoomResource::getUrl('index') . '?tableFilters[property_id][value]=' . $record->id),
+                    ->url(fn (Property $record) => RoomResource::getUrl('index').'?tableFilters[property_id][value]='.$record->id),
             ])
             ->defaultSort('name');
     }
@@ -98,9 +115,9 @@ class PropertyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProperties::route('/'),
+            'index' => Pages\ListProperties::route('/'),
             'create' => Pages\CreateProperty::route('/create'),
-            'edit'   => Pages\EditProperty::route('/{record}/edit'),
+            'edit' => Pages\EditProperty::route('/{record}/edit'),
         ];
     }
 }

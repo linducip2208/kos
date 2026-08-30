@@ -2,35 +2,50 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\BookingRequestResource\Pages;
 use App\Models\BookingRequest;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomType;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class BookingRequestResource extends Resource
 {
-    protected static ?string $model          = BookingRequest::class;
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-calendar-days';
-    protected static ?int    $navigationSort = 30;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return '?? Penghuni & Sewa'; }
-    public static function getLabel(): ?string           { return 'Permintaan Booking'; }
-    public static function getPluralLabel(): ?string     { return 'Booking Online'; }
+    protected static ?string $model = BookingRequest::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+
+    protected static ?int $navigationSort = 30;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::BOOKINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Permintaan Booking';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Booking Online';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -49,18 +64,18 @@ class BookingRequestResource extends Resource
                     Select::make('room_type_id')->label('Tipe Kamar')->options(RoomType::pluck('name', 'id'))->nullable(),
                     Select::make('room_id')->label('Kamar Spesifik')->options(
                         Room::where('status', 'available')->with('property')
-                            ->get()->mapWithKeys(fn ($r) => [$r->id => $r->property->name . ' - ' . $r->room_number])
+                            ->get()->mapWithKeys(fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number])
                     )->nullable(),
                 ]),
                 Grid::make(2)->schema([
                     DatePicker::make('desired_move_in')->label('Rencana Masuk')->required(),
                     Select::make('billing_cycle')->label('Siklus Sewa')
                         ->options([
-                            'daily'     => 'Harian',
-                            'weekly'    => 'Mingguan',
-                            'monthly'   => 'Bulanan',
+                            'daily' => 'Harian',
+                            'weekly' => 'Mingguan',
+                            'monthly' => 'Bulanan',
                             'quarterly' => 'Triwulan',
-                            'yearly'    => 'Tahunan',
+                            'yearly' => 'Tahunan',
                         ])
                         ->default('monthly'),
                 ]),
@@ -87,7 +102,9 @@ class BookingRequestResource extends Resource
                 TextColumn::make('property.name')->label('Properti'),
                 TextColumn::make('desired_move_in')->label('Rencana Masuk')->date('d/m/Y'),
                 TextColumn::make('billing_cycle')->label('Siklus')
-                    ->formatStateUsing(fn ($s) => match ($s) { 'monthly' => 'Bulanan', 'quarterly' => 'Triwulan', default => 'Tahunan' }),
+                    ->formatStateUsing(fn ($s) => match ($s) {
+                        'monthly' => 'Bulanan', 'quarterly' => 'Triwulan', default => 'Tahunan'
+                    }),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn ($s) => match ($s) {
                         'pending' => 'warning', 'contacted' => 'info',
@@ -109,7 +126,7 @@ class BookingRequestResource extends Resource
                 Actions\EditAction::make(),
                 Actions\Action::make('contact')
                     ->label('Hubungi WA')->icon('heroicon-o-chat-bubble-left')->color('success')
-                    ->url(fn (BookingRequest $r) => 'https://wa.me/' . preg_replace('/\D/', '', $r->whatsapp ?? $r->phone))
+                    ->url(fn (BookingRequest $r) => 'https://wa.me/'.preg_replace('/\D/', '', $r->whatsapp ?? $r->phone))
                     ->openUrlInNewTab(),
             ])
             ->defaultSort('created_at', 'desc');
@@ -118,9 +135,9 @@ class BookingRequestResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBookingRequests::route('/'),
+            'index' => Pages\ListBookingRequests::route('/'),
             'create' => Pages\CreateBookingRequest::route('/create'),
-            'edit'   => Pages\EditBookingRequest::route('/{record}/edit'),
+            'edit' => Pages\EditBookingRequest::route('/{record}/edit'),
         ];
     }
 }

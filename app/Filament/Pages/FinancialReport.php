@@ -2,24 +2,38 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\AuthorizesPageAccess;
 use App\Models\Invoice;
-use App\Models\Lease;
-use App\Models\Room;
 use App\Models\Property;
+use App\Support\NavigationGroups;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class FinancialReport extends Page
 {
+    use AuthorizesPageAccess;
+
+    protected static ?string $permission = 'finance.report';
+
     protected string $view = 'filament.pages.financial-report';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
     protected static ?int $navigationSort = 10;
 
-    public static function getNavigationGroup(): ?string { return '?? Laporan'; }
-    public static function getNavigationLabel(): string  { return 'Laporan Keuangan'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::REPORTS;
+    }
 
-    public function getTitle(): string { return 'Laporan Keuangan'; }
+    public static function getNavigationLabel(): string
+    {
+        return 'Laporan Keuangan';
+    }
+
+    public function getTitle(): string
+    {
+        return 'Laporan Keuangan';
+    }
 
     public function getRevenueByMonth(): array
     {
@@ -35,6 +49,7 @@ class FinancialReport extends Page
                 'total' => $total,
             ];
         }
+
         return $data;
     }
 
@@ -44,18 +59,19 @@ class FinancialReport extends Page
             'rooms',
             'rooms as occupied_rooms_count' => fn ($q) => $q->where('status', 'occupied'),
         ])->get()->map(fn ($p) => [
-            'name'     => $p->name,
-            'total'    => $p->rooms_count,
+            'name' => $p->name,
+            'total' => $p->rooms_count,
             'occupied' => $p->occupied_rooms_count,
-            'rate'     => $p->rooms_count > 0 ? round(($p->occupied_rooms_count / $p->rooms_count) * 100, 1) : 0,
+            'rate' => $p->rooms_count > 0 ? round(($p->occupied_rooms_count / $p->rooms_count) * 100, 1) : 0,
         ])->toArray();
     }
 
     public function getOverdueSummary(): array
     {
         $overdue = Invoice::whereIn('status', ['sent', 'overdue'])->where('due_date', '<', now())->get();
+
         return [
-            'count'  => $overdue->count(),
+            'count' => $overdue->count(),
             'amount' => $overdue->sum('total'),
         ];
     }

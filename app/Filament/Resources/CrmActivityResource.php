@@ -2,30 +2,46 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\CrmActivityResource\Pages;
 use App\Models\BookingRequest;
 use App\Models\CrmActivity;
 use App\Models\User;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class CrmActivityResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = CrmActivity::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-ellipsis';
+
     protected static ?int $navigationSort = 55;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string { return 'Aktivitas CRM'; }
-    public static function getPluralLabel(): ?string { return 'Aktivitas CRM'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::BOOKINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Aktivitas CRM';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Aktivitas CRM';
+    }
 
     public static function form(Schema $schema): Schema
     {

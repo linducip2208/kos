@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
+use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = ['name', 'email', 'password', 'role', 'phone', 'is_active', 'tenant_id'];
 
@@ -21,8 +21,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'is_active'         => 'boolean',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -33,14 +33,29 @@ class User extends Authenticatable
         return in_array($this->role, $roles, true);
     }
 
-    public function isSuperAdmin(): bool { return $this->role === 'super_admin'; }
-    public function isOwner(): bool      { return $this->role === 'owner'; }
-    public function isStaff(): bool      { return in_array($this->role, ['owner', 'staff', 'property_manager'], true); } // legacy compat
-    public function isViewer(): bool     { return in_array($this->role, ['viewer', 'auditor'], true); }
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+
+    public function isStaff(): bool
+    {
+        return in_array($this->role, ['owner', 'property_manager'], true);
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->role === 'auditor';
+    }
 
     public function getRoleLabelAttribute(): string
     {
-        return \App\Support\Permissions::ROLES[$this->role] ?? $this->role;
+        return Permissions::ROLES[$this->role] ?? $this->role;
     }
 
     // ── Property scoping ─────────────────────────────────────────────────

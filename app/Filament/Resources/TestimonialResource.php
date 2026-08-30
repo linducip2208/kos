@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\TestimonialResource\Pages;
 use App\Models\Property;
 use App\Models\Testimonial;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -14,8 +17,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -24,13 +25,28 @@ use Filament\Tables\Table;
 
 class TestimonialResource extends Resource
 {
-    protected static ?string $model         = Testimonial::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-star';
-    protected static ?int    $navigationSort = 61;
+    use AuthorizesAccess;
 
-    public static function getNavigationGroup(): ?string { return 'Konten Landing'; }
-    public static function getLabel(): ?string           { return 'Testimoni'; }
-    public static function getPluralLabel(): ?string     { return 'Testimoni Penyewa'; }
+    protected static ?string $model = Testimonial::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-star';
+
+    protected static ?int $navigationSort = 61;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::SETTINGS;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Testimoni';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Testimoni Penyewa';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -65,7 +81,7 @@ class TestimonialResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('order')->label('#')->sortable()->width(50),
-                ImageColumn::make('avatar')->label('Foto')->circular()->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name) . '&background=3b82f6&color=fff'),
+                ImageColumn::make('avatar')->label('Foto')->circular()->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&background=3b82f6&color=fff'),
                 TextColumn::make('name')->label('Nama')->searchable()->weight('bold'),
                 TextColumn::make('occupation')->label('Pekerjaan')->color('gray'),
                 TextColumn::make('rating')->label('Rating')
@@ -87,9 +103,9 @@ class TestimonialResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTestimonials::route('/'),
+            'index' => Pages\ListTestimonials::route('/'),
             'create' => Pages\CreateTestimonial::route('/create'),
-            'edit'   => Pages\EditTestimonial::route('/{record}/edit'),
+            'edit' => Pages\EditTestimonial::route('/{record}/edit'),
         ];
     }
 }

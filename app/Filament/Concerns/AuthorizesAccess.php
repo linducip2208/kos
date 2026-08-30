@@ -22,7 +22,7 @@ trait AuthorizesAccess
 
     public static function canViewAny(): bool
     {
-        return static::$permission === null || Gate::allows(static::$permission);
+        return Gate::allows(static::viewPermission());
     }
 
     public static function canCreate(): bool
@@ -47,12 +47,36 @@ trait AuthorizesAccess
 
     public static function canAccess(): bool
     {
-        return static::$permission === null || Gate::allows(static::$permission);
+        return Gate::allows(static::viewPermission());
     }
 
-    public static function canView(): bool
+    public static function canView(Model $record): bool
     {
-        return static::$permission === null || Gate::allows(static::$permission);
+        return Gate::allows(static::viewPermission());
+    }
+
+    protected static function viewPermission(): string
+    {
+        if (static::$permission !== null) {
+            return static::$permission;
+        }
+
+        $map = [
+            'User' => 'user.manage', 'Property' => 'property.view', 'Facility' => 'property.view',
+            'Room' => 'room.view', 'RoomType' => 'room.view', 'RoomChecklist' => 'checkin.view',
+            'RoomInventoryItem' => 'inventory.view', 'Occupant' => 'tenant.view', 'Lease' => 'lease.view',
+            'EContract' => 'lease.view', 'CheckinRecord' => 'checkin.view', 'RoomTransfer' => 'checkin.view',
+            'Deposit' => 'deposit.view', 'DepositTransaction' => 'deposit.view', 'Invoice' => 'invoice.view',
+            'InvoicePayment' => 'payment.view', 'PaymentTransaction' => 'payment.view', 'Expense' => 'expense.view',
+            'UtilityRate' => 'utility.view', 'UtilityReading' => 'utility.view',
+            'MaintenanceRequest' => 'maintenance.view', 'Vendor' => 'vendor.manage', 'VisitorLog' => 'visitor.view',
+            'BookingRequest' => 'booking.view', 'CrmActivity' => 'booking.view', 'Announcement' => 'website.manage',
+            'MessageTemplate' => 'website.manage', 'BlogPost' => 'website.manage', 'BlogCategory' => 'website.manage',
+            'Faq' => 'website.manage', 'Testimonial' => 'website.manage', 'ContactSubmission' => 'website.manage',
+            'AuditLog' => 'audit.view', 'AutomationLog' => 'audit.view',
+        ];
+
+        return $map[class_basename(static::getModel())] ?? 'settings.manage';
     }
 
     protected static function managePermission(): string
@@ -61,11 +85,11 @@ trait AuthorizesAccess
             return static::$managePermission;
         }
 
-        $perm = static::$permission ?? '';
+        $perm = static::viewPermission();
 
         // 'foo.view' → 'foo.manage'; fallback kalau tidak berakhiran .view.
         return str_ends_with($perm, '.view')
-            ? substr($perm, 0, -5) . '.manage'
+            ? substr($perm, 0, -5).'.manage'
             : ($perm !== '' ? $perm : 'settings.manage');
     }
 }

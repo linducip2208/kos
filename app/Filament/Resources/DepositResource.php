@@ -2,31 +2,48 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\DepositResource\Pages;
 use App\Models\Deposit;
+use App\Models\Lease;
 use App\Models\Occupant;
 use App\Services\DepositService;
+use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class DepositResource extends Resource
 {
+    use AuthorizesAccess;
+
     protected static ?string $model = Deposit::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
+
     protected static ?int $navigationSort = 25;
 
-    public static function getNavigationGroup(): ?string { return '👤 Penghuni & Sewa'; }
-    public static function getLabel(): ?string { return 'Deposit'; }
-    public static function getPluralLabel(): ?string { return 'Deposit Jaminan'; }
+    public static function getNavigationGroup(): ?string
+    {
+        return NavigationGroups::FINANCE;
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'Deposit';
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return 'Deposit Jaminan';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -35,7 +52,7 @@ class DepositResource extends Resource
                 Grid::make(2)->schema([
                     Forms\Components\Select::make('tenant_id')->label('Penyewa')->options(Occupant::pluck('name', 'id'))->required()->searchable(),
                     Forms\Components\Select::make('lease_id')->label('Kontrak Sewa')
-                        ->options(fn () => \App\Models\Lease::with('occupant')->get()->mapWithKeys(
+                        ->options(fn () => Lease::with('occupant')->get()->mapWithKeys(
                             fn ($l) => [$l->id => ($l->occupant?->name ?? 'Tenant #'.$l->occupant_id).' — '.$l->lease_number]
                         ))->searchable()->nullable(),
                     Forms\Components\TextInput::make('amount')->label('Jumlah')->numeric()->prefix('Rp')->required(),
@@ -60,7 +77,9 @@ class DepositResource extends Resource
                 TextColumn::make('balance')->label('Saldo')->weight('bold')
                     ->color(fn (Deposit $r) => $r->balance <= 0 ? 'danger' : 'success')
                     ->formatStateUsing(fn (Deposit $r) => 'Rp '.number_format($r->balance, 0, ',', '.')),
-                TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) { 'security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci', default => 'Lainnya' }),
+                TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) {
+                    'security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci', default => 'Lainnya'
+                }),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn (Deposit $r) => $r->status_color)
                     ->formatStateUsing(fn ($s) => Deposit::STATUSES[$s] ?? $s),
@@ -88,7 +107,7 @@ class DepositResource extends Resource
 
                     Actions\Action::make('deduct')
                         ->label('Potong Deposit')->icon('heroicon-o-scissors')->color('danger')
-                        ->visible(fn (Deposit $r) => !$r->is_settled && $r->balance > 0)
+                        ->visible(fn (Deposit $r) => ! $r->is_settled && $r->balance > 0)
                         ->form([
                             Grid::make(2)->schema([
                                 Forms\Components\TextInput::make('amount')->label('Nominal Potong')->numeric()->prefix('Rp')->required(),
@@ -103,7 +122,7 @@ class DepositResource extends Resource
 
                     Actions\Action::make('refund')
                         ->label('Refund Sisa Deposit')->icon('heroicon-o-arrow-uturn-left')->color('info')
-                        ->visible(fn (Deposit $r) => !in_array($r->status, ['refunded', 'forfeited'], true))
+                        ->visible(fn (Deposit $r) => ! in_array($r->status, ['refunded', 'forfeited'], true))
                         ->form([
                             Grid::make(2)->schema([
                                 Forms\Components\TextInput::make('amount')->label('Nominal Refund')->numeric()->prefix('Rp')
@@ -119,7 +138,7 @@ class DepositResource extends Resource
 
                     Actions\Action::make('forfeit')
                         ->label('Hanguskan')->icon('heroicon-o-fire')->color('danger')
-                        ->visible(fn (Deposit $r) => !in_array($r->status, ['refunded', 'forfeited'], true))
+                        ->visible(fn (Deposit $r) => ! in_array($r->status, ['refunded', 'forfeited'], true))
                         ->requiresConfirmation()
                         ->form([
                             Forms\Components\Textarea::make('reason')->label('Alasan Hangus')->required()->rows(2),
