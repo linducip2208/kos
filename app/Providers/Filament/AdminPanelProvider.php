@@ -4,8 +4,11 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Widgets\BookingFunnelChart;
 use App\Filament\Widgets\DashboardActionCenterWidget;
+use App\Filament\Widgets\MaintenanceOverviewChart;
 use App\Filament\Widgets\PendingVerificationsWidget;
+use App\Filament\Widgets\ReceivableAgingChart;
 use App\Filament\Widgets\RecentPaymentsWidget;
 use App\Filament\Widgets\RevenueTrendChart;
 use App\Filament\Widgets\RoomStatusWidget;
@@ -61,6 +64,9 @@ class AdminPanelProvider extends PanelProvider
                 StatsOverviewWidget::class,
                 DashboardActionCenterWidget::class,
                 RevenueTrendChart::class,
+                ReceivableAgingChart::class,
+                BookingFunnelChart::class,
+                MaintenanceOverviewChart::class,
                 RoomStatusWidget::class,
                 RecentPaymentsWidget::class,
                 PendingVerificationsWidget::class,
