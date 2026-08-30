@@ -33,6 +33,20 @@ class Permissions
         'auditor'          => 'Auditor / Viewer',
     ];
 
+    /** Deskripsi role untuk UI manajemen pengguna. */
+    public const ROLE_DESCRIPTIONS = [
+        'super_admin'      => 'Akses teknis penuh tanpa batas termasuk sistem & plugin.',
+        'owner'            => 'Pemilik bisnis — semua data bisnis, semua properti.',
+        'property_manager' => 'Operasional harian properti yang ditugaskan.',
+        'finance'          => 'Tagihan, pembayaran, deposit, refund, dan laporan keuangan.',
+        'cashier'          => 'Terima pembayaran dan verifikasi bukti transfer.',
+        'customer_service' => 'Keluhan penyewa, intake perbaikan, dan tamu.',
+        'marketing'        => 'Booking, leads, follow-up, promo, dan konten website.',
+        'maintenance'      => 'Work order teknis — tanpa akses data keuangan.',
+        'security'         => 'Buku tamu dan verifikasi check-in/out.',
+        'auditor'          => 'Akses baca seluruh modul + audit log (read-only).',
+    ];
+
     public const PERMISSIONS = [
         // Dashboard
         'dashboard.view',
@@ -61,6 +75,7 @@ class Permissions
         'maintenance.view', 'maintenance.manage', 'maintenance.technician',
         'vendor.manage',
         'inventory.view', 'inventory.manage',
+        'visitor.view', 'visitor.manage',
 
         // Booking & CRM
         'booking.view', 'booking.manage',
