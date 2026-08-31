@@ -8,6 +8,7 @@ use App\Models\RoomType;
 use App\Services\RoomAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
@@ -32,6 +33,10 @@ class BookingController extends Controller
             'room_id' => 'nullable|exists:rooms,id',
             'message' => 'nullable|max:1000',
         ]);
+
+        if ($request->filled('room_type_id') && ! $property->roomTypes()->whereKey($request->integer('room_type_id'))->exists()) {
+            throw ValidationException::withMessages(['room_type_id' => 'Tipe kamar tidak berasal dari properti yang dipilih.']);
+        }
 
         if ($request->filled('room_id')) {
             $room = $property->rooms()->findOrFail($request->integer('room_id'));

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\EContract;
 use App\Models\Lease;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class EContractService
 {
@@ -17,50 +17,51 @@ class EContractService
             return $existing;
         }
 
-        $contractNumber = 'EKTR-' . $lease->lease_number;
-        $html           = $this->buildContractHtml($lease);
+        $contractNumber = 'EKTR-'.$lease->lease_number;
+        $html = $this->buildContractHtml($lease);
 
         return EContract::updateOrCreate(
             ['lease_id' => $lease->id],
             [
                 'contract_number' => $contractNumber,
-                'content_html'    => $html,
-                'status'          => 'draft',
+                'content_html' => $html,
+                'status' => 'draft',
             ]
         );
     }
 
     public function signByOwner(EContract $contract, string $signatureBase64): void
     {
-        $path = $this->saveSignature($signatureBase64, 'owner_' . $contract->id);
+        $path = $this->saveSignature($signatureBase64, 'owner_'.$contract->id);
         $contract->update([
             'owner_signature' => $path,
             'owner_signed_at' => now(),
-            'status'          => $contract->occupant_signature ? 'fully_signed' : 'owner_signed',
+            'status' => $contract->occupant_signature ? 'fully_signed' : 'owner_signed',
         ]);
     }
 
     public function signByOccupant(EContract $contract, string $signatureBase64): void
     {
-        $path = $this->saveSignature($signatureBase64, 'occupant_' . $contract->id);
+        $path = $this->saveSignature($signatureBase64, 'occupant_'.$contract->id);
         $contract->update([
             'occupant_signature' => $path,
             'occupant_signed_at' => now(),
-            'status'             => $contract->owner_signature ? 'fully_signed' : 'draft',
+            'status' => $contract->owner_signature ? 'fully_signed' : 'draft',
         ]);
     }
 
     public function sendSignLink(EContract $contract): string
     {
         $token = $contract->generateSignToken();
+
         return url("/portal/contract/sign/{$token}");
     }
 
     private function buildContractHtml(Lease $lease): string
     {
-        $appName  = setting('app_name', 'Kos Manager');
+        $appName = setting('app_name', 'Kos Manager');
         $occupant = $lease->occupant;
-        $room     = $lease->room;
+        $room = $lease->room;
         $property = $room->property;
 
         return <<<HTML
@@ -141,9 +142,10 @@ class EContractService
 
     private function saveSignature(string $base64, string $name): string
     {
-        $data    = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
-        $path    = "signatures/{$name}.png";
-        \Illuminate\Support\Facades\Storage::disk('public')->put($path, $data);
+        $data = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
+        $path = "signatures/{$name}.png";
+        Storage::disk('local')->put($path, $data);
+
         return $path;
     }
 

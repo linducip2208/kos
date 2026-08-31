@@ -13,34 +13,38 @@ class MaintenanceController extends Controller
     {
         $occupant = Auth::guard('portal')->user();
         $requests = $occupant->maintenanceRequests()->with('room')->latest()->paginate(10);
+
         return view('portal.maintenance.index', compact('requests'));
     }
 
     public function create()
     {
         $occupant = Auth::guard('portal')->user();
-        $lease    = $occupant->leases()->where('status', 'active')->with('room')->first();
+        $lease = $occupant->leases()->where('status', 'active')->with('room')->first();
+
         return view('portal.maintenance.create', compact('occupant', 'lease'));
     }
 
     public function store(Request $request)
     {
         $occupant = Auth::guard('portal')->user();
-        $lease    = $occupant->leases()->where('status', 'active')->first();
+        $lease = $occupant->leases()->where('status', 'active')->first();
 
         $request->validate([
-            'title'       => 'required|max:255',
+            'title' => 'required|max:255',
             'description' => 'required',
-            'priority'    => 'required|in:low,medium,high,urgent',
+            'priority' => 'required|in:low,medium,high,urgent',
         ]);
 
+        abort_unless($lease, 422, 'Penyewa belum memiliki kontrak aktif.');
+
         MaintenanceRequest::create([
-            'room_id'     => $lease?->room_id,
+            'room_id' => $lease->room_id,
             'occupant_id' => $occupant->id,
-            'title'       => $request->title,
+            'title' => $request->title,
             'description' => $request->description,
-            'priority'    => $request->priority,
-            'status'      => 'open',
+            'priority' => $request->priority,
+            'status' => 'open',
         ]);
 
         return redirect()->route('portal.maintenance.index')

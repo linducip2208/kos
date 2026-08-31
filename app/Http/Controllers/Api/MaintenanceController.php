@@ -41,9 +41,10 @@ class MaintenanceController extends Controller
 
         $occupant = $request->user();
         $lease = $occupant->leases()->where('status', 'active')->first();
+        abort_unless($lease, 422, 'Penyewa belum memiliki kontrak aktif.');
 
         $record = MaintenanceRequest::create([
-            'room_id' => $lease?->room_id,
+            'room_id' => $lease->room_id,
             'occupant_id' => $occupant->id,
             'title' => $request->title,
             'description' => $request->description,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Concerns;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
@@ -53,6 +54,43 @@ trait AuthorizesAccess
     public static function canView(Model $record): bool
     {
         return Gate::allows(static::viewPermission());
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+        $propertyIds = $user?->scopedPropertyIds();
+
+        if (! $user || $propertyIds === null) {
+            return $query;
+        }
+
+        $model = class_basename(static::getModel());
+        $direct = ['Room', 'RoomType', 'Facility', 'Expense', 'BookingRequest', 'Announcement', 'VisitorLog'];
+        if (in_array($model, $direct, true)) {
+            return $query->whereIn('property_id', $propertyIds ?: [0]);
+        }
+
+        $relations = [
+            'Lease' => 'room',
+            'Invoice' => 'lease.room',
+            'InvoicePayment' => 'invoice.lease.room',
+            'PaymentTransaction' => 'invoice.lease.room',
+            'Deposit' => 'lease.room',
+            'UtilityReading' => 'room',
+            'MaintenanceRequest' => 'room',
+            'RoomTransfer' => 'fromRoom',
+            'CheckinRecord' => 'room',
+            'EContract' => 'lease.room',
+            'Occupant' => 'leases.room',
+        ];
+
+        if (isset($relations[$model])) {
+            return $query->whereHas($relations[$model], fn (Builder $relation) => $relation->whereIn('property_id', $propertyIds ?: [0]));
+        }
+
+        return $query;
     }
 
     protected static function viewPermission(): string
