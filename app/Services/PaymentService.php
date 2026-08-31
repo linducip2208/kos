@@ -120,6 +120,10 @@ class PaymentService
 
     public function markPaidWithRecord(Invoice $invoice, string $method = 'cash', ?string $reference = null): InvoicePayment
     {
-        return $this->recordPayment($invoice, ['amount' => $invoice->balance_due > 0 ? $invoice->balance_due : $invoice->payable_amount, 'method' => $method, 'paid_at' => now(), 'reference' => $reference, 'status' => 'verified']);
+        if ($invoice->balance_due <= 0.009) {
+            throw ValidationException::withMessages(['invoice' => 'Invoice sudah lunas.']);
+        }
+
+        return $this->recordPayment($invoice, ['amount' => $invoice->balance_due, 'method' => $method, 'paid_at' => now(), 'reference' => $reference, 'status' => 'verified']);
     }
 }

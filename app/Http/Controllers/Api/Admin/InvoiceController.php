@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Lease;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -35,14 +36,15 @@ class InvoiceController extends Controller
             'due_date' => 'required|date',
             'base_amount' => 'required|numeric|min:0',
             'additional_charges' => 'nullable|array',
+            'additional_charges.*.label' => 'required|string|max:120',
+            'additional_charges.*.amount' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
         $this->assertLeaseScope($request, (int) $data['lease_id']);
 
         $data['invoice_number'] = $this->generateNumber();
-        $data['total'] = ($data['base_amount'] - ($data['discount'] ?? 0))
-            + collect($data['additional_charges'] ?? [])->sum('amount');
+        $data['total'] = $this->calculateTotal($data);
         $data['status'] = 'draft';
 
         $invoice = Invoice::create($data);
@@ -66,11 +68,13 @@ class InvoiceController extends Controller
             'due_date' => 'sometimes|date',
             'base_amount' => 'sometimes|numeric|min:0',
             'additional_charges' => 'nullable|array',
+            'additional_charges.*.label' => 'required|string|max:120',
+            'additional_charges.*.amount' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
-            'status' => 'in:draft,sent,paid,overdue,cancelled',
             'notes' => 'nullable|string',
         ]);
 
+        $data['total'] = $this->calculateTotal(array_merge($invoice->only(['base_amount', 'discount', 'additional_charges']), $data));
         $invoice->update($data);
 
         return response()->json($invoice);
@@ -79,20 +83,14 @@ class InvoiceController extends Controller
     public function markPaid(Request $request, Invoice $invoice)
     {
         $this->authorizeInvoice($request, $invoice, 'payment.record');
-        $request->validate([
+        $data = $request->validate([
             'payment_method' => 'nullable|string|max:50',
             'payment_ref' => 'nullable|string|max:100',
             'paid_at' => 'nullable|date',
         ]);
+        $payment = app(PaymentService::class)->markPaidWithRecord($invoice, $data['payment_method'] ?? 'cash', $data['payment_ref'] ?? null);
 
-        $invoice->update([
-            'status' => 'paid',
-            'paid_at' => $request->paid_at ?? now(),
-            'payment_method' => $request->payment_method,
-            'payment_ref' => $request->payment_ref,
-        ]);
-
-        return response()->json(['message' => 'Tagihan ditandai lunas.', 'invoice' => $invoice]);
+        return response()->json(['message' => 'Pembayaran dicatat dan diverifikasi.', 'payment' => $payment, 'invoice' => $invoice->fresh()]);
     }
 
     public function destroy(Invoice $invoice)
@@ -133,5 +131,15 @@ class InvoiceController extends Controller
         }
 
         abort_unless(Lease::whereKey($leaseId)->whereHas('room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0]))->exists(), 403);
+    }
+
+    private function calculateTotal(array $data): float
+    {
+        $base = (float) ($data['base_amount'] ?? 0);
+        $discount = (float) ($data['discount'] ?? 0);
+        $extras = collect($data['additional_charges'] ?? [])->sum(fn ($charge) => (float) ($charge['amount'] ?? 0));
+        abort_unless($discount <= $base + $extras + 0.009, 422, 'Diskon melebihi nilai invoice.');
+
+        return round(max(0, $base + $extras - $discount), 2);
     }
 }

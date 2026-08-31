@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\Room;
 use App\Models\RoomInventoryItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Proses check-in & check-out profesional.
@@ -33,12 +34,12 @@ class CheckInOutService
             ->get()
             ->map(fn (RoomInventoryItem $item) => [
                 'inventory_item_id' => $item->id,
-                'name'              => $item->name,
-                'quantity'          => $item->quantity,
-                'expected_condition'=> $item->condition,
+                'name' => $item->name,
+                'quantity' => $item->quantity,
+                'expected_condition' => $item->condition,
                 'replacement_value' => (float) $item->replacement_value,
-                'condition'         => null,   // diisi saat checklist
-                'notes'             => null,
+                'condition' => null,   // diisi saat checklist
+                'notes' => null,
             ])
             ->all();
     }
@@ -51,33 +52,37 @@ class CheckInOutService
      */
     public function checkIn(Lease $lease, array $data = []): CheckinRecord
     {
-        if (!$lease->isOperational()) {
+        if (! $lease->isOperational()) {
             abort(422, 'Kontrak belum aktif — aktifkan kontrak sebelum check-in.');
         }
 
-        if ($lease->checkinRecords()->where('type', 'check_in')->exists()) {
-            abort(422, 'Tenant sudah pernah check-in pada kontrak ini.');
-        }
+        $this->validateMeter($data['meter_electric'] ?? null, null, 'meter_electric');
+        $this->validateMeter($data['meter_water'] ?? null, null, 'meter_water');
 
         $room = $lease->room;
 
         return DB::transaction(function () use ($lease, $room, $data) {
+            $lockedLease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            if ($lockedLease->checkinRecords()->where('type', 'check_in')->exists()) {
+                throw ValidationException::withMessages(['lease' => 'Tenant sudah pernah check-in pada kontrak ini.']);
+            }
+
             $record = CheckinRecord::create([
-                'lease_id'       => $lease->id,
-                'room_id'        => $room->id,
-                'occupant_id'    => $lease->occupant_id,
-                'type'           => 'check_in',
+                'lease_id' => $lockedLease->id,
+                'room_id' => $room->id,
+                'occupant_id' => $lockedLease->occupant_id,
+                'type' => 'check_in',
                 'meter_electric_prev' => null,
                 'meter_electric_current' => $data['meter_electric'] ?? null,
                 'meter_water_prev' => null,
                 'meter_water_current' => $data['meter_water'] ?? null,
-                'checklist'      => $data['checklist'] ?? $this->buildChecklist($room),
-                'photos'         => $data['photos'] ?? [],
-                'key_handover'   => $data['key_handover'] ?? true,
-                'acknowledged_by'=> $data['acknowledged_by'] ?? $lease->occupant?->name,
-                'acknowledged_at'=> now(),
-                'performed_by'   => auth()->id(),
-                'completed_at'   => now(),
+                'checklist' => $data['checklist'] ?? $this->buildChecklist($room),
+                'photos' => $data['photos'] ?? [],
+                'key_handover' => $data['key_handover'] ?? true,
+                'acknowledged_by' => $data['acknowledged_by'] ?? $lockedLease->occupant?->name,
+                'acknowledged_at' => now(),
+                'performed_by' => auth()->id(),
+                'completed_at' => now(),
             ]);
 
             app(RoomStatusService::class)->transition($room, 'occupied');
@@ -97,18 +102,30 @@ class CheckInOutService
     public function checkOut(Lease $lease, array $data = []): CheckinRecord
     {
         $checkin = $lease->checkinRecords()->where('type', 'check_in')->first();
+        if (! $checkin) {
+            throw ValidationException::withMessages(['lease' => 'Checkout membutuhkan check-in terlebih dahulu.']);
+        }
+        if ($lease->checkinRecords()->where('type', 'check_out')->exists()) {
+            throw ValidationException::withMessages(['lease' => 'Kontrak ini sudah pernah checkout.']);
+        }
 
         $room = $lease->room;
 
         $missingItems = collect($data['missing_items'] ?? [])
             ->map(fn ($m) => [
-                'name'              => $m['name'] ?? '-',
+                'name' => $m['name'] ?? '-',
                 'replacement_value' => (float) ($m['replacement_value'] ?? 0),
             ])->values()->all();
 
         $missingTotal = collect($missingItems)->sum('replacement_value');
         $damageAmount = round((float) ($data['damage_amount'] ?? 0), 2);
         $cleaningAmount = round((float) ($data['cleaning_amount'] ?? 0), 2);
+        if ($damageAmount < 0 || $cleaningAmount < 0) {
+            throw ValidationException::withMessages(['amount' => 'Biaya kerusakan dan cleaning tidak boleh negatif.']);
+        }
+
+        $this->validateMeter($data['meter_electric'] ?? null, $this->lastMeter($lease, 'electric'), 'meter_electric');
+        $this->validateMeter($data['meter_water'] ?? null, $this->lastMeter($lease, 'water'), 'meter_water');
 
         // Utilitas belum ditagihkan
         $unpaidUtility = (float) ($lease
@@ -116,26 +133,30 @@ class CheckInOutService
             : 0);
 
         $record = DB::transaction(function () use ($lease, $room, $data, $missingItems, $missingTotal, $damageAmount, $cleaningAmount, $unpaidUtility) {
+            $lockedLease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            if ($lockedLease->checkinRecords()->where('type', 'check_out')->exists()) {
+                throw ValidationException::withMessages(['lease' => 'Kontrak ini sudah pernah checkout.']);
+            }
             $rec = CheckinRecord::create([
-                'lease_id'       => $lease->id,
-                'room_id'        => $room->id,
-                'occupant_id'    => $lease->occupant_id,
-                'type'           => 'check_out',
+                'lease_id' => $lease->id,
+                'room_id' => $room->id,
+                'occupant_id' => $lease->occupant_id,
+                'type' => 'check_out',
                 'meter_electric_prev' => $this->lastMeter($lease, 'electric'),
                 'meter_electric_current' => $data['meter_electric'] ?? null,
                 'meter_water_prev' => $this->lastMeter($lease, 'water'),
                 'meter_water_current' => $data['meter_water'] ?? null,
-                'checklist'      => $data['checklist'] ?? $this->buildChecklist($room),
-                'photos'         => $data['photos'] ?? [],
-                'missing_items'  => $missingItems,
-                'key_handover'   => $data['key_returned'] ?? true,
-                'damage_amount'  => $damageAmount + $missingTotal,
-                'cleaning_amount'=> $cleaningAmount,
+                'checklist' => $data['checklist'] ?? $this->buildChecklist($room),
+                'photos' => $data['photos'] ?? [],
+                'missing_items' => $missingItems,
+                'key_handover' => $data['key_returned'] ?? true,
+                'damage_amount' => $damageAmount + $missingTotal,
+                'cleaning_amount' => $cleaningAmount,
                 'unpaid_utility' => $unpaidUtility,
-                'acknowledged_by'=> $data['acknowledged_by'] ?? $lease->occupant?->name,
-                'acknowledged_at'=> now(),
-                'performed_by'   => auth()->id(),
-                'completed_at'   => now(),
+                'acknowledged_by' => $data['acknowledged_by'] ?? $lease->occupant?->name,
+                'acknowledged_at' => now(),
+                'performed_by' => auth()->id(),
+                'completed_at' => now(),
             ]);
 
             app(LeaseWorkflowService::class)->end($lease, 'Check-out normal');
@@ -149,8 +170,8 @@ class CheckInOutService
             if ($deposit) {
                 $settlement = $this->deposits->buildCheckoutSettlement($deposit);
                 $record->forceFill([
-                    'settlement'      => $settlement,
-                    'tenant_payable'  => $settlement['tenant_payable'],
+                    'settlement' => $settlement,
+                    'tenant_payable' => $settlement['tenant_payable'],
                     'deposit_deduction' => $settlement['deduction'],
                 ])->saveQuietly();
                 $this->deposits->executeCheckoutSettlement($deposit, $settlement);
@@ -179,5 +200,18 @@ class CheckInOutService
             ->whereNotNull($col)
             ->orderByDesc('id')
             ->value($col);
+    }
+
+    protected function validateMeter(mixed $current, mixed $previous, string $field): void
+    {
+        if ($current === null || $current === '') {
+            return;
+        }
+        if (! is_numeric($current) || (float) $current < 0) {
+            throw ValidationException::withMessages([$field => 'Bacaan meter harus berupa angka nol atau lebih.']);
+        }
+        if ($previous !== null && (float) $current < (float) $previous) {
+            throw ValidationException::withMessages([$field => 'Bacaan meter tidak boleh lebih kecil dari bacaan sebelumnya.']);
+        }
     }
 }

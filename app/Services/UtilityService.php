@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\Lease;
 use App\Models\UtilityReading;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class UtilityService
 {
@@ -13,9 +15,9 @@ class UtilityService
     {
         return match ($type) {
             'electricity' => (float) setting('electricity_rate', 1352, 'utility'),
-            'water'       => (float) setting('water_rate', 6000, 'utility'),
-            'gas'         => (float) setting('gas_rate', 7000, 'utility'),
-            default       => 0,
+            'water' => (float) setting('water_rate', 6000, 'utility'),
+            'gas' => (float) setting('gas_rate', 7000, 'utility'),
+            default => 0,
         };
     }
 
@@ -26,39 +28,56 @@ class UtilityService
         string $billingPeriod,
         ?float $rateOverride = null
     ): UtilityReading {
-        $previous = UtilityReading::where('room_id', $roomId)
-            ->where('type', $type)
-            ->where('billing_period', '<', $billingPeriod)
-            ->orderByDesc('billing_period')
-            ->value('current_reading') ?? 0;
+        if (! in_array($type, ['electricity', 'water', 'gas'], true)) {
+            throw ValidationException::withMessages(['type' => 'Jenis utilitas tidak valid.']);
+        }
+        if ($currentReading < 0) {
+            throw ValidationException::withMessages(['current_reading' => 'Bacaan meter tidak boleh negatif.']);
+        }
 
-        $rate   = $rateOverride ?? $this->getDefaultRate($type);
-        $usage  = $currentReading - $previous;
-        $amount = max(0, $usage) * $rate;
+        return DB::transaction(function () use ($roomId, $type, $currentReading, $billingPeriod, $rateOverride) {
+            $previous = UtilityReading::where('room_id', $roomId)
+                ->where('type', $type)
+                ->where('billing_period', '<', $billingPeriod)
+                ->orderByDesc('billing_period')
+                ->lockForUpdate()
+                ->value('current_reading') ?? 0;
 
-        $lease = Lease::where('room_id', $roomId)->where('status', 'active')->first();
+            if ($currentReading < (float) $previous) {
+                throw ValidationException::withMessages(['current_reading' => 'Bacaan sekarang tidak boleh lebih kecil dari bacaan sebelumnya.']);
+            }
 
-        return UtilityReading::updateOrCreate(
-            ['room_id' => $roomId, 'type' => $type, 'billing_period' => $billingPeriod],
-            [
-                'lease_id'         => $lease?->id,
-                'previous_reading' => $previous,
-                'current_reading'  => $currentReading,
-                'rate_per_unit'    => $rate,
-                'amount'           => $amount,
-                'reading_date'     => now()->toDateString(),
-            ]
-        );
+            $rate = $rateOverride ?? $this->getDefaultRate($type);
+            $lease = Lease::where('room_id', $roomId)->whereIn('status', ['active', 'expiring_soon'])->first();
+
+            return UtilityReading::updateOrCreate(
+                ['room_id' => $roomId, 'type' => $type, 'billing_period' => $billingPeriod],
+                [
+                    'lease_id' => $lease?->id,
+                    'previous_reading' => $previous,
+                    'current_reading' => $currentReading,
+                    'rate_per_unit' => $rate,
+                    'amount' => round(($currentReading - $previous) * $rate, 2),
+                    'reading_date' => now()->toDateString(),
+                ]
+            );
+        });
     }
 
     public function addToInvoice(UtilityReading $reading, Invoice $invoice): void
     {
-        $charges   = $invoice->additional_charges ?? [];
-        $label     = match ($reading->type) {
+        if ($reading->added_to_invoice || $reading->invoice_id) {
+            throw ValidationException::withMessages(['reading' => 'Pembacaan ini sudah masuk invoice.']);
+        }
+        if (! in_array($invoice->status, ['draft', 'sent'], true)) {
+            throw ValidationException::withMessages(['invoice' => 'Invoice tidak dapat diubah pada status ini.']);
+        }
+        $charges = $invoice->additional_charges ?? [];
+        $label = match ($reading->type) {
             'electricity' => 'Listrik',
-            'water'       => 'Air',
-            'gas'         => 'Gas',
-            default       => ucfirst($reading->type),
+            'water' => 'Air',
+            'gas' => 'Gas',
+            default => ucfirst($reading->type),
         };
 
         $charges[] = ['label' => "{$label} ({$reading->usage} unit)", 'amount' => $reading->amount];
@@ -69,13 +88,13 @@ class UtilityService
 
         $invoice->update([
             'additional_charges' => $charges,
-            'total'              => $newTotal,
+            'total' => $newTotal,
         ]);
 
         $reading->update(['added_to_invoice' => true, 'invoice_id' => $invoice->id]);
     }
 
-    public function getPendingReadings(int $roomId): \Illuminate\Database\Eloquent\Collection
+    public function getPendingReadings(int $roomId): Collection
     {
         return UtilityReading::where('room_id', $roomId)
             ->where('added_to_invoice', false)
