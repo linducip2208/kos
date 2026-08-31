@@ -33,4 +33,15 @@ class AdminAuthorizationTest extends TestCase
             ->assertOk()
             ->assertJsonPath('total_rooms', 0);
     }
+
+    public function test_maintenance_cannot_read_admin_properties_or_occupants(): void
+    {
+        Sanctum::actingAs(User::factory()->create([
+            'role' => 'maintenance',
+            'is_active' => true,
+        ]));
+
+        $this->getJson('/api/v1/admin/properties')->assertForbidden();
+        $this->getJson('/api/v1/admin/occupants')->assertForbidden();
+    }
 }

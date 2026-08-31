@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Property extends Model
@@ -49,15 +50,20 @@ class Property extends Model
 
     protected $casts = [
         'facilities' => 'array',
-        'photos'     => 'array',
-        'is_active'  => 'boolean',
-        'latitude'   => 'float',
-        'longitude'  => 'float',
+        'photos' => 'array',
+        'is_active' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class);
+    }
+
+    public function leases(): HasManyThrough
+    {
+        return $this->hasManyThrough(Lease::class, Room::class);
     }
 
     /** Property manager yang ditugaskan ke properti ini. */
@@ -84,8 +90,11 @@ class Property extends Model
     public function getOccupancyRateAttribute(): float
     {
         $total = $this->rooms()->where('is_active', true)->count();
-        if ($total === 0) return 0;
+        if ($total === 0) {
+            return 0;
+        }
         $occupied = $this->rooms()->where('status', 'occupied')->count();
+
         return round(($occupied / $total) * 100, 1);
     }
 
