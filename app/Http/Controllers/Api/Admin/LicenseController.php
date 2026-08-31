@@ -6,6 +6,7 @@ use App\Core\License\LicenseService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class LicenseController extends Controller
 {
@@ -13,11 +14,14 @@ class LicenseController extends Controller
 
     public function info()
     {
+        Gate::authorize('settings.manage');
+
         return response()->json($this->license->info());
     }
 
     public function activate(Request $request)
     {
+        Gate::authorize('settings.manage');
         $request->validate(['activation_key' => 'required|string']);
         $result = $this->license->activate($request->activation_key);
 
@@ -26,15 +30,19 @@ class LicenseController extends Controller
 
     public function validate()
     {
+        Gate::authorize('settings.manage');
         Cache::forget('license_valid');
         $result = $this->license->validate();
+
         return response()->json($result, ($result['valid'] ?? false) ? 200 : 402);
     }
 
     public function revoke(Request $request)
     {
+        Gate::authorize('settings.manage');
         $request->validate(['activation_key' => 'required|string']);
         $result = $this->license->revoke($request->activation_key);
+
         return response()->json($result);
     }
 }

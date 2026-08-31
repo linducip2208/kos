@@ -44,4 +44,18 @@ class AdminAuthorizationTest extends TestCase
         $this->getJson('/api/v1/admin/properties')->assertForbidden();
         $this->getJson('/api/v1/admin/occupants')->assertForbidden();
     }
+
+    public function test_operational_roles_cannot_access_system_settings_plugins_themes_or_exports(): void
+    {
+        Sanctum::actingAs(User::factory()->create([
+            'role' => 'maintenance',
+            'is_active' => true,
+        ]));
+
+        $this->getJson('/api/v1/admin/settings')->assertForbidden();
+        $this->getJson('/api/v1/admin/plugins')->assertForbidden();
+        $this->getJson('/api/v1/admin/themes')->assertForbidden();
+        $this->getJson('/api/v1/admin/license')->assertForbidden();
+        $this->getJson('/api/v1/admin/export?type=invoices&format=csv')->assertForbidden();
+    }
 }

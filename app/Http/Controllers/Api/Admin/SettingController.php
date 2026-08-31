@@ -6,21 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class SettingController extends Controller
 {
     public function index(Request $request)
     {
-        $group    = $request->group ?? 'general';
+        Gate::authorize('settings.manage');
+        $group = $request->group ?? 'general';
         $settings = Setting::where('group', $group)->get(['key', 'value', 'type', 'group']);
+
         return response()->json($settings);
     }
 
     public function update(Request $request)
     {
+        Gate::authorize('settings.manage');
         $request->validate([
-            'settings'         => 'required|array',
-            'settings.*.key'   => 'required|string',
+            'settings' => 'required|array',
+            'settings.*.key' => 'required|string',
             'settings.*.value' => 'nullable',
             'settings.*.group' => 'nullable|string',
         ]);
@@ -31,11 +35,14 @@ class SettingController extends Controller
         }
 
         Cache::flush();
+
         return response()->json(['message' => 'Pengaturan disimpan.']);
     }
 
     public function byGroup(string $group)
     {
+        Gate::authorize('settings.manage');
+
         return response()->json(Setting::where('group', $group)->get(['key', 'value', 'type']));
     }
 }
