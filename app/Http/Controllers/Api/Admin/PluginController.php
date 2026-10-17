@@ -22,7 +22,7 @@ class PluginController extends Controller
     {
         Gate::authorize('plugin.manage');
         $request->validate([
-            'slug' => 'required|string',
+            'slug' => 'required|string|max:100|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             'activation_key' => 'nullable|string',
         ]);
 
@@ -34,6 +34,7 @@ class PluginController extends Controller
     public function activate(string $slug)
     {
         Gate::authorize('plugin.manage');
+        abort_unless(\App\Core\Plugin\SlugGuard::plugin($slug), 422, 'Slug plugin tidak valid.');
         $result = $this->manager->activate($slug);
 
         return response()->json($result, $result['success'] ? 200 : 422);
@@ -42,6 +43,7 @@ class PluginController extends Controller
     public function deactivate(string $slug)
     {
         Gate::authorize('plugin.manage');
+        abort_unless(\App\Core\Plugin\SlugGuard::plugin($slug), 422, 'Slug plugin tidak valid.');
         $result = $this->manager->deactivate($slug);
 
         return response()->json($result, $result['success'] ? 200 : 422);
@@ -50,6 +52,7 @@ class PluginController extends Controller
     public function destroy(string $slug)
     {
         Gate::authorize('plugin.manage');
+        abort_unless(\App\Core\Plugin\SlugGuard::plugin($slug), 422, 'Slug plugin tidak valid.');
         $result = $this->manager->uninstall($slug);
 
         return response()->json($result, $result['success'] ? 200 : 422);

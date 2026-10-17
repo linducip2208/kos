@@ -22,7 +22,7 @@
                 <li>✗ Payment Gateway</li>
                 <li>✗ Portal Penghuni</li>
             </ul>
-            <a href="/admin/register" class="block mt-8 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition-colors">Coba Gratis</a>
+            <a href="/admin" class="block mt-8 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition-colors">Lihat Demo</a>
         </div>
 
         <div class="bg-gradient-to-br from-primary-600 to-indigo-700 rounded-2xl p-8 shadow-xl border-2 border-primary-500 text-center text-white transform scale-105">

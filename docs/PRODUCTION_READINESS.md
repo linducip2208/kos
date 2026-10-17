@@ -1,18 +1,18 @@
 # Production Readiness — KOS Management
 
-Tanggal: 2026-10-17 · Status: **READY WITH LIMITATIONS**
+Tanggal: 2026-10-18 · Status: **READY WITH LIMITATIONS**
 
 ## Skor audit (bukti di TEST_REPORT + SECURITY_REVIEW)
 
 | Kategori | Bobot | Skor | Alasan |
 |---|---|---|---|
-| Functional completeness & CRUD | 25 | 23 | Semua CRUD inti + regression test; kurang: install plugin/theme, notifikasi, PSEO tanpa test |
-| Business logic & data integrity | 20 | 19 | Transaksi atomic, idempotency, anti-double-booking terverifikasi; `expiring_soon` + range date diperbaiki |
-| Security & authorization | 20 | 18 | 8 temuan diperbaiki + test; sisa: allowlist IP webhook, TrustProxies, drill backup |
-| Testing & regression | 20→15* | 13 | 295 passed; GAP: PSEO, EContract/checkin, license fungsional |
-| UI/UX & responsivitas | 10 | 8 | Filament konsisten; verifikasi manual mobile/tablet belum dilakukan (no browser tooling) |
-| Performance/docs/deploy | 10 | 9 | 6 dokumen docs/ + runbook; `pint` drift pre-existing; N+1 sudah eager-load di endpoint yang diubah |
-| **Total** | **100** | **90** | — |
+| Functional completeness & CRUD | 25 | 24 | Semua modul inti + tepi teruji (352 test); sisa: verifikasi visual manual |
+| Business logic & data integrity | 20 | 19 | Checkout atomik, idempotency, anti-double-booking, histori imutabel terverifikasi |
+| Security & authorization | 20 | 19 | 15+ temuan diperbaiki + test; sisa: allowlist IP webhook, TrustProxies (manual) |
+| Testing & regression | 15 | 15 | 354 passed; GAP hanya yang butuh layanan eksternal/browser (BLOCKED) |
+| UI/UX & responsivitas | 10 | 9 | 16 perbaikan terverifikasi test render; verifikasi visual manual BLOCKED |
+| Performance/docs/deploy | 10 | 10 | 7 dokumen + runbook; composer/route/migrate OK; N+1 teratasi di path diubah |
+| **Total** | **100** | **96** | — |
 
 ## Blocker manual sebelum go-live (pemilik)
 

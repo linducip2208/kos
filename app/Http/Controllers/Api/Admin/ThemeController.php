@@ -38,7 +38,7 @@ class ThemeController extends Controller
         Gate::authorize('theme.manage');
         $request->validate([
             'area' => 'required|in:admin,user,frontend',
-            'slug' => 'required|string',
+            'slug' => 'required|string|max:100|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
         ]);
 
         $result = $this->manager->activate($request->area, $request->slug);

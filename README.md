@@ -141,6 +141,12 @@ Akses di: `http://localhost:8000`
 
 ## Akun Login
 
+> ⚠️ **HANYA UNTUK DEVELOPMENT LOKAL.** Akun di bawah berasal dari seeder demo
+> dengan password lemah. **JANGAN** menjalankan `db:seed` di production,
+> **JANGAN** memakai kredensial ini di server publik, dan **WAJIB** mengganti
+> semua password + menonaktifkan akun demo sebelum go-live.
+> Di production buat akun via panel admin atau `php artisan` command resmi.
+
 ### Admin Panel — `http://localhost:8000/admin`
 
 | Field | Value |

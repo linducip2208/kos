@@ -32,12 +32,25 @@ class OccupancyReport extends Page
 
     public function getViewData(): array
     {
-        $totalRooms = Room::where('is_active', true)->count();
-        $occupied = Room::where('status', 'occupied')->count();
-        $available = Room::where('status', 'available')->count();
-        $maintenance = Room::where('status', 'maintenance')->count();
+        $propertyIds = auth()->user()?->scopedPropertyIds();
+        $scope = fn ($q) => $propertyIds === null ? $q : $q->whereHas('room',
+            fn ($r) => $r->whereIn('property_id', $propertyIds ?: [0]));
+
+        $totalRooms = Room::where('is_active', true)
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('property_id', $propertyIds ?: [0]))
+            ->count();
+        $occupied = Room::where('status', 'occupied')
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('property_id', $propertyIds ?: [0]))
+            ->count();
+        $available = Room::where('status', 'available')
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('property_id', $propertyIds ?: [0]))
+            ->count();
+        $maintenance = Room::where('status', 'maintenance')
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('property_id', $propertyIds ?: [0]))
+            ->count();
 
         $properties = Property::withCount(['rooms', 'rooms as occupied_rooms' => fn ($q) => $q->where('status', 'occupied')])
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('id', $propertyIds ?: [0]))
             ->get()
             ->map(fn ($p) => [
                 'name' => $p->name,

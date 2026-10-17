@@ -26,6 +26,7 @@
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
 php artisan migrate --force          # HANYA migrate; jangan fresh/refresh
+php artisan license:validate         # lock lisensi valid? gagal = pairing ulang via /__pair
 php artisan db:seed --class=UserSeeder --force   # bila butuh akun awal (idempoten via updateOrCreate)
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 php artisan queue:restart

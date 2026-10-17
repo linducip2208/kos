@@ -2,7 +2,27 @@
 
 Tanggal: 2026-10-17 · Referensi: OWASP ASVS / Top 10 (diterapkan sesuai stack Laravel + Filament + Sanctum).
 
-## Diperbaiki sesi ini
+## Diperbaiki sesi 100/100 (2026-10-18)
+
+| # | Area | Perbaikan |
+|---|---|---|
+| 9 | Report date-range | `to` tanggal-polus mengecualikan data hari yang sama → helper `dateRange()` inklusif + konsisten halaman Filament (scope properti di 3 report pages) |
+| 10 | Webhook | Verifikasi nominal vs transaksi; guard success (idempotency + out-of-order); unknown order diabaikan |
+| 11 | Plugin/theme | `SlugGuard` (regex + containment), validasi manifest + kompatibilitas versi, transaksi DB, `uninstall` jujur, hapus permission mati `system.plugins` |
+| 12 | License | Command `license:validate` dibuat (jadwal tidak lagi broken); `dev_bypass` default false + `.env.example` false |
+| 13 | Lease workflow | `terminate` tanpa fallback diam-diam + transaksi; `end` transaksi; `giveNotice`/`renew` guard status |
+| 14 | Deposit ledger | Refund parsial tidak mengunci; guard settled di markReceived/refund/forfeit |
+| 15 | MoveRoom | Kredit prorate bertanda benar; lock + cek operasional; transisi status via service |
+| 16 | CheckInOut | Settlement masuk transaksi yang sama (atomik) |
+| 17 | EContract | Guard status, occupant-first → `sent`, reset signature saat regenerasi, validasi signature (magic bytes, 2MB), rute portal sign + kirim WA nyata |
+| 18 | Utility | Duplikat periode (whereDate + normalisasi), histori invoice imutabel |
+| 19 | WA log | Migrasi nullable `notifiable_*` (reversible, MySQL/SQLite) |
+| 20 | PSEO | Whitelist kota/kampus/fasilitas/tipe + 404; filter properti per kota; alternatif/bandingkan wajib properti nyata; fix variabel view |
+| 21 | Notifikasi | Isolasi tenant + endpoint tenant + hapus + markAll query |
+| 22 | Commands | Dedupe notifikasi `lease:check-expiring` + `send-reminders`; status `expiring_soon` + range inklusif |
+| 23 | README | Peringatan kredensial demo hanya lokal |
+
+## Diperbaiki sesi sebelumnya (2026-10-17)
 
 | # | Area | Sebelum | Sesudah | Bukti |
 |---|---|---|---|---|

@@ -21,6 +21,10 @@ class DepositService
         return DB::transaction(function () use ($deposit, $method, $reference) {
             $deposit = Deposit::lockForUpdate()->find($deposit->id);
 
+            if ($deposit->is_settled) {
+                abort(422, 'Deposit sudah diselesaikan dan tidak dapat diterima ulang.');
+            }
+
             if ($deposit->status === 'pending') {
                 $this->seedLedgerIfNeeded($deposit);
                 $balance = round((float) $deposit->balance, 2);
@@ -74,10 +78,10 @@ class DepositService
 
             $remaining = round((float) $deposit->refresh()->balance, 2);
 
+            // Konvensi: deposit yang pernah dipotong = partially_used
+            // (saldo 0 = habis terpakai; guard nominal mencegah mutasi lanjutan).
             if (! in_array($deposit->status, ['refunded', 'forfeited'], true)) {
-                $deposit->update([
-                    'status' => $remaining <= 0.009 ? 'partially_used' : 'partially_used',
-                ]);
+                $deposit->update(['status' => 'partially_used']);
             }
 
             return $tx;
@@ -91,6 +95,10 @@ class DepositService
     {
         return DB::transaction(function () use ($deposit, $amount, $method, $reason) {
             $deposit = Deposit::lockForUpdate()->find($deposit->id);
+
+            if ($deposit->is_settled) {
+                abort(422, 'Deposit sudah diselesaikan.');
+            }
 
             $this->seedLedgerIfNeeded($deposit);
 
@@ -107,8 +115,11 @@ class DepositService
                 'balance_after' => round($balance - $refundAmount, 2),
             ]);
 
+            // Refund penuh → terkunci; parsial → tetap terbuka untuk sisa saldo.
+            $remaining = round($balance - $refundAmount, 2);
+
             $deposit->forceFill([
-                'status' => 'refunded',
+                'status' => $remaining <= 0.009 ? 'refunded' : 'partially_used',
                 'refunded_amount' => (float) $deposit->refunded_amount + $refundAmount,
                 'refunded_at' => today(),
             ])->save();
@@ -124,6 +135,10 @@ class DepositService
     {
         return DB::transaction(function () use ($deposit, $reason) {
             $deposit = Deposit::lockForUpdate()->find($deposit->id);
+
+            if ($deposit->is_settled) {
+                abort(422, 'Deposit sudah diselesaikan.');
+            }
 
             $this->seedLedgerIfNeeded($deposit);
 

@@ -46,8 +46,11 @@ return [
     |---------------------------------------------------------------------
     | Skip license check on localhost / .test domains in local env.
     | Banner is shown on every page when this is on.
+    |
+    | PERINGATAN: wajib false (atau unset) di production. Nilai default
+    | false agar lupa konfigurasi tidak membuka bypass secara diam-diam.
     */
-    'dev_bypass' => env('LICENSE_DEV_BYPASS', true),
+    'dev_bypass' => env('LICENSE_DEV_BYPASS', false),
 
     /*
     |---------------------------------------------------------------------

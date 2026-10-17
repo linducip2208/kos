@@ -102,7 +102,7 @@ class LeaseController extends Controller
         $this->authorizeLease($request, $lease, 'lease.manage');
         $request->validate(['reason' => 'nullable|string']);
 
-        app(LeaseWorkflowService::class)->terminate($lease, $request->reason ?? 'Terminasi melalui API');
+        $lease = app(LeaseWorkflowService::class)->terminate($lease, $request->reason ?? 'Terminasi melalui API');
 
         return response()->json(['message' => 'Kontrak diterminasi.', 'lease' => $lease]);
     }

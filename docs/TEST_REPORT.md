@@ -2,40 +2,58 @@
 
 Tanggal: 2026-10-17 · Runner: `php artisan test` (PHPUnit, SQLite in-memory, sesuai `phpunit.xml`).
 
-## Hasil akhir (full suite)
+## Hasil akhir (full suite) — sesi 100/100 (2026-10-18)
 
-- **295 passed, 0 failed — 628 assertions — ±45 detik.**
-- Baseline sebelum sesi: 279 passed / 591 assertions. Sesi ini: **+16 test, +37 assertions.**
+- **354 passed, 0 failed — 815 assertions — ±110 detik.**
+- Baseline sesi lalu: 295 passed / 628 assertions. Total sesi ini: **+59 test, +187 assertions.**
 
-## Test baru sesi ini
+## Test baru sesi ini (57)
 
 | File | Jumlah | Cakupan |
 |---|---|---|
-| `tests/Feature/Api/AdminSecurityHardeningTest.php` | 11 | Scope dashboard (summary/upcoming/recent), `users` 403 vs 200, token nonaktif admin & tenant, scope export CSV, PDF lintas properti → 403, webhook 403/500/idempotency, `leases/expiring` |
-| `tests/Feature/WhatsAppBlastPageTest.php` | 2 | Akses halaman blast (owner 200 / maintenance 403), user nonaktif 403 di panel |
-| `tests/Unit/Services/UtilityRateServiceTest.php` | 3 | Tiered rate, integrasi `UtilityService`, kalkulasi minimum + charges |
+| `tests/Unit/Services/DepositLedgerTest.php` | 10 | Refund parsial/ganda, forfeit ganda, markReceived settled, terminate/giveNotice/renew guard |
+| `tests/Unit/Services/MoveRoomServiceTest.php` | 4 | Kredit vs tagihan prorate, lease ended, tujuan sama/occupied |
+| `tests/Unit/Services/CheckInOutServiceTest.php` | 5 | Check-in/out, duplikat, tanpa check-in, settlement deposit atomik, nominal negatif |
+| `tests/Unit/Services/UtilityBillingTest.php` | 5 | Duplikat periode, nol, reset meter, imutabilitas histori, double-add invoice |
+| `tests/Unit/Services/WhatsAppServiceTest.php` | 5 | Disabled, sukses, gagal provider, exception, blast count |
+| `tests/Feature/EContractTest.php` | 5 | Urutan tanda tangan, final guard, signature invalid, regenerasi, portal token flow |
+| `tests/Feature/PseoRoutesTest.php` | 4 | 404 kota/kampus/fasilitas fiktif, filter kota, alternatif/bandingkan |
+| `tests/Feature/Api/ReportEndpointsTest.php` | 5 | Revenue/overdue/turnover/occupancy, scope, empty, 403 |
+| `tests/Feature/Api/NotificationLifecycleTest.php` | 2 | Admin lifecycle + hapus, isolasi tenant |
+| `tests/Feature/Commands/ReminderCommandsTest.php` | 2 | Dedupe lease-expiring + send-reminders |
+| `tests/Feature/Commands/LicenseValidateCommandTest.php` | 3 | Fail-closed tanpa lock, sukses terverifikasi, schedule |
+| `tests/Feature/Api/PluginThemeLifecycleTest.php` | 4 | Lifecycle install→uninstall, traversal/manifest/versi, theme, API 422 |
+| `tests/Feature/PrintRenderTest.php` | 2 | PDF invoice/kwitansi/laporan ter-render (owner + tenant) |
+| Perluasan `AdminSecurityHardeningTest.php` | 3 | Webhook nominal salah, out-of-order, order asing |
 
 ## Perintah yang dijalankan (semua PASS)
 
 ```bash
-php artisan test --filter=AdminSecurityHardeningTest   # 11 passed (iterasi, sempat 2 gagal → diperbaiki)
-php artisan test --filter="UtilityRateServiceTest|UtilityServiceTest"  # 9 passed
-php artisan test --filter="WhatsAppBlastPageTest"      # 2 passed
-php artisan test --filter="LandingTest|DemoAccountsTest"  # 19 passed
-php artisan test                                        # 295 passed (final)
-php vendor/bin/pint --test <18 file>                    # NOT CLEAN (pre-existing, lihat bawah)
-php artisan route:list --except-vendor                   # 248 baris, tidak ada route hilang
+composer validate --no-check-publish          # valid
+php artisan optimize:clear                   # DONE
+php artisan route:list --except-vendor        # 257 baris, tidak ada route hilang
+php artisan migrate --pretend                # OK termasuk migrasi baru
+php artisan test                              # 354 passed, 815 assertions (final)
+php vendor/bin/pint --test <file baru>        # passed (4 file test di-fix otomatis)
+php vendor/bin/pint --test <file lama diubah> # NOT CLEAN pre-existing (tidak di-fix massal)
 ```
 
-## Failure selama sesi (diperbaiki, bukan diabaikan)
+## Failure yang ditemukan & diperbaiki (tidak diabaikan)
 
-1. `upcoming` kosong — akar: lease ≤30 hari berstatus `expiring_soon` + `whereBetween(now(),…)` ber-waktu. Fix di controller.
-2. Webhook test 500 — perilaku fail-closed yang benar; test disesuaikan (skenario key kosong vs signature salah dipisah).
-3. `/admin/whatsapp-blast` 404 — slug Filament `whats-app-blast`; fix via `$slug` eksplisit.
+Sesi lalu: `upcoming` kosong (status `expiring_soon` + range ber-waktu); webhook 500 fail-closed; slug `whats-app-blast`.
+
+Sesi ini:
+1. `ReportController` filter `to` tanggal-polus mengecualikan data hari yang sama → helper `dateRange()` inklusif.
+2. Webhook nominal salah → invoice tidak lunas; out-of-order deny → tidak downgrade success.
+3. `recordReading` duplikat periode → UNIQUE violation (cast date vs lookup) → `whereDate` + normalisasi awal bulan.
+4. `WhatsAppService::send` tanpa notifiable → crash NOT NULL → migrasi nullable baru (reversible, MySQL/SQLite).
+5. View `pseo/kos-fasilitas` variabel `$fasilitasName` hilang → 500 → controller kirim alias.
+6. Rute combo kampus memakai dash (`/kos-dekat-itb-di-bandung`).
+7. Checkout settlement di luar transaksi → dipindah ke dalam transaksi yang sama.
 
 ## Tidak dijalankan (BLOCKED / manual)
 
 - `npm run build` — tidak ada perubahan frontend/Vite sesi ini; tidak diperlukan.
 - Restore backup drill, webhook gateway asli, WA blast sungguhan — butuh kredensial/layanan eksternal (dilarang misi).
-- `pint --test` repo-wide NOT CLEAN termasuk file yang tidak saya sentuh (`Lease.php` dsb) → style drift pre-existing; `pint --fix` sengaja TIDAK dijalankan agar diff minimal.
-- Test PSEO (15+ route), install plugin/theme, license server — GAP tercatat di FEATURE_MATRIX.
+- `pint --test` repo-wide NOT CLEAN termasuk file yang tidak saya sentuh (`Lease.php` dsb) → style drift pre-existing; `pint --fix` massal sengaja TIDAK dijalankan agar diff minimal.
+- Browser/E2E manual (responsivitas mobile, visual) — tooling browser tidak tersedia → BLOCKED, tandai verifikasi manual.

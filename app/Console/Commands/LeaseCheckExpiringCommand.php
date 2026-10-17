@@ -17,8 +17,8 @@ class LeaseCheckExpiringCommand extends Command
     {
         $days = (int) $this->option('days');
 
-        $leases = Lease::where('status', 'active')
-            ->whereBetween('end_date', [now(), now()->addDays($days)])
+        $leases = Lease::whereIn('status', ['active', 'expiring_soon'])
+            ->whereBetween('end_date', [now()->startOfDay(), now()->addDays($days)->endOfDay()])
             ->with(['occupant', 'room.property'])
             ->orderBy('end_date')
             ->get();
@@ -41,12 +41,18 @@ class LeaseCheckExpiringCommand extends Command
 
         $this->table(['No. Kontrak', 'Penyewa', 'Kamar', 'Berakhir', 'Sisa'], $rows->toArray());
 
-        // Kirim in-app notification ke semua admin/owner
+        // Kirim in-app notification ke semua admin/owner (dedupe per lease).
         $admins = User::whereIn('role', ['owner', 'super_admin', 'property_manager'])->where('is_active', true)->get();
         foreach ($leases as $lease) {
             $daysLeft = (int) now()->diffInDays($lease->end_date, false);
             foreach ($admins as $admin) {
-                $admin->notify(new LeaseExpiringNotification($lease, $daysLeft));
+                $already = $admin->notifications()
+                    ->whereNull('read_at')
+                    ->where('data->lease_id', $lease->id)
+                    ->exists();
+                if (! $already) {
+                    $admin->notify(new LeaseExpiringNotification($lease, $daysLeft));
+                }
             }
         }
 

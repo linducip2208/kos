@@ -6,7 +6,7 @@
     body { font-family: Arial, sans-serif; font-size: 12px; color: #1e293b; margin: 0; padding: 24px; }
     .receipt { border: 2px solid #16a34a; border-radius: 8px; padding: 24px; max-width: 700px; margin: 0 auto; position: relative; }
     .stamp { position: absolute; top: 18px; right: 18px; transform: rotate(-12deg); border: 3px solid #16a34a; color: #16a34a; font-weight: bold; font-size: 18px; padding: 6px 14px; border-radius: 6px; opacity: .85; letter-spacing: 1px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 1px dashed #cbd5e1; margin-bottom: 16px; }
+    .header { margin-bottom: 16px; border-bottom: 1px dashed #cbd5e1; }
     .app-name { font-size: 18px; font-weight: bold; color: #15803d; }
     .doc-title { font-size: 22px; font-weight: 800; color: #15803d; letter-spacing: 1px; }
     .doc-num { color: #64748b; font-size: 11px; margin-top: 2px; }
@@ -30,18 +30,20 @@
         <div class="stamp">LUNAS</div>
     @endif
 
-    <div class="header">
-        <div>
-            <div class="app-name">{{ setting('app_name', 'Kos Manager') }}</div>
-            <div style="color:#64748b;font-size:11px;margin-top:2px;">{{ setting('contact_address', '') }}</div>
-            @if(setting('contact_phone')) <div style="color:#64748b;font-size:11px;">Telp: {{ setting('contact_phone') }}</div> @endif
-        </div>
-        <div style="text-align:right;">
-            <div class="doc-title">KWITANSI</div>
-            <div class="doc-num">No. {{ str_replace('INV-', 'KW-', $invoice->invoice_number) }}</div>
-            <div class="doc-num">Ref. Invoice: {{ $invoice->invoice_number }}</div>
-        </div>
-    </div>
+    <table style="width:100%;border-collapse:collapse;" class="header">
+        <tr>
+            <td style="vertical-align:top;">
+                <div class="app-name">{{ setting('app_name', 'Kos Manager') }}</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px;">{{ setting('contact_address', '') }}</div>
+                @if(setting('contact_phone')) <div style="color:#64748b;font-size:11px;">Telp: {{ setting('contact_phone') }}</div> @endif
+            </td>
+            <td style="text-align:right;vertical-align:top;">
+                <div class="doc-title">KWITANSI</div>
+                <div class="doc-num">No. {{ str_replace('INV-', 'KW-', $invoice->invoice_number) }}</div>
+                <div class="doc-num">Ref. Invoice: {{ $invoice->invoice_number }}</div>
+            </td>
+        </tr>
+    </table>
 
     <table class="info">
         <tr>

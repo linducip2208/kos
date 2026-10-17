@@ -37,9 +37,15 @@ class SendPaymentReminders extends Command
 
         $sent = 0;
         foreach ($invoices as $invoice) {
-            // In-app notification
+            // In-app notification (dedupe: jangan duplikat bila run diulang).
             foreach ($admins as $admin) {
-                $admin->notify(new InvoiceDueNotification($invoice));
+                $already = $admin->notifications()
+                    ->whereNull('read_at')
+                    ->where('data->invoice_id', $invoice->id)
+                    ->exists();
+                if (! $already) {
+                    $admin->notify(new InvoiceDueNotification($invoice));
+                }
             }
 
             $occupant = $invoice->lease->occupant;

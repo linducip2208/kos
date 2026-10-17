@@ -93,8 +93,7 @@
             <div class="mb-2">
                 <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">Masuk</h1>
                 <p class="text-slate-500 mt-2 text-sm">
-                    Belum punya akun?
-                    <a href="/admin/register" class="text-primary-600 font-semibold hover:underline">Daftar gratis</a>
+                    Butuh akun? Hubungi administrator kos Anda.
                 </p>
             </div>
 
@@ -125,7 +124,7 @@
                         <span>auditor@kos.test / password</span>
                     </div>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-3">Hubungi WA 0812-9605-2010 untuk bantuan akses.</p>
+                <p class="text-[10px] text-slate-400 mt-3">Hanya untuk development lokal — jangan gunakan di production.</p>
             </div>
         </div>
     </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DashboardController as TenantDashboardController;
 use App\Http\Controllers\Api\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Api\LeaseController as TenantLeaseController;
 use App\Http\Controllers\Api\MaintenanceController as TenantMaintenanceController;
+use App\Http\Controllers\Api\NotificationController as TenantNotificationController;
 use App\Http\Controllers\Api\PropertyController as PublicPropertyController;
 use Illuminate\Support\Facades\Route;
 
@@ -100,6 +101,7 @@ Route::prefix('v1')->group(function () {
         Route::get  ('notifications/unread-count', [Admin\NotificationController::class, 'unreadCount']);
         Route::patch('notifications/{id}/read',    [Admin\NotificationController::class, 'markRead']);
         Route::post ('notifications/read-all',     [Admin\NotificationController::class, 'markAllRead']);
+        Route::delete('notifications/{id}',        [Admin\NotificationController::class, 'destroy']);
 
         // Export (Excel & PDF)
         Route::get('export',                           [Admin\ExportController::class, 'export']);
@@ -119,6 +121,12 @@ Route::prefix('v1')->group(function () {
         Route::get ('invoices/{id}',  [TenantInvoiceController::class, 'show']);
         Route::get ('maintenance',    [TenantMaintenanceController::class, 'index']);
         Route::post('maintenance',    [TenantMaintenanceController::class, 'store']);
+
+        Route::get   ('notifications',           [TenantNotificationController::class, 'index']);
+        Route::get   ('notifications/unread-count', [TenantNotificationController::class, 'unreadCount']);
+        Route::patch ('notifications/{id}/read', [TenantNotificationController::class, 'markRead']);
+        Route::post  ('notifications/read-all',  [TenantNotificationController::class, 'markAllRead']);
+        Route::delete('notifications/{id}',      [TenantNotificationController::class, 'destroy']);
     });
 });
 
@@ -133,6 +141,7 @@ Route::middleware(['auth:sanctum', 'active.account'])->prefix('tenant')->group(f
     Route::get('invoices/{id}',    [TenantInvoiceController::class, 'show']);
     Route::get('maintenance',      [TenantMaintenanceController::class, 'index']);
     Route::post('maintenance',     [TenantMaintenanceController::class, 'store']);
+    Route::get('notifications',   [TenantNotificationController::class, 'index']);
 });
 Route::get('properties',           [PublicPropertyController::class, 'index']);
 Route::get('properties/{property}',[PublicPropertyController::class, 'show']);

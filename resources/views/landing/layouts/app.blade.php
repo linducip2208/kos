@@ -80,10 +80,13 @@
             border: 1px solid #bfdbfe;
         }
         @keyframes float {
-            0%,100% { transform: translateY(0px); }
+            from, to { transform: translateY(0px); }
             50% { transform: translateY(-12px); }
         }
         .float-anim { animation: float 4s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+            .float-anim, .card-premium, .card-premium:hover { animation: none; transform: none; transition: none; }
+        }
         @keyframes fade-up {
             from { opacity:0; transform: translateY(20px); }
             to   { opacity:1; transform: translateY(0); }
@@ -99,7 +102,7 @@
      x-data="{ scrolled: false, open: false }"
      x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 40)"
      :class="scrolled ? 'nav-scrolled' : 'bg-transparent'">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 md:h-18">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 md:h-20">
 
         <a href="{{ route('landing.home') }}" class="flex items-center gap-2.5 font-extrabold text-xl"
            :class="scrolled ? 'text-primary-700' : 'text-white'">
@@ -144,7 +147,7 @@
         </div>
 
         {{-- Mobile menu button --}}
-        <button @click="open = !open" class="md:hidden p-2 rounded-lg"
+        <button @click="open = !open" class="md:hidden p-2 rounded-lg" aria-label="Buka/tutup menu navigasi" aria-expanded="false"
                 :class="scrolled ? 'text-slate-700' : 'text-white'">
             <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -199,9 +202,9 @@
                 <h4 class="text-white font-semibold mb-4">Navigasi</h4>
                 <ul class="space-y-2.5 text-sm">
                     <li><a href="{{ route('landing.home') }}" class="hover:text-white transition-colors">Beranda</a></li>
-                    <li><a href="#kamar" class="hover:text-white transition-colors">Pilihan Kamar</a></li>
-                    <li><a href="#testimoni" class="hover:text-white transition-colors">Testimoni</a></li>
-                    <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
+                    <li><a href="{{ route('landing.home') }}#properti" class="hover:text-white transition-colors">Pilihan Kamar</a></li>
+                    <li><a href="{{ route('landing.home') }}#testimoni" class="hover:text-white transition-colors">Testimoni</a></li>
+                    <li><a href="{{ route('blog.index') }}" class="hover:text-white transition-colors">Blog</a></li>
                     <li><a href="{{ route('portal.login') }}" class="hover:text-white transition-colors">Portal Penyewa</a></li>
                 </ul>
             </div>
@@ -246,6 +249,7 @@
         x-transition:enter-start="opacity-0 translate-y-2"
         x-transition:enter-end="opacity-100 translate-y-0"
         @click="window.scrollTo({top:0,behavior:'smooth'})"
+        aria-label="Kembali ke atas"
         class="fixed bottom-24 right-6 w-11 h-11 bg-slate-800/80 backdrop-blur text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-600 transition-colors z-40">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -257,7 +261,7 @@
 <a href="https://wa.me/{{ preg_replace('/\D/', '', setting('contact_whatsapp')) }}"
    target="_blank"
    class="fixed bottom-6 right-6 w-14 h-14 bg-green-500 text-white rounded-full shadow-xl shadow-green-500/40 flex items-center justify-center hover:bg-green-600 hover:scale-110 transition-all z-50"
-   title="Chat WhatsApp">
+   title="Chat WhatsApp" aria-label="Chat WhatsApp">
     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
     </svg>
@@ -302,14 +306,7 @@
     function render() {
         if (!shouldShow()) return;
         var html =
-                        '<div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 mt-16">' +
-              '<div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">' +
-                '<h2 class="text-3xl font-extrabold mb-4">Butuh Aplikasi Manajemen Kos Kosan?</h2>' +
-                '<p class="text-blue-100 mb-8 max-w-2xl mx-auto">Source code aplikasi Kos Kosan Pro siap pakai. Fitur lengkap: manajemen properti, booking, invoice otomatis, laporan keuangan, portal penghuni. Bisa dikustomisasi!</p>' +
-                '<a href="https://wa.me/6281296052010" target="_blank" class="inline-block bg-white text-primary-700 px-8 py-3 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors">Beli Source Code</a>' +
-                '<p class="text-blue-200 text-sm mt-4">Atau hubungi WhatsApp kami untuk demo gratis</p>' +
-              '</div>' +
-            '</div>' +
+            '<div id="purchase-popup" role="dialog" aria-label="Penawaran aplikasi kos" class="fixed bottom-6 left-6 z-50 max-w-xs w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">' +
               '<div style="background:linear-gradient(135deg,#10b981,#0d9488);" class="px-5 py-4 flex items-start justify-between gap-3">' +
                 '<div class="flex items-center gap-3">' +
                   '<div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">💼</div>' +
@@ -318,7 +315,7 @@
                     '<div class="text-emerald-50 text-xs">Hubungi pemilik untuk pembelian</div>' +
                   '</div>' +
                 '</div>' +
-                '<button id="purchase-popup-close" aria-label="Tutup" class="text-white/80 hover:text-white text-xl leading-none -mr-1 -mt-1 px-2">&times;</button>' +
+                '<button id="purchase-popup-close" aria-label="Tutup penawaran" class="text-white/80 hover:text-white text-xl leading-none px-2">&times;</button>' +
               '</div>' +
               '<div class="p-5">' +
                 '<div class="text-xs text-slate-500 mb-1">WhatsApp</div>' +
@@ -329,7 +326,7 @@
               '</div>' +
             '</div>';
         var wrap = document.getElementById('purchase-popup-wrapper');
-        if (!wrap) return;
+        if (!wrap || document.getElementById('purchase-popup')) return;
         wrap.innerHTML = html;
         var btn = document.getElementById('purchase-popup-close');
         if (btn) btn.addEventListener('click', dismiss);

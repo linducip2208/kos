@@ -214,17 +214,27 @@ class PaymentGatewayService
         $grossAmount  = $payload['gross_amount'] ?? '';
         $expectedHash = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
 
-        if ($payload['signature_key'] !== $expectedHash) return false;
+        if (($payload['signature_key'] ?? null) !== $expectedHash) return false;
 
         $trx = PaymentTransaction::where('order_id', $orderId)->first();
         if (!$trx) return false;
+        if ($trx->status === 'success') return true; // idempotent: sudah diproses
 
         $transactionStatus = $payload['transaction_status'] ?? '';
 
         if (in_array($transactionStatus, ['capture', 'settlement'])) {
+            // Tolak nominal yang tidak sesuai agar invoice tidak lunas semu.
+            if (abs((float) $grossAmount - (float) $trx->amount) > 0.009) {
+                \Illuminate\Support\Facades\Log::warning("Midtrans amount mismatch: order {$orderId} expected {$trx->amount}, got {$grossAmount}.");
+                $trx->update(['status' => 'failed', 'gateway_response' => $payload]);
+                return true;
+            }
             $this->markPaid($trx, $payload);
         } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire'])) {
-            $trx->update(['status' => 'failed', 'gateway_response' => $payload]);
+            // Jangan downgrade transaksi yang sudah sukses (callback out-of-order).
+            if ($trx->status !== 'success') {
+                $trx->update(['status' => 'failed', 'gateway_response' => $payload]);
+            }
         }
 
         return true;
@@ -235,12 +245,18 @@ class PaymentGatewayService
         $privateKey  = setting('tripay_private_key', '', 'payment');
         $signature   = hash_hmac('sha256', $payload['merchant_ref'] . $payload['amount'], $privateKey);
 
-        if ($payload['signature'] !== $signature) return false;
+        if (($payload['signature'] ?? null) !== $signature) return false;
 
         $trx = PaymentTransaction::where('order_id', $payload['merchant_ref'])->first();
         if (!$trx) return false;
+        if ($trx->status === 'success') return true; // idempotent: sudah diproses
 
-        if ($payload['status'] === 'PAID') {
+        if (($payload['status'] ?? null) === 'PAID') {
+            if (abs((float) ($payload['amount'] ?? 0) - (float) $trx->amount) > 0.009) {
+                \Illuminate\Support\Facades\Log::warning("Tripay amount mismatch: order {$trx->order_id} expected {$trx->amount}, got {$payload['amount']}.");
+                $trx->update(['status' => 'failed', 'gateway_response' => $payload]);
+                return true;
+            }
             $this->markPaid($trx, $payload);
         }
 

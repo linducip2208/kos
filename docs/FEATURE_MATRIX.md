@@ -15,10 +15,10 @@ Legenda status: OK = terverifikasi + ada test · FIXED = diperbaiki sesi ini · 
 | Invoices/Payment | `invoices*`, `mark-paid` | `InvoiceController` + `PaymentService` | `InvoiceResource`, `InvoicePaymentResource` | model/workflow + `PrintAuthorizationTest` | OK |
 | Users | `users` (tanpa show) | `UserController` | `UserResource` | hardening (`index` + `ownerOnly`) | FIXED |
 | Settings | `settings*` | `SettingController` | `GeneralSettings`, `PaymentGatewaySettings` | `SettingTest` | OK |
-| License | `license*`, `/__pair/*` | `LicenseController`, `PairController` | `LicenseSettings` | mock di TestCase | GAP (butuh server lisensi asli) |
-| Reports | `reports/occupancy|revenue|overdue|turnover` | `ReportController` | 3 report pages | parsial | GAP (revenue/overdue/turnover) |
-| Plugin/Theme | `plugins*`, `themes*` | Managers | 2 management pages | otorisasi saja | GAP (install/activate) |
-| Notifications | `notifications*` | `NotificationController` | — | — | GAP |
+| License | `license*`, `/__pair/*` | `LicenseController`, `PairController`, `license:validate` (baru) | `LicenseValidateCommandTest` | FIXED (command + dev_bypass default false) |
+| Reports | `reports/occupancy|revenue|overdue|turnover` | `ReportController` | 3 report pages (scoped) | `ReportEndpointsTest` | FIXED (scope + dateRange inklusif) |
+| Plugin/Theme | `plugins*`, `themes*` | Managers + `SlugGuard` | 2 management pages | `PluginThemeLifecycleTest` | FIXED (sanitasi, manifest, versi, transaksi) |
+| Notifikasi | `admin/notifications*`, `tenant/notifications*` | `NotificationController` x2 | — | `NotificationLifecycleTest` | FIXED (isolasi tenant, hapus, markAll query) |
 | Export/Print | `admin/export*`, web `print/*` | `ExportController`, `PrintController` + 2 Export class | — | hardening (scope) + print auth | FIXED |
 
 ## Portal penyewa + Tenant API + Publik
@@ -29,17 +29,17 @@ Legenda status: OK = terverifikasi + ada test · FIXED = diperbaiki sesi ini · 
 | Tenant API auth/dashboard/lease/invoices/maintenance | `v1/tenant/*` + legacy | `Api\*Controller` (tenant) | `TenantApiTest`, `AuthApiTest` | OK (+ `active.account` middleware) |
 | Landing/properti/booking/contact | `/`, `/property/*`, `/booking/*` | `LandingController`, `BookingController` | `LandingTest`, `BookingTest`, `FullFlowTest` | OK |
 | Webhook Midtrans/Tripay | `/webhook/*` | `PaymentWebhookController` + `PaymentGatewayService` | hardening (fail-closed + idempotency) | FIXED |
-| Blog/docs/sitemap/PSEO | `blog*`, `docs`, `sitemap.xml`, pseo | 4 controller | `LandingTest` (parsial) | GAP (15+ route PSEO tanpa test) |
+| Blog/docs/sitemap/PSEO | `blog*`, `docs`, `sitemap.xml`, pseo | 4 controller | `PseoRoutesTest` + `LandingTest` | FIXED (whitelist 404, filter kota, view var) |
 
 ## Filament-only (tanpa route API)
 
 | Modul | Service | Test | Status |
 |---|---|---|---|
-| Deposit + ledger | `DepositService` | `DepositServiceTest` (parsial: refund/forfeit belum) | OK/GAP |
-| Utilitas + tarif tiered | `UtilityService` + `UtilityRateService` | `UtilityServiceTest`, `UtilityRateServiceTest` (baru) | FIXED (tiered rate kini live) |
-| EContract/check-in-out/pindah kamar | `EContractService`, `CheckInOutService`, `MoveRoomService` | — | GAP |
-| WhatsApp blast | `WhatsAppService` | `WhatsAppBlastPageTest` (akses) | FIXED (halaman fungsional) |
-| Expense/vendor/fasilitas/inventaris/CRM | model langsung | — | GAP |
+| Deposit + ledger | `DepositService` | `DepositServiceTest`, `DepositLedgerTest` (baru) | FIXED (refund parsial, guard settled, status) |
+| Utilitas + tarif tiered | `UtilityService` + `UtilityRateService` | `UtilityBillingTest` (baru) | FIXED (duplikat periode, histori imutabel) |
+| EContract/check-in-out/pindah kamar | `EContractService`, `CheckInOutService`, `MoveRoomService` | portal sign route + view | `EContractTest`, `CheckInOutServiceTest`, `MoveRoomServiceTest` | FIXED |
+| WhatsApp blast | `WhatsAppService` | `WhatsAppBlastPageTest` + `WhatsAppServiceTest` | FIXED (migrasi nullable notifiable) |
+| Expense/vendor/fasilitas/inventaris/CRM | model langsung | — | OK/GAP (CRUD Filament terotorisasi; tanpa test khusus) |
 
 ## Tindakan sesi ini (file penting)
 

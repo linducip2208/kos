@@ -32,6 +32,11 @@
 
         {{-- Form --}}
         <div class="lg:col-span-2">
+            @if(session('booking_success'))
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center text-sm text-blue-700">
+                    Permintaan Anda sudah kami terima. Untuk booking tambahan, silakan isi form baru di bawah atau hubungi kami via WhatsApp.
+                </div>
+            @else
             <div class="bg-white rounded-2xl shadow-sm p-6">
                 <h2 class="font-bold text-lg mb-5 text-gray-800">Isi Data Diri</h2>
 
@@ -135,6 +140,7 @@
                     </p>
                 </form>
             </div>
+            @endif
         </div>
 
         {{-- Sidebar info kamar --}}

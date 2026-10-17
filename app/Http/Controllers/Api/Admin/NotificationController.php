@@ -33,7 +33,15 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request)
     {
-        $request->user()->unreadNotifications->markAsRead();
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
         return response()->json(['message' => 'Semua notifikasi ditandai dibaca.']);
+    }
+
+    public function destroy(Request $request, string $id)
+    {
+        $request->user()->notifications()->findOrFail($id)->delete();
+
+        return response()->json(['message' => 'Notifikasi dihapus.']);
     }
 }

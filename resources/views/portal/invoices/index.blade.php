@@ -8,7 +8,7 @@
     </div>
 
     @forelse($invoices as $invoice)
-    <div class="flex items-center justify-between p-4 border-b last:border-0 hover:bg-gray-50">
+    <a href="{{ route('portal.invoices.show', $invoice) }}" class="flex items-center justify-between p-4 border-b last:border-0 hover:bg-gray-50 transition-colors">
         <div>
             <div class="font-medium text-sm">{{ $invoice->invoice_number }}</div>
             <div class="text-xs text-gray-500 mt-0.5">
@@ -16,14 +16,14 @@
                 Jatuh tempo: {{ $invoice->due_date?->format('d M Y') }}
             </div>
         </div>
-        <div class="text-right">
+        <div class="text-right shrink-0 ml-3">
             <div class="font-semibold text-sm">Rp {{ number_format($invoice->total, 0, ',', '.') }}</div>
             <span class="text-xs px-1.5 py-0.5 rounded mt-1 inline-block
                 {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-700' : ($invoice->status === 'overdue' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') }}">
                 {{ match($invoice->status) { 'paid' => 'Lunas', 'overdue' => 'Jatuh Tempo', default => 'Belum Dibayar' } }}
             </span>
         </div>
-    </div>
+    </a>
     @empty
     <div class="p-8 text-center text-gray-400">
         <div class="text-4xl mb-2">📭</div>

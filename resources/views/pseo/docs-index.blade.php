@@ -35,6 +35,7 @@
         .browser-mock .bar .dots span{width:10px;height:10px;border-radius:50%}
         .browser-mock .bar .url{background:#e2e8f0;border-radius:6px;padding:4px 12px;font-size:11px;color:#64748b;flex:1;text-align:center;font-family:monospace}
     </style>
+    <noscript><style>.reveal{opacity:1 !important;transform:none !important}</style></noscript>
 </head>
 <body class="bg-slate-50 font-sans antialiased text-slate-800">
 

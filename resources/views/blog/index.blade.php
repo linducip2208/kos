@@ -45,6 +45,7 @@
             .blog-header h1{font-size:1.75rem}
         }
     </style>
+    <noscript><style>.reveal{opacity:1 !important;transform:none !important}</style></noscript>
 </head>
 <body class="bg-slate-50 font-sans antialiased">
 

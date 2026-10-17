@@ -11,8 +11,8 @@ class ProgrammaticSeoController extends Controller
     // ───────── Single City ─────────
     public function bestCity($city)
     {
-        $cityName = $this->cityLabel($city);
-        $properties = Property::active()->latest()->take(12)->get();
+        $cityName = $this->knownCity($city);
+        $properties = $this->propertiesInCity($cityName);
 
         $seo = $this->seo(
             "10 Kos Terbaik di {$cityName} — Rekomendasi Hunian Nyaman",
@@ -26,9 +26,9 @@ class ProgrammaticSeoController extends Controller
     // ───────── City + Facility Combo ─────────
     public function cityFacility($city, $facility)
     {
-        $cityName = $this->cityLabel($city);
-        $facilityName = $this->facilityLabel($facility);
-        $properties = Property::active()->latest()->take(12)->get();
+        $cityName = $this->knownCity($city);
+        $facilityName = $this->knownFacility($facility);
+        $properties = $this->propertiesInCity($cityName);
 
         $seo = $this->seo(
             "Kos {$facilityName} di {$cityName} — Hunian Nyaman Fasilitas Lengkap",
@@ -42,11 +42,11 @@ class ProgrammaticSeoController extends Controller
     // ───────── City + Price Range Combo ─────────
     public function cityPrice($city, $range)
     {
-        $cityName = $this->cityLabel($city);
+        $cityName = $this->knownCity($city);
         $ranges = PseoDataService::priceRanges();
         if (!isset($ranges[$range])) abort(404);
         $rangeLabel = $this->priceLabel($range);
-        $properties = Property::active()->latest()->take(12)->get();
+        $properties = $this->propertiesInCity($cityName);
 
         $seo = $this->seo(
             "Kos {$rangeLabel} di {$cityName} — Harga Terjangkau, Nyaman",
@@ -60,9 +60,10 @@ class ProgrammaticSeoController extends Controller
     // ───────── City + Type Combo ─────────
     public function cityType($city, $type)
     {
-        $cityName = $this->cityLabel($city);
+        $cityName = $this->knownCity($city);
+        if (! in_array($type, PseoDataService::types(), true)) abort(404);
         $typeLabel = $this->typeLabel($type);
-        $properties = Property::active()->latest()->take(12)->get();
+        $properties = $this->propertiesInCity($cityName);
 
         $seo = $this->seo(
             "Kos {$typeLabel} di {$cityName} — Hunian Tepat Sesuai Kebutuhan",
@@ -76,10 +77,11 @@ class ProgrammaticSeoController extends Controller
     // ───────── Campus Near City ─────────
     public function campusCity($kampus, $city = null)
     {
+        if (! in_array(strtolower($kampus), PseoDataService::campuses(), true)) abort(404);
         $kampusName = strtoupper($kampus);
-        $cityName = $city ? $this->cityLabel($city) : '';
+        $cityName = $city ? $this->knownCity($city) : '';
         $subTitle = $city ? " di {$cityName}" : '';
-        $properties = Property::active()->latest()->take(12)->get();
+        $properties = $city ? $this->propertiesInCity($cityName) : Property::active()->latest()->take(12)->get();
 
         $route = $city
             ? route('pseo.campus-city', ['kampus' => $kampus, 'city' => $city])
@@ -97,7 +99,8 @@ class ProgrammaticSeoController extends Controller
     // ───────── Facility (standalone) ─────────
     public function kosFasilitas($fasilitas)
     {
-        $facilityName = $this->facilityLabel($fasilitas);
+        $facilityName = $this->knownFacility($fasilitas);
+        $fasilitasName = $facilityName;
         $properties = Property::active()->latest()->take(12)->get();
 
         $seo = $this->seo(
@@ -106,7 +109,7 @@ class ProgrammaticSeoController extends Controller
             route('pseo.fasilitas', $fasilitas)
         );
 
-        return view('pseo.kos-fasilitas', compact('fasilitas', 'facilityName', 'properties', 'seo'));
+        return view('pseo.kos-fasilitas', compact('fasilitas', 'facilityName', 'fasilitasName', 'properties', 'seo'));
     }
 
     // ───────── Price Range (standalone) ─────────
@@ -129,6 +132,7 @@ class ProgrammaticSeoController extends Controller
     // ───────── Type (standalone) ─────────
     public function kosTipe($tipe)
     {
+        if (! in_array($tipe, PseoDataService::types(), true)) abort(404);
         $typeLabel = $this->typeLabel($tipe);
         $properties = Property::active()->latest()->take(12)->get();
 
@@ -145,8 +149,9 @@ class ProgrammaticSeoController extends Controller
     public function alternatif($slug)
     {
         $property = Property::active()->where('slug', $slug)->first();
-        $alternatives = Property::active()->where('id', '!=', $property?->id)->inRandomOrder()->take(6)->get();
-        $name = $property ? $property->name : ucwords(str_replace('-', ' ', $slug));
+        abort_unless($property, 404);
+        $alternatives = Property::active()->where('id', '!=', $property->id)->inRandomOrder()->take(6)->get();
+        $name = $property->name;
 
         $seo = $this->seo(
             "Alternatif {$name} — Pilihan Kos Serupa & Terbaik",
@@ -165,8 +170,9 @@ class ProgrammaticSeoController extends Controller
             $a_slug = $parts[0]; $b_slug = $parts[1];
             $propA = Property::active()->where('slug', $a_slug)->first();
             $propB = Property::active()->where('slug', $b_slug)->first();
-            $nameA = $propA ? $propA->name : ucwords(str_replace('-', ' ', $a_slug));
-            $nameB = $propB ? $propB->name : ucwords(str_replace('-', ' ', $b_slug));
+            abort_unless($propA && $propB, 404);
+            $nameA = $propA->name;
+            $nameB = $propB->name;
 
             $seo = $this->seo(
                 "{$nameA} vs {$nameB} — Perbandingan Kos Mana yang Lebih Baik?",
@@ -201,7 +207,7 @@ class ProgrammaticSeoController extends Controller
 
     public function beliSourceCodeByCity($city)
     {
-        $cityName = $this->cityLabel($city);
+        $cityName = $this->knownCity($city);
 
         $seo = $this->seo(
             "Beli Aplikasi Kos di {$cityName} — Source Code Manajemen Kos",
@@ -214,7 +220,7 @@ class ProgrammaticSeoController extends Controller
 
     public function beliSourceCodeByFeature($feature)
     {
-        $featureLabel = $this->facilityLabel($feature);
+        $featureLabel = $this->knownFacility($feature);
 
         $seo = $this->seo(
             "Aplikasi Kos dengan {$featureLabel} — Source Code Siap Pakai",
@@ -226,6 +232,35 @@ class ProgrammaticSeoController extends Controller
     }
 
     // ═══════════════ HELPERS ═══════════════
+
+    /**
+     * Kota wajib ada di whitelist — cegah halaman fabrikasi untuk slug fiktif.
+     */
+    protected function knownCity(string $slug): string
+    {
+        abort_unless(in_array(strtolower($slug), PseoDataService::cities(), true), 404);
+
+        return $this->cityLabel($slug);
+    }
+
+    protected function knownFacility(string $slug): string
+    {
+        abort_unless(in_array(strtolower($slug), PseoDataService::facilities(), true), 404);
+
+        return $this->facilityLabel($slug);
+    }
+
+    /**
+     * Properti yang benar-benar berada di kota tersebut.
+     */
+    protected function propertiesInCity(string $cityName)
+    {
+        return Property::active()
+            ->whereRaw('LOWER(city) = ?', [mb_strtolower($cityName)])
+            ->latest()
+            ->take(12)
+            ->get();
+    }
 
     protected function seo(string $title, string $desc, string $canonical): array
     {

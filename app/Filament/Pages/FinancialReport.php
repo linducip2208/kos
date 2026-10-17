@@ -40,7 +40,8 @@ class FinancialReport extends Page
         $data = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $total = Invoice::where('status', 'paid')
+            $total = $this->scopedInvoices()
+                ->where('status', 'paid')
                 ->whereYear('paid_at', $date->year)
                 ->whereMonth('paid_at', $date->month)
                 ->sum('total');
@@ -55,10 +56,14 @@ class FinancialReport extends Page
 
     public function getOccupancyByProperty(): array
     {
+        $propertyIds = auth()->user()?->scopedPropertyIds();
+
         return Property::withCount([
             'rooms',
             'rooms as occupied_rooms_count' => fn ($q) => $q->where('status', 'occupied'),
-        ])->get()->map(fn ($p) => [
+        ])
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('id', $propertyIds ?: [0]))
+            ->get()->map(fn ($p) => [
             'name' => $p->name,
             'total' => $p->rooms_count,
             'occupied' => $p->occupied_rooms_count,
@@ -68,7 +73,7 @@ class FinancialReport extends Page
 
     public function getOverdueSummary(): array
     {
-        $overdue = Invoice::whereIn('status', ['sent', 'overdue'])->where('due_date', '<', now())->get();
+        $overdue = $this->scopedInvoices()->whereIn('status', ['sent', 'overdue'])->where('due_date', '<', now())->get();
 
         return [
             'count' => $overdue->count(),
@@ -78,12 +83,20 @@ class FinancialReport extends Page
 
     public function getStats(): array
     {
-        $thisMonth = Invoice::where('status', 'paid')
+        $thisMonth = $this->scopedInvoices()->where('status', 'paid')
             ->whereMonth('paid_at', now()->month)->whereYear('paid_at', now()->year)->sum('total');
-        $lastMonth = Invoice::where('status', 'paid')
+        $lastMonth = $this->scopedInvoices()->where('status', 'paid')
             ->whereMonth('paid_at', now()->subMonth()->month)->whereYear('paid_at', now()->subMonth()->year)->sum('total');
-        $ytd = Invoice::where('status', 'paid')->whereYear('paid_at', now()->year)->sum('total');
+        $ytd = $this->scopedInvoices()->where('status', 'paid')->whereYear('paid_at', now()->year)->sum('total');
 
         return compact('thisMonth', 'lastMonth', 'ytd');
+    }
+
+    private function scopedInvoices()
+    {
+        $propertyIds = auth()->user()?->scopedPropertyIds();
+
+        return Invoice::query()->when($propertyIds !== null, fn ($q) => $q->whereHas('lease.room',
+            fn ($r) => $r->whereIn('property_id', $propertyIds ?: [0])));
     }
 }

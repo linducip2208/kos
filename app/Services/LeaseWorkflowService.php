@@ -88,42 +88,54 @@ class LeaseWorkflowService
      */
     public function end(Lease $lease, ?string $reason = null): Lease
     {
-        $this->ensureTransition($lease, 'ended');
+        return DB::transaction(function () use ($lease, $reason) {
+            $lease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            $this->ensureTransition($lease, 'ended');
 
-        $lease->forceFill([
-            'status' => 'ended',
-            'moved_out_at' => today(),
-            'termination_reason' => $reason ?? $lease->termination_reason,
-        ])->save();
+            $lease->forceFill([
+                'status' => 'ended',
+                'moved_out_at' => today(),
+                'termination_reason' => $reason ?? $lease->termination_reason,
+            ])->save();
 
-        // Alur checkout: kamar masuk tahap cleaning sebelum inspeksi.
-        if ($room = $lease->fresh()->room) {
-            try {
-                app(RoomStatusService::class)->transition($room, 'cleaning');
-            } catch (ValidationException) {
-                // kamar mungkin sudah available/dipindahkan
+            // Alur checkout: kamar masuk tahap cleaning sebelum inspeksi.
+            if ($room = $lease->fresh()->room) {
+                try {
+                    app(RoomStatusService::class)->transition($room, 'cleaning');
+                } catch (ValidationException) {
+                    // kamar mungkin sudah available/dipindahkan
+                }
             }
-        }
 
-        return $lease;
+            return $lease;
+        });
     }
 
     /**
-     * Terminasi dini.
+     * Terminasi dini. Hanya dari status operasional; tanpa fallback diam-diam.
      */
     public function terminate(Lease $lease, string $reason): Lease
     {
-        $target = in_array('terminated', self::TRANSITIONS[$lease->status] ?? [], true)
-            ? 'terminated'
-            : 'ended';
+        return DB::transaction(function () use ($lease, $reason) {
+            $lease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            $this->ensureTransition($lease, 'terminated');
 
-        $lease->forceFill([
-            'status' => $target,
-            'terminated_at' => today(),
-            'termination_reason' => $reason,
-        ])->save();
+            $lease->forceFill([
+                'status' => 'terminated',
+                'terminated_at' => today(),
+                'termination_reason' => $reason,
+            ])->save();
 
-        return $lease;
+            if ($room = $lease->fresh()->room) {
+                try {
+                    app(RoomStatusService::class)->transition($room, 'cleaning');
+                } catch (ValidationException) {
+                    // kamar mungkin sudah available/dipindahkan
+                }
+            }
+
+            return $lease;
+        });
     }
 
     /**
@@ -134,6 +146,10 @@ class LeaseWorkflowService
      */
     public function renew(Lease $lease, array $overrides = [], ?User $by = null): Lease
     {
+        if (! in_array($lease->status, ['active', 'expiring_soon', 'ended', 'expired'], true)) {
+            throw ValidationException::withMessages(['status' => 'Hanya kontrak aktif/selesai yang dapat diperpanjang.']);
+        }
+
         $room = $lease->room;
 
         if (! $room) {
@@ -182,13 +198,23 @@ class LeaseWorkflowService
     }
 
     /**
-     * Tandai tenant memberi notice akan keluar.
+     * Tandai tenant memberi notice akan keluar. Hanya dari status operasional.
      */
     public function giveNotice(Lease $lease, ?Carbon $effectiveDate = null): Lease
     {
+        if (! $lease->isOperational()) {
+            throw ValidationException::withMessages(['status' => 'Notice hanya untuk kontrak aktif.']);
+        }
+
+        $effective = $effectiveDate?->toDateString() ?? $lease->end_date?->toDateString();
+
+        if ($effective && $lease->start_date && $effective < $lease->start_date->toDateString()) {
+            throw ValidationException::withMessages(['end_date' => 'Tanggal efektif tidak boleh sebelum tanggal mulai.']);
+        }
+
         $lease->forceFill([
             'notice_given_at' => today(),
-            'end_date' => $effectiveDate?->toDateString() ?? $lease->end_date,
+            'end_date' => $effective ?? $lease->end_date,
         ])->save();
 
         try {

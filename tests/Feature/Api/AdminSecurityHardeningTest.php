@@ -181,4 +181,75 @@ class AdminSecurityHardeningTest extends TestCase
         $this->postJson('/webhook/midtrans', $payload)->assertOk();
         $this->assertSame('success', $trx->fresh()->status);
     }
+
+    public function test_webhook_with_wrong_amount_does_not_pay_invoice(): void
+    {
+        $lease = Lease::factory()->create();
+        $invoice = Invoice::factory()->create(['lease_id' => $lease->id, 'total' => 1000000, 'status' => 'sent']);
+        PaymentTransaction::create([
+            'invoice_id' => $invoice->id,
+            'gateway' => 'midtrans',
+            'order_id' => 'KOS-AMOUNT-1',
+            'amount' => 1000000,
+            'status' => 'pending',
+        ]);
+
+        \App\Models\Setting::set('midtrans_server_key', 'dummy-key-for-test', 'payment');
+        $payload = [
+            'order_id' => 'KOS-AMOUNT-1',
+            'status_code' => '200',
+            'gross_amount' => '100.00',
+            'transaction_status' => 'settlement',
+        ];
+        $payload['signature_key'] = hash('sha512',
+            $payload['order_id'].$payload['status_code'].$payload['gross_amount'].'dummy-key-for-test');
+
+        $this->postJson('/webhook/midtrans', $payload)->assertOk();
+        $this->assertSame('failed', PaymentTransaction::where('order_id', 'KOS-AMOUNT-1')->first()->status);
+        $this->assertNotSame('paid', $invoice->fresh()->status);
+    }
+
+    public function test_webhook_out_of_order_deny_after_success_keeps_paid(): void
+    {
+        $lease = Lease::factory()->create();
+        $invoice = Invoice::factory()->create(['lease_id' => $lease->id, 'total' => 1000000, 'status' => 'paid']);
+        PaymentTransaction::create([
+            'invoice_id' => $invoice->id,
+            'gateway' => 'midtrans',
+            'order_id' => 'KOS-OOO-1',
+            'amount' => 1000000,
+            'status' => 'success',
+            'paid_at' => now(),
+        ]);
+
+        \App\Models\Setting::set('midtrans_server_key', 'dummy-key-for-test', 'payment');
+        $payload = [
+            'order_id' => 'KOS-OOO-1',
+            'status_code' => '200',
+            'gross_amount' => '1000000.00',
+            'transaction_status' => 'deny',
+        ];
+        $payload['signature_key'] = hash('sha512',
+            $payload['order_id'].$payload['status_code'].$payload['gross_amount'].'dummy-key-for-test');
+
+        $this->postJson('/webhook/midtrans', $payload)->assertOk();
+        $this->assertSame('success', PaymentTransaction::where('order_id', 'KOS-OOO-1')->first()->status);
+        $this->assertSame('paid', $invoice->fresh()->status);
+    }
+
+    public function test_webhook_unknown_order_is_ignored(): void
+    {
+        \App\Models\Setting::set('midtrans_server_key', 'dummy-key-for-test', 'payment');
+        $payload = [
+            'order_id' => 'KOS-NOT-EXIST',
+            'status_code' => '200',
+            'gross_amount' => '1000000.00',
+            'transaction_status' => 'settlement',
+        ];
+        $payload['signature_key'] = hash('sha512',
+            $payload['order_id'].$payload['status_code'].$payload['gross_amount'].'dummy-key-for-test');
+
+        $this->postJson('/webhook/midtrans', $payload)->assertOk();
+        $this->assertSame(0, PaymentTransaction::where('order_id', 'KOS-NOT-EXIST')->count());
+    }
 }

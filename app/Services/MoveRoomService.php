@@ -54,6 +54,10 @@ class MoveRoomService
             abort(422, 'Kontrak tidak memiliki kamar.');
         }
 
+        if (! $lease->isOperational()) {
+            abort(422, 'Hanya kontrak aktif yang dapat dipindahkan.');
+        }
+
         if ($fromRoom->id === $toRoom->id) {
             abort(422, 'Kamar tujuan sama dengan kamar asal.');
         }
@@ -69,6 +73,16 @@ class MoveRoomService
         $prorate = $options['prorate_amount'] ?? $this->calculateProrate($lease, $toRoom);
 
         return DB::transaction(function () use ($lease, $fromRoom, $toRoom, $effectiveDate, $prorate, $options) {
+            // Kunci lease + kedua kamar agar transfer konkuren tidak menempati ganda.
+            $lease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            $fromRoom = Room::query()->lockForUpdate()->findOrFail($fromRoom->id);
+            $toRoom = Room::query()->lockForUpdate()->findOrFail($toRoom->id);
+
+            if ($fromRoom->id === $toRoom->id
+                || !$toRoom->is_active
+                || in_array($toRoom->status, ['occupied', 'reserved', 'inactive'], true)) {
+                abort(422, 'Kamar tujuan tidak lagi tersedia.');
+            }
             // 1. Riwayat transfer
             $transfer = RoomTransfer::create([
                 'lease_id'           => $lease->id,
@@ -87,20 +101,22 @@ class MoveRoomService
             // 2. Update lease → kamar baru (riwayat tetap tersimpan di room_transfers)
             $lease->forceFill(['room_id' => $toRoom->id])->saveQuietly();
 
-            // 3. Invoice prorate bila ada selisih
+            // 3. Invoice prorate bila ada selisih.
+            // Prorate negatif = KREDIT untuk tenant (total negatif, bukan tagihan).
             if (abs((float) $prorate) > 0.009) {
+                $signed = round((float) $prorate, 2);
                 Invoice::create([
                     'lease_id'      => $lease->id,
                     'invoice_number'=> $this->generateAdjustmentNumber(),
                     'period_start'  => $effectiveDate->copy()->startOfMonth(),
                     'period_end'    => $effectiveDate->copy()->endOfMonth(),
                     'due_date'      => now()->addDays(7),
-                    'base_amount'   => abs((float) $prorate),
-                    'total'         => abs((float) $prorate),
+                    'base_amount'   => $signed,
+                    'total'         => $signed,
                     'additional_charges' => [[
-                        'label'  => ($prorate > 0 ? 'Selisih harga pindah kamar '
+                        'label'  => ($signed > 0 ? 'Selisih harga pindah kamar '
                                     : 'Kredit pindah kamar ').$fromRoom->room_number.' → '.$toRoom->room_number,
-                        'amount' => abs((float) $prorate),
+                        'amount' => $signed,
                     ]],
                     'status' => 'sent',
                     'sent_at'=> now(),
@@ -109,14 +125,21 @@ class MoveRoomService
                 ]);
             }
 
+            // Deposit mengikuti lease_id secara otomatis (tidak perlu dipindah manual).
+            // Flag transfer_deposit disimpan sebagai jejak intent pada room_transfers.
+
             // 4. Status kamar: asal → cleaning; tujuan → occupied
             try {
-                app(RoomStatusService::class)->transition($fromRoom, 'cleaning', 'Tenant pindah ke '.$toRoom->room_number);
+                app(RoomStatusService::class)->transition($fromRoom->fresh(), 'cleaning', 'Tenant pindah ke '.$toRoom->room_number);
             } catch (\Throwable) {
                 $fromRoom->forceFill(['status' => 'cleaning'])->saveQuietly();
             }
 
-            $toRoom->forceFill(['status' => 'occupied'])->saveQuietly();
+            try {
+                app(RoomStatusService::class)->transition($toRoom->fresh(), 'occupied', 'Pindahan dari '.$fromRoom->room_number);
+            } catch (\Throwable) {
+                $toRoom->forceFill(['status' => 'occupied'])->saveQuietly();
+            }
 
             return $transfer;
         });

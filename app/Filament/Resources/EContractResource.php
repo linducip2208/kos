@@ -95,16 +95,34 @@ class EContractResource extends Resource
                 Actions\Action::make('sign_owner')
                     ->label('Tanda Tangan Pemilik')->icon('heroicon-o-pencil')->color('warning')
                     ->visible(fn (EContract $r) => in_array($r->status, ['draft', 'sent']))
-                    ->action(function (EContract $record) {
-                        app(EContractService::class)->signByOwner($record, 'owner_signature_placeholder');
+                    ->schema([
+                        Textarea::make('signature_base64')->label('Signature (base64 PNG/JPEG, maks 2MB)')
+                            ->required()->rows(4)
+                            ->helperText('Tempel data gambar base64 tanda tangan pemilik.'),
+                    ])
+                    ->action(function (EContract $record, array $data) {
+                        app(EContractService::class)->signByOwner($record, $data['signature_base64']);
                         Notification::make()->title('Kontrak ditandatangani pemilik.')->success()->send();
                     }),
                 Actions\Action::make('send_link')
                     ->label('Kirim Link ke Penyewa')->icon('heroicon-o-paper-airplane')->color('success')
                     ->visible(fn (EContract $r) => ! empty($r->owner_signature))
                     ->action(function (EContract $record) {
-                        app(EContractService::class)->sendSignLink($record);
-                        Notification::make()->title('Link tanda tangan terkirim via WhatsApp.')->success()->send();
+                        $link = app(EContractService::class)->sendSignLink($record);
+                        $occupant = $record->lease?->occupant;
+                        $sent = $occupant
+                            ? app(\App\Services\WhatsAppService::class)->send(
+                                $occupant->whatsapp_number,
+                                "Kontrak digital Anda siap ditandatangani: {$link}",
+                                'econtract',
+                                $record
+                            )
+                            : false;
+                        if ($record->status === 'owner_signed') {
+                            $record->update(['status' => 'sent']);
+                        }
+                        Notification::make()->title($sent ? 'Link tanda tangan terkirim via WhatsApp.' : 'Link dibuat, pengiriman WA gagal/nonaktif. Link: '.$link)
+                            ->success()->send();
                     }),
             ])
             ->defaultSort('created_at', 'desc');

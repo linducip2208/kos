@@ -25,6 +25,13 @@ class EContractService
             [
                 'contract_number' => $contractNumber,
                 'content_html' => $html,
+                // Regenerasi = mulai dari draft bersih; signature lama tidak berlaku.
+                'owner_signature' => null,
+                'owner_signed_at' => null,
+                'occupant_signature' => null,
+                'occupant_signed_at' => null,
+                'sign_token' => null,
+                'sign_token_expires_at' => null,
                 'status' => 'draft',
             ]
         );
@@ -32,6 +39,7 @@ class EContractService
 
     public function signByOwner(EContract $contract, string $signatureBase64): void
     {
+        $this->assertSignable($contract);
         $path = $this->saveSignature($signatureBase64, 'owner_'.$contract->id);
         $contract->update([
             'owner_signature' => $path,
@@ -42,12 +50,21 @@ class EContractService
 
     public function signByOccupant(EContract $contract, string $signatureBase64): void
     {
+        $this->assertSignable($contract);
         $path = $this->saveSignature($signatureBase64, 'occupant_'.$contract->id);
         $contract->update([
             'occupant_signature' => $path,
             'occupant_signed_at' => now(),
-            'status' => $contract->owner_signature ? 'fully_signed' : 'draft',
+            // occupant-first: tandai 'sent' (menunggu pemilik), bukan draft.
+            'status' => $contract->owner_signature ? 'fully_signed' : 'sent',
         ]);
+    }
+
+    private function assertSignable(EContract $contract): void
+    {
+        if (in_array($contract->status, ['fully_signed', 'expired'], true)) {
+            abort(422, 'Kontrak sudah final/kedaluwarsa dan tidak dapat ditandatangani.');
+        }
     }
 
     public function sendSignLink(EContract $contract): string
@@ -62,7 +79,16 @@ class EContractService
         $appName = setting('app_name', 'Kos Manager');
         $occupant = $lease->occupant;
         $room = $lease->room;
-        $property = $room->property;
+        $property = $room?->property;
+
+        $occupantName = $occupant?->name ?? '-';
+        $idNumber = $occupant?->id_number ?? '-';
+        $phone = $occupant?->phone ?? '-';
+        $roomNumber = $room?->room_number ?? '-';
+        $propertyName = $property?->name ?? '-';
+        $propertyAddress = $property?->address ?? '-';
+        $startDate = $lease->start_date?->format('d F Y') ?? '-';
+        $endDate = $lease->end_date?->format('d F Y') ?? '-';
 
         return <<<HTML
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 40px;">
@@ -79,15 +105,15 @@ class EContractService
                 </tr>
                 <tr>
                     <td><strong>PENYEWA</strong></td>
-                    <td>: {$occupant->name}</td>
+                    <td>: {$occupantName}</td>
                 </tr>
                 <tr>
                     <td><strong>No. KTP</strong></td>
-                    <td>: {$occupant->id_number}</td>
+                    <td>: {$idNumber}</td>
                 </tr>
                 <tr>
                     <td><strong>No. HP</strong></td>
-                    <td>: {$occupant->phone}</td>
+                    <td>: {$phone}</td>
                 </tr>
             </table>
 
@@ -95,12 +121,12 @@ class EContractService
 
             <ol>
                 <li>
-                    <strong>Objek Sewa:</strong> Kamar No. <strong>{$room->room_number}</strong>
-                    di {$property->name}, {$property->address}.
+                    <strong>Objek Sewa:</strong> Kamar No. <strong>{$roomNumber}</strong>
+                    di {$propertyName}, {$propertyAddress}.
                 </li>
                 <li>
                     <strong>Periode Sewa:</strong>
-                    {$lease->start_date->format('d F Y')} s/d {$lease->end_date->format('d F Y')}
+                    {$startDate} s/d {$endDate}
                 </li>
                 <li>
                     <strong>Harga Sewa:</strong> Rp {$this->fmt($lease->price)} per bulan
@@ -133,7 +159,7 @@ class EContractService
                 <div style="text-align:center; width:45%;">
                     <p>Penyewa</p>
                     <div style="height:80px; border:1px dashed #ccc; margin:10px 0;"></div>
-                    <p><strong>{$occupant->name}</strong></p>
+                    <p><strong>{$occupantName}</strong></p>
                 </div>
             </div>
         </div>
@@ -142,9 +168,38 @@ class EContractService
 
     private function saveSignature(string $base64, string $name): string
     {
-        $data = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
+        $raw = preg_replace('/^data:image\/\w+;base64,/', '', trim($base64));
+        $data = base64_decode($raw, true);
+
+        if ($data === false || $data === '' || strlen($data) > 2 * 1024 * 1024) {
+            abort(422, 'Signature tidak valid (bukan base64 atau melebihi 2MB).');
+        }
+
+        // Terima PNG/JPEG berdasarkan magic bytes.
+        $isPng = str_starts_with($data, "\x89PNG");
+        $isJpg = str_starts_with($data, "\xFF\xD8\xFF");
+        if (! $isPng && ! $isJpg) {
+            abort(422, 'Signature harus berupa gambar PNG/JPEG.');
+        }
+
         $path = "signatures/{$name}.png";
         Storage::disk('local')->put($path, $data);
+
+        return $path;
+    }
+
+    /**
+     * Simpan signature dari file upload (portal penyewa).
+     */
+    public function saveSignatureUpload(\Illuminate\Http\UploadedFile $file, string $name): string
+    {
+        if (! in_array($file->getMimeType(), ['image/png', 'image/jpeg'], true)
+            || $file->getSize() > 2 * 1024 * 1024) {
+            abort(422, 'Signature harus berupa gambar PNG/JPEG maksimal 2MB.');
+        }
+
+        $path = "signatures/{$name}.".$file->extension();
+        Storage::disk('local')->putFileAs('signatures', $file, basename($path));
 
         return $path;
     }

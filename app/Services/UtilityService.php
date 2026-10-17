@@ -52,6 +52,10 @@ class UtilityService
             throw ValidationException::withMessages(['current_reading' => 'Bacaan meter tidak boleh negatif.']);
         }
 
+        // Normalisasi ke awal bulan agar lookup updateOrCreate konsisten
+        // dengan cast date (input 'YYYY-MM' vs 'YYYY-MM-DD').
+        $billingPeriod = \Carbon\Carbon::parse($billingPeriod)->startOfMonth()->toDateString();
+
         return DB::transaction(function () use ($roomId, $type, $currentReading, $billingPeriod, $rateOverride) {
             $previous = UtilityReading::where('room_id', $roomId)
                 ->where('type', $type)
@@ -67,17 +71,35 @@ class UtilityService
             $rate = $rateOverride ?? $this->rateForRoom($roomId, $type);
             $lease = Lease::where('room_id', $roomId)->whereIn('status', ['active', 'expiring_soon'])->first();
 
-            return UtilityReading::updateOrCreate(
-                ['room_id' => $roomId, 'type' => $type, 'billing_period' => $billingPeriod],
-                [
+            // whereDate eksplisit: cast `date` menyimpan format datetime,
+            // sedangkan lookup string polos tidak akan cocok.
+            $reading = UtilityReading::where('room_id', $roomId)
+                ->where('type', $type)
+                ->whereDate('billing_period', $billingPeriod)
+                ->first();
+
+            if ($reading) {
+                $reading->fill([
                     'lease_id' => $lease?->id,
                     'previous_reading' => $previous,
                     'current_reading' => $currentReading,
                     'rate_per_unit' => $rate,
                     'amount' => round(($currentReading - $previous) * $rate, 2),
                     'reading_date' => now()->toDateString(),
-                ]
-            );
+                ])->save();
+
+                return $reading;
+            }
+
+            return UtilityReading::create([
+                'room_id' => $roomId, 'type' => $type, 'billing_period' => $billingPeriod,
+                'lease_id' => $lease?->id,
+                'previous_reading' => $previous,
+                'current_reading' => $currentReading,
+                'rate_per_unit' => $rate,
+                'amount' => round(($currentReading - $previous) * $rate, 2),
+                'reading_date' => now()->toDateString(),
+            ]);
         });
     }
 

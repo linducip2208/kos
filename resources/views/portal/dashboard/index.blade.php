@@ -54,18 +54,18 @@
     </div>
     <div class="space-y-3">
         @foreach($unpaidInvoices as $inv)
-        <div class="flex justify-between items-center py-2 border-b last:border-0">
+        <a href="{{ route('portal.invoices.show', $inv) }}" class="flex justify-between items-center py-2 border-b last:border-0 hover:bg-gray-50 -mx-1 px-1 rounded transition-colors">
             <div>
                 <div class="font-medium text-sm">{{ $inv->invoice_number }}</div>
                 <div class="text-xs text-gray-500">Jatuh tempo: {{ $inv->due_date?->format('d M Y') }}</div>
             </div>
-            <div class="text-right">
+            <div class="text-right shrink-0 ml-3">
                 <div class="font-semibold text-sm">Rp {{ number_format($inv->total, 0, ',', '.') }}</div>
                 <span class="text-xs px-1.5 py-0.5 rounded {{ $inv->status === 'overdue' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' }}">
                     {{ $inv->status === 'overdue' ? 'Lewat Jatuh Tempo' : 'Belum Dibayar' }}
                 </span>
             </div>
-        </div>
+        </a>
         @endforeach
     </div>
 </div>

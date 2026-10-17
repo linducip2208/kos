@@ -17,8 +17,7 @@ class ReportController extends Controller
     {
         $this->authorize($request);
         $rooms = $this->scopeProperty(Room::query(), $request->user());
-        $from = $request->from ?? now()->startOfMonth()->toDateString();
-        $to = $request->to ?? now()->toDateString();
+        [$from, $to] = $this->dateRange($request, now()->startOfMonth()->toDateString());
 
         $totalRooms = (clone $rooms)->count();
         $occupiedRooms = (clone $rooms)->where('status', 'occupied')->count();
@@ -42,8 +41,7 @@ class ReportController extends Controller
     {
         $this->authorize($request);
         $invoiceScope = fn ($query) => $query->whereHas('lease.room', fn ($room) => $this->scopeProperty($room, $request->user()));
-        $from = $request->from ?? now()->startOfMonth()->toDateString();
-        $to = $request->to ?? now()->toDateString();
+        [$from, $to] = $this->dateRange($request, now()->startOfMonth()->toDateString());
 
         $paid = Invoice::where('status', 'paid')->tap($invoiceScope)
             ->whereBetween('paid_at', [$from, $to])
@@ -90,8 +88,7 @@ class ReportController extends Controller
     public function turnover(Request $request)
     {
         $this->authorize($request);
-        $from = $request->from ?? now()->subMonths(6)->toDateString();
-        $to = $request->to ?? now()->toDateString();
+        [$from, $to] = $this->dateRange($request, now()->subMonths(6)->toDateString());
 
         $terminated = Lease::whereBetween('terminated_at', [$from, $to])->whereHas('room', fn ($room) => $this->scopeProperty($room, $request->user()))
             ->with(['occupant:id,name', 'room:id,room_number'])
@@ -119,6 +116,28 @@ class ReportController extends Controller
         return DB::getDriverName() === 'sqlite'
             ? "strftime('%Y-%m', paid_at)"
             : "DATE_FORMAT(paid_at, '%Y-%m')";
+    }
+
+    /**
+     * Rentang tanggal inklusif: tanggal polos diperluas ke
+     * awal/akhir hari agar data hari yang sama tidak terlewat
+     * (perbandingan string datetime vs date).
+     *
+     * @return array{0:string,1:string}
+     */
+    private function dateRange(Request $request, string $defaultFrom): array
+    {
+        $from = (string) ($request->from ?? $defaultFrom);
+        $to = (string) ($request->to ?? now()->toDateTimeString());
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            $from .= ' 00:00:00';
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            $to .= ' 23:59:59';
+        }
+
+        return [$from, $to];
     }
 
     private function scopeProperty($query, User $user)

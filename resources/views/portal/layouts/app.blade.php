@@ -33,8 +33,8 @@
         </div>
 
         {{-- Mobile hamburger --}}
-        <button @click="navOpen = !navOpen" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-gray-100">
-            <svg x-show="!navOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button @click="navOpen = !navOpen" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-gray-100" aria-label="Buka/tutup menu">
+            <svg x-show="!navOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
             <svg x-show="navOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,12 +69,12 @@
     @endif
 
     {{-- Nav tabs — scrollable on mobile --}}
-    <div class="flex gap-1.5 mb-6 overflow-x-auto -mx-1 px-1 pb-1" style="-webkit-overflow-scrolling:touch">
-        <a href="{{ route('portal.dashboard') }}" class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.dashboard') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Dashboard</a>
-        <a href="{{ route('portal.invoices.index') }}" class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.invoices*') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Tagihan</a>
-        <a href="{{ route('portal.maintenance.index') }}" class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.maintenance*') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Maintenance</a>
-        <a href="{{ route('portal.profile.edit') }}" class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.profile*') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Profil</a>
-    </div>
+    <nav aria-label="Navigasi portal" class="flex gap-1.5 mb-6 overflow-x-auto -mx-1 px-1 pb-1" style="-webkit-overflow-scrolling:touch">
+        <a href="{{ route('portal.dashboard') }}" @if(request()->routeIs('portal.dashboard')) aria-current="page" @endif class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.dashboard') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Dashboard</a>
+        <a href="{{ route('portal.invoices.index') }}" @if(request()->routeIs('portal.invoices*')) aria-current="page" @endif class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.invoices*') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Tagihan</a>
+        <a href="{{ route('portal.maintenance.index') }}" @if(request()->routeIs('portal.maintenance*')) aria-current="page" @endif class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.maintenance*') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Maintenance</a>
+        <a href="{{ route('portal.profile.edit') }}" @if(request()->routeIs('portal.profile*')) aria-current="page" @endif class="portal-btn px-3 py-1.5 rounded text-sm whitespace-nowrap {{ request()->routeIs('portal.profile*') ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">Profil</a>
+    </nav>
 
     @yield('content')
 </div>

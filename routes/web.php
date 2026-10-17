@@ -43,6 +43,10 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('login',  [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
 
+    // Tanda tangan kontrak digital via token (tanpa login; token = otorisasi).
+    Route::get('contract/sign/{token}',  [\App\Http\Controllers\Portal\ContractController::class, 'show'])->name('contract.sign');
+    Route::post('contract/sign/{token}', [\App\Http\Controllers\Portal\ContractController::class, 'sign'])->middleware('throttle:10,1')->name('contract.sign.post');
+
     Route::middleware('portal.auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 

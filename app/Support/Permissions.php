@@ -95,7 +95,6 @@ class Permissions
         'role.view',
         'settings.manage',
         'audit.view',
-        'system.plugins',
         'plugin.manage', 'theme.manage', 'print.report', 'pdf.report',
     ];
 

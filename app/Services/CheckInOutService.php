@@ -159,24 +159,25 @@ class CheckInOutService
                 'completed_at' => now(),
             ]);
 
-            app(LeaseWorkflowService::class)->end($lease, 'Check-out normal');
+            app(LeaseWorkflowService::class)->end($lockedLease, 'Check-out normal');
 
-            return $rec;
-        });
-
-        // Settlement deposit bila diminta dan ada deposit
-        if ($data['execute_settlement'] ?? true) {
-            $deposit = $lease->deposits()->whereNotIn('status', ['refunded', 'forfeited'])->latest('id')->first();
-            if ($deposit) {
-                $settlement = $this->deposits->buildCheckoutSettlement($deposit);
-                $record->forceFill([
-                    'settlement' => $settlement,
-                    'tenant_payable' => $settlement['tenant_payable'],
-                    'deposit_deduction' => $settlement['deduction'],
-                ])->saveQuietly();
-                $this->deposits->executeCheckoutSettlement($deposit, $settlement);
+            // Settlement deposit dalam transaksi yang SAMA agar gagal settlement
+            // me-rollback check_out + end lease (tidak ada state parsial).
+            if ($data['execute_settlement'] ?? true) {
+                $deposit = $lockedLease->deposits()->whereNotIn('status', ['refunded', 'forfeited'])->latest('id')->first();
+                if ($deposit) {
+                    $settlement = $this->deposits->buildCheckoutSettlement($deposit);
+                    $rec->forceFill([
+                        'settlement' => $settlement,
+                        'tenant_payable' => $settlement['tenant_payable'],
+                        'deposit_deduction' => $settlement['deduction'],
+                    ])->save();
+                    $this->deposits->executeCheckoutSettlement($deposit, $settlement);
+                }
             }
-        }
+
+            return $rec->refresh();
+        });
 
         // Kamar masuk tahap cleaning setelah checkout selesai
         try {

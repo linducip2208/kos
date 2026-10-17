@@ -22,26 +22,36 @@ class ThemeManager
 
     public function activate(string $area, string $slug): array
     {
+        if (! \App\Core\Plugin\SlugGuard::themeArea($area)) {
+            return ['success' => false, 'message' => 'Area theme tidak valid.'];
+        }
+        if (! \App\Core\Plugin\SlugGuard::plugin($slug)) {
+            return ['success' => false, 'message' => 'Slug theme tidak valid.'];
+        }
+
         $themePath = base_path("themes/{$area}/{$slug}/theme.json");
-        if (!file_exists($themePath)) {
+        if (! file_exists($themePath)
+            || ! \App\Core\Plugin\SlugGuard::containedIn(base_path("themes/{$area}"), $themePath)) {
             return ['success' => false, 'message' => "Theme '{$slug}' tidak ditemukan di area '{$area}'."];
         }
 
-        InstalledTheme::where('area', $area)->update(['is_active' => false]);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($area, $slug) {
+            InstalledTheme::where('area', $area)->update(['is_active' => false]);
 
-        $manifest = $this->getManifest($area, $slug);
-        InstalledTheme::updateOrCreate(
-            ['area' => $area, 'slug' => $slug],
-            [
-                'name'      => $manifest['name'] ?? $slug,
-                'version'   => $manifest['version'] ?? '1.0.0',
-                'is_active' => true,
-            ]
-        );
+            $manifest = $this->getManifest($area, $slug);
+            InstalledTheme::updateOrCreate(
+                ['area' => $area, 'slug' => $slug],
+                [
+                    'name'      => $manifest['name'] ?? $slug,
+                    'version'   => $manifest['version'] ?? '1.0.0',
+                    'is_active' => true,
+                ]
+            );
 
-        $this->activeThemes[$area] = $slug;
+            $this->activeThemes[$area] = $slug;
 
-        return ['success' => true, 'message' => "Theme '{$slug}' aktif untuk area '{$area}'."];
+            return ['success' => true, 'message' => "Theme '{$slug}' aktif untuk area '{$area}'."];
+        });
     }
 
     public function getActive(string $area): string
