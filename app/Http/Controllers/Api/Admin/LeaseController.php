@@ -114,9 +114,9 @@ class LeaseController extends Controller
         $propertyIds = $request->user()->scopedPropertyIds();
 
         return response()->json(
-            Lease::where('status', 'active')
+            Lease::whereIn('status', ['active', 'expiring_soon'])
                 ->when($propertyIds !== null, fn ($query) => $query->whereHas('room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0])))
-                ->whereBetween('end_date', [now(), now()->addDays($days)])
+                ->whereBetween('end_date', [now()->startOfDay(), now()->addDays($days)->endOfDay()])
                 ->with(['occupant:id,name,phone', 'room:id,room_number,property_id', 'room.property:id,name'])
                 ->get()
         );

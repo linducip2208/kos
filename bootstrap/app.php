@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'portal.auth' => \App\Http\Middleware\PortalAuth::class,
+            'active.account' => \App\Http\Middleware\EnsureActiveAccount::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

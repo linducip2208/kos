@@ -15,11 +15,15 @@ class InvoicesExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         private ?string $status = null,
         private ?string $from   = null,
         private ?string $to     = null,
+        /** null = semua properti (owner/super_admin), array = batasi ke ID properti ini */
+        private ?array $propertyIds = null,
     ) {}
 
     public function query()
     {
         return Invoice::with(['lease.occupant', 'lease.room.property'])
+            ->when($this->propertyIds !== null, fn ($q) => $q->whereHas('lease.room',
+                fn ($r) => $r->whereIn('property_id', $this->propertyIds ?: [0])))
             ->when($this->status, fn ($q) => $q->where('status', $this->status))
             ->when($this->from,   fn ($q) => $q->where('due_date', '>=', $this->from))
             ->when($this->to,     fn ($q) => $q->where('due_date', '<=', $this->to))

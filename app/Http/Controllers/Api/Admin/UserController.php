@@ -10,8 +10,10 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $this->ownerOnly($request);
+
         return response()->json(User::select('id', 'name', 'email', 'phone', 'role', 'is_active', 'created_at')->get());
     }
 

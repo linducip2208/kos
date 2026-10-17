@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class UtilityService
 {
+    public function __construct(private ?UtilityRateService $rates = null) {}
+
     public function getDefaultRate(string $type): float
     {
         return match ($type) {
@@ -19,6 +21,21 @@ class UtilityService
             'gas' => (float) setting('gas_rate', 7000, 'utility'),
             default => 0,
         };
+    }
+
+    /**
+     * Tarif per unit untuk kamar: tiered rate (kamar → tipe → properti → global)
+     * bila ada baris utility_rates, fallback ke setting global.
+     */
+    public function rateForRoom(int $roomId, string $type): float
+    {
+        $room = \App\Models\Room::find($roomId);
+
+        if ($room) {
+            return ($this->rates ?? app(UtilityRateService::class))->ratePerUnit($room, $type);
+        }
+
+        return $this->getDefaultRate($type);
     }
 
     public function recordReading(
@@ -47,7 +64,7 @@ class UtilityService
                 throw ValidationException::withMessages(['current_reading' => 'Bacaan sekarang tidak boleh lebih kecil dari bacaan sebelumnya.']);
             }
 
-            $rate = $rateOverride ?? $this->getDefaultRate($type);
+            $rate = $rateOverride ?? $this->rateForRoom($roomId, $type);
             $lease = Lease::where('room_id', $roomId)->whereIn('status', ['active', 'expiring_soon'])->first();
 
             return UtilityReading::updateOrCreate(

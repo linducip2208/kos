@@ -43,6 +43,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 h-14 overflow-x-auto text-sm font-medium">
         <a href="/" class="text-primary-600 font-extrabold shrink-0">{{ setting('app_name', 'Kos Manager') }}</a>
         <a href="#demo" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Akun Demo</a>
+        <a href="#alamat" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Alamat</a>
         <a href="#struktur" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Struktur Menu</a>
         <a href="#tutorial" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Tutorial</a>
         <a href="#fitur" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Fitur</a>
@@ -61,7 +62,8 @@
 
     {{-- Demo Accounts --}}
     <section id="demo" class="reveal">
-        <h2 class="text-3xl font-extrabold text-slate-900 mb-8">Akun Demo</h2>
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Akun Demo</h2>
+        <p class="text-slate-500 text-sm mb-6">Gunakan akun berikut untuk login ke <a href="{{ $adminUrl }}" class="text-primary-600 font-semibold hover:underline">{{ $adminUrl }}</a> (password semua sama).</p>
         <div class="overflow-x-auto">
             <table class="w-full bg-white rounded-xl shadow-sm border border-slate-200 text-sm">
                 <thead class="bg-slate-50 border-b border-slate-200">
@@ -131,6 +133,26 @@
         @endforeach
     </section>
 
+    {{-- Alamat Penting --}}
+    <section id="alamat" class="reveal">
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Alamat Penting</h2>
+        <p class="text-slate-500 text-sm mb-6">Semua URL mengikuti domain aktif (<span class="font-mono font-semibold text-slate-700">{{ $baseUrl }}</span>) — ganti otomatis saat pindah domain.</p>
+        <div class="grid sm:grid-cols-2 gap-4">
+            @foreach([
+                ['Admin Panel', $adminUrl, 'Kelola properti, sewa, keuangan'],
+                ['Portal Penyewa', $portalUrl, 'Login penghuni: tagihan & maintenance'],
+                ['API Mobile', $apiUrl . '/tenant/me', 'REST API + Sanctum token'],
+                ['Dokumentasi', $baseUrl . '/docs', 'Halaman ini'],
+            ] as $l)
+            <a href="{{ $l[1] }}" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-200 hover:shadow-md transition-all block">
+                <h4 class="font-bold text-slate-800">{{ $l[0] }}</h4>
+                <p class="font-mono text-xs text-primary-600 mt-1 break-all">{{ $l[1] }}</p>
+                <p class="text-xs text-slate-500 mt-1">{{ $l[2] }}</p>
+            </a>
+            @endforeach
+        </div>
+    </section>
+
     {{-- Fitur --}}
     <section id="fitur" class="reveal">
         <h2 class="text-3xl font-extrabold text-slate-900 mb-8">Fitur Lengkap</h2>
@@ -141,25 +163,13 @@
                 <div class="browser-mock">
                     <div class="bar">
                         <div class="dots"><span style="background:#ef4444"></span><span style="background:#f59e0b"></span><span style="background:#22c55e"></span></div>
-                        <div class="url">kos.test/admin</div>
+                        <div class="url">{{ $baseUrl }}{{ $f['path'] ?? '/admin' }}</div>
                     </div>
-                    <div class="aspect-video bg-gradient-to-br from-primary-50 to-indigo-50 flex items-center justify-center p-8">
-                        <div class="text-center">
-                            <div class="text-4xl mb-4">
-                                @switch($f['group'])
-                                    @case('Master Data') 🏠 @break
-                                    @case('Transaksi') 📋 @break
-                                    @case('Keuangan') 💰 @break
-                                    @case('Operasional') 🔧 @break
-                                    @case('Laporan') 📊 @break
-                                    @default 📦
-                                @endswitch
-                            </div>
-                            <p class="text-lg font-bold text-slate-400">{{ $f['title'] }}</p>
-                            <p class="text-xs text-slate-300 mt-1">Screenshot {{ $f['screenshot'] }}</p>
-                        </div>
-                    </div>
+                    <img src="{{ asset('images/docs/' . $f['screenshot']) }}" alt="Screenshot {{ $f['title'] }}" loading="lazy"
+                         class="w-full aspect-video object-cover bg-gradient-to-br from-primary-50 to-indigo-50"
+                         onerror="this.outerHTML='<div class=&quot;aspect-video bg-gradient-to-br from-primary-50 to-indigo-50 flex items-center justify-center p-8&quot;><div class=&quot;text-center&quot;><div class=&quot;text-4xl mb-4&quot;>📸</div><p class=&quot;text-sm font-bold text-slate-400&quot;>Screenshot menyusul: {{ $f['screenshot'] }}</p><p class=&quot;text-xs text-slate-300 mt-1&quot;>Simpan file di public/images/docs/</p></div></div>'">
                 </div>
+                <p class="text-center mt-2"><a href="{{ $baseUrl }}{{ $f['path'] ?? '/admin' }}" class="font-mono text-xs text-primary-600 hover:underline">{{ $baseUrl }}{{ $f['path'] ?? '/admin' }}</a></p>
             </div>
             <div class="flex-1">
                 <span class="text-xs font-semibold text-primary-600 uppercase tracking-wider">{{ $f['group'] }}</span>
@@ -183,8 +193,9 @@
         <h2 class="text-3xl font-extrabold">Siap Mengelola Kos Lebih Mudah?</h2>
         <p class="text-primary-100 mt-3 max-w-lg mx-auto">Coba demo gratis atau beli source code untuk digunakan selamanya.</p>
         <div class="flex flex-wrap justify-center gap-4 mt-8">
-            <a href="/admin" class="bg-white text-primary-700 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors">Coba Demo</a>
-            <a href="https://wa.me/6281296052010" class="bg-green-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-600 transition-colors">WhatsApp</a>
+            <a href="{{ $adminUrl }}" class="bg-white text-primary-700 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors">Coba Demo</a>
+            <a href="{{ $portalUrl }}" class="bg-white/10 text-white px-8 py-3 rounded-xl font-bold hover:bg-white/20 transition-colors border border-white/30">Portal Penyewa</a>
+            <a href="https://wa.me/{{ $whatsapp }}" class="bg-green-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-600 transition-colors">WhatsApp</a>
         </div>
     </section>
 </div>

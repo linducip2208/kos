@@ -41,7 +41,7 @@ Route::prefix('print')->name('print.')->group(function () {
 // Portal Penyewa
 Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('login',  [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
 
     Route::middleware('portal.auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');

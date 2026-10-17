@@ -6,8 +6,6 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\UtilityRate;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\OperationalAlert;
 
 /**
  * Resolusi tarif utilitas berjenjang:

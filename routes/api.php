@@ -22,9 +22,9 @@ Route::prefix('v1')->group(function () {
     });
 
     // ── Admin Auth ────────────────────────────────────────────────────
-    Route::post('admin/auth/login',  [Admin\AuthController::class, 'login']);
+    Route::post('admin/auth/login',  [Admin\AuthController::class, 'login'])->middleware('throttle:10,1');
 
-    Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::middleware(['auth:sanctum', 'active.account'])->prefix('admin')->group(function () {
 
         // Auth & profil
         Route::post  ('auth/logout',          [Admin\AuthController::class, 'logout']);
@@ -107,9 +107,9 @@ Route::prefix('v1')->group(function () {
     });
 
     // ── Tenant (Portal Penyewa) ───────────────────────────────────────
-    Route::post('tenant/auth/login',  [TenantAuthController::class, 'login']);
+    Route::post('tenant/auth/login',  [TenantAuthController::class, 'login'])->middleware('throttle:10,1');
 
-    Route::middleware('auth:sanctum')->prefix('tenant')->group(function () {
+    Route::middleware(['auth:sanctum', 'active.account'])->prefix('tenant')->group(function () {
         Route::post ('auth/logout',   [TenantAuthController::class, 'logout']);
         Route::get  ('auth/me',       [TenantAuthController::class, 'me']);
 
@@ -123,9 +123,9 @@ Route::prefix('v1')->group(function () {
 });
 
 // ── Legacy routes (backward compat, redirect ke v1) ──────────────────
-Route::post('auth/login',  [TenantAuthController::class, 'login']);
-Route::post('auth/logout', [TenantAuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::middleware('auth:sanctum')->prefix('tenant')->group(function () {
+Route::post('auth/login',  [TenantAuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('auth/logout', [TenantAuthController::class, 'logout'])->middleware(['auth:sanctum', 'active.account']);
+Route::middleware(['auth:sanctum', 'active.account'])->prefix('tenant')->group(function () {
     Route::get('me',               [TenantAuthController::class, 'me']);
     Route::get('dashboard',        [TenantDashboardController::class, 'index']);
     Route::get('lease',            [TenantLeaseController::class, 'active']);

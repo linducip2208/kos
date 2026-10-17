@@ -7,7 +7,8 @@ class DocsController extends Controller
     protected function demoAccounts(): array
     {
         return [
-            ['role' => 'Owner', 'email' => 'owner@kos.test', 'password' => 'password', 'scope' => 'Semua akses penuh'],
+            ['role' => 'Super Admin', 'email' => 'admin@kos.test', 'password' => 'password', 'scope' => 'Akses penuh semua menu + pengaturan'],
+            ['role' => 'Owner', 'email' => 'owner@kos.test', 'password' => 'password', 'scope' => 'Laporan, keuangan & monitoring usaha'],
             ['role' => 'Property Manager', 'email' => 'manager@kos.test', 'password' => 'password', 'scope' => 'Kelola operasional properti, kamar, penghuni'],
             ['role' => 'Auditor', 'email' => 'auditor@kos.test', 'password' => 'password', 'scope' => 'Lihat data dan audit log tanpa mengubah data'],
         ];
@@ -65,56 +66,121 @@ class DocsController extends Controller
                 'title' => 'Manajemen Properti & Kamar',
                 'description' => 'Kelola banyak properti kos dalam satu dashboard. Setiap properti punya tipe kamar, fasilitas, dan harga yang berbeda.',
                 'bullets' => ['Multi-properti dalam satu akun', 'Tipe kamar dengan fasilitas kustom', 'Status kamar real-time (tersedia/terisi/maintenance)', 'Upload foto properti & kamar', 'Deskripsi dan alamat lengkap'],
-                'screenshot' => 'property-list.png',
+                'screenshot' => 'property-list.svg',
+                'path' => '/admin/properties',
             ],
             [
                 'group' => 'Master Data',
                 'title' => 'Data Penghuni Lengkap',
                 'description' => 'Database penghuni dengan data KTP, kontak darurat, dan riwayat sewa. Setiap penghuni dapat akses portal mandiri.',
                 'bullets' => ['Data KTP & identitas', 'Kontak darurat', 'Riwayat sewa per penghuni', 'Portal login mandiri', 'Upload dokumen pendukung'],
-                'screenshot' => 'occupant-list.png',
+                'screenshot' => 'occupant-list.svg',
+                'path' => '/admin/occupants',
             ],
             [
                 'group' => 'Transaksi',
                 'title' => 'Sewa & Kontrak Otomatis',
                 'description' => 'Atur periode sewa dengan tanggal mulai dan selesai. Sistem otomatis generate invoice setiap bulan sesuai kontrak.',
                 'bullets' => ['Periode sewa fleksibel (harian/mingguan/bulanan/tahunan)', 'Auto-generate invoice bulanan', 'Perpanjangan kontrak otomatis', 'E-Contract dengan tanda tangan digital', 'Notifikasi H-30 sebelum kontrak habis'],
-                'screenshot' => 'lease-list.png',
+                'screenshot' => 'lease-list.svg',
+                'path' => '/admin/leases',
             ],
             [
                 'group' => 'Keuangan',
                 'title' => 'Invoice & Pembayaran',
                 'description' => 'Invoice otomatis dengan rincian sewa + utilitas + biaya lain. Pembayaran via tunai, transfer, atau payment gateway.',
                 'bullets' => ['Invoice otomatis per bulan', 'Rincian: sewa + listrik + air + lain-lain', 'Payment gateway Midtrans & Tripay', 'Status pembayaran real-time (lunas/sebagian/belum)', 'Cetak PDF invoice & kwitansi'],
-                'screenshot' => 'invoice-list.png',
+                'screenshot' => 'invoice-list.svg',
+                'path' => '/admin/invoices',
+            ],
+            [
+                'group' => 'Keuangan',
+                'title' => 'Deposit & Ledger',
+                'description' => 'Kelola uang deposit penghuni dengan ledger transparan. Setiap potongan dan pengembalian tercatat rapi.',
+                'bullets' => ['Deposit per kontrak sewa', 'Ledger mutasi (masuk/keluar)', 'Potongan kerusakan otomatis', 'Pengembalian deposit', 'Riwayat lengkap per penghuni'],
+                'screenshot' => 'deposit-list.svg',
+                'path' => '/admin/deposits',
             ],
             [
                 'group' => 'Operasional',
                 'title' => 'Maintenance & Perbaikan',
                 'description' => 'Catat dan lacak semua permintaan perbaikan. Penghuni bisa submit request maintenance langsung dari portal.',
-                'bullets' => ['Request maintenance dari admin & penghuni', 'Prioritas (rendah/sedang/tinggi/urgent)', 'Tracking status perbaikan', 'Biaya perbaikan', 'History maintenance per kamar'],
-                'screenshot' => 'maintenance-list.png',
+                'bullets' => ['Request maintenance dari admin & penghuni', 'Prioritas (rendah/sedang/tinggi/urgent)', 'Tracking status perbaikan', 'Biaya perbaikan + vendor', 'History maintenance per kamar'],
+                'screenshot' => 'maintenance-list.svg',
+                'path' => '/admin/maintenance-requests',
+            ],
+            [
+                'group' => 'Operasional',
+                'title' => 'Meteran Listrik & Air',
+                'description' => 'Catat angka meter tiap bulan. Tagihan utilitas otomatis dihitung dari selisih pemakaian × tarif.',
+                'bullets' => ['Pembacaan meter per kamar', 'Tarif per properti (listrik/air)', 'Otomatis masuk invoice', 'Riwayat pemakaian', 'Deteksi pemakaian abnormal'],
+                'screenshot' => 'meter-list.svg',
+                'path' => '/admin/utility-readings',
+            ],
+            [
+                'group' => 'Operasional',
+                'title' => 'Booking Online & E-Contract',
+                'description' => 'Calon penghuni booking dari landing page publik. Setelah disetujui, kontrak digital ditandatangani online.',
+                'bullets' => ['Form booking publik per properti', 'Approval manager → jadi lease', 'E-Contract + tanda tangan digital', 'Checklist check-in/out kamar', 'Pindah kamar (room transfer)'],
+                'screenshot' => 'booking-list.svg',
+                'path' => '/admin/booking-requests',
             ],
             [
                 'group' => 'Laporan',
                 'title' => 'Laporan Keuangan Lengkap',
                 'description' => 'Dashboard laporan dengan chart interaktif. Filter tanggal, properti, dan download PDF/Excel.',
                 'bullets' => ['Ringkasan pendapatan & piutang', 'Chart revenue bulanan/tahunan', 'Laporan P&L (Profit & Loss)', 'Filter per properti', 'Export PDF & Excel'],
-                'screenshot' => 'financial-report.png',
+                'screenshot' => 'financial-report.svg',
+                'path' => '/admin/financial-report',
+            ],
+            [
+                'group' => 'Laporan',
+                'title' => 'Okupansi & Analitik',
+                'description' => 'Pantau tingkat keterisian per properti, kamar kosong, dan tren hunian dari dashboard operasional.',
+                'bullets' => ['Tingkat hunian per properti', 'Daftar kamar kosong siap jual', 'Kontrak hampir habis (H-30)', 'Invoice jatuh tempo', 'Export Excel okupansi'],
+                'screenshot' => 'occupancy-report.svg',
+                'path' => '/admin',
+            ],
+            [
+                'group' => 'Notifikasi',
+                'title' => 'WhatsApp Blast & Reminder',
+                'description' => 'Kirim tagihan, pengingat jatuh tempo, dan pengumuman massal via WhatsApp otomatis.',
+                'bullets' => ['Reminder H-3 otomatis', 'Notice keterlambatan + denda', 'Blast pengumuman ke semua penghuni', 'Template pesan kustom', 'Log status terkirim/gagal'],
+                'screenshot' => 'whatsapp-blast.svg',
+                'path' => '/admin/whatsapp-blast',
+            ],
+            [
+                'group' => 'Portal Penyewa',
+                'title' => 'Portal & Mobile API',
+                'description' => 'Penghuni mandiri: lihat tagihan, bayar online, lapor kerusakan, dan update profil tanpa hubungi admin.',
+                'bullets' => ['Login portal penyewa', 'Dashboard tagihan & kontrak', 'Bayar via Midtrans/Tripay', 'Lapor maintenance + foto', 'REST API untuk aplikasi mobile'],
+                'screenshot' => 'portal-dashboard.svg',
+                'path' => '/portal',
             ],
         ];
     }
 
     public function index()
     {
+        $baseUrl = rtrim(config('app.url'), '/');
+        // Ikut host aktual saat diakses via domain produksi
+        if (request()->getHost() !== parse_url($baseUrl, PHP_URL_HOST)) {
+            $baseUrl = request()->getSchemeAndHttpHost();
+        }
+
         $seo = [
-            'title' => 'Dokumentasi — Kos Manager',
-            'description' => 'Panduan lengkap penggunaan aplikasi Kos Manager. Tutorial step-by-step, fitur lengkap, dan akun demo.',
-            'canonical' => route('docs'),
+            'title' => 'Dokumentasi — ' . setting('app_name', 'Kos Manager'),
+            'description' => 'Panduan lengkap penggunaan aplikasi ' . setting('app_name', 'Kos Manager') . '. Tutorial step-by-step, fitur lengkap, dan akun demo.',
+            'canonical' => $baseUrl . '/docs',
         ];
 
         return view('pseo.docs-index', [
             'seo' => $seo,
+            'baseUrl' => $baseUrl,
+            'adminUrl' => $baseUrl . '/admin',
+            'portalUrl' => $baseUrl . '/portal',
+            'apiUrl' => $baseUrl . '/api',
+            'whatsapp' => setting('owner_phone', '', 'general') ?: '6281296052010',
             'demoAccounts' => $this->demoAccounts(),
             'tutorial' => $this->tutorial(),
             'features' => $this->features(),

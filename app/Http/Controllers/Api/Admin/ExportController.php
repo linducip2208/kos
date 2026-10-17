@@ -41,7 +41,7 @@ class ExportController extends Controller
     public function invoicePdfSingle(Invoice $invoice)
     {
         Gate::authorize('print.report');
-        abort_unless($invoice->lease?->room !== null && $this->canAccessProperty($invoice->lease->room->property_id), 404);
+        abort_unless($invoice->lease?->room !== null && $this->canAccessProperty($invoice->lease->room->property_id), 403);
         $invoice->load(['lease.occupant', 'lease.room.property']);
         $pdf = Pdf::loadView('pdf.invoice', compact('invoice'));
 
@@ -51,13 +51,18 @@ class ExportController extends Controller
     private function canAccessProperty(?int $propertyId): bool
     {
         $user = request()->user();
+        $ids = $user?->scopedPropertyIds();
 
-        return $user?->isOwner() || $user?->isSuperAdmin() || in_array($propertyId, $user?->propertyIds() ?? [], true);
+        if ($ids === null) {
+            return (bool) $user?->isOwner() || (bool) $user?->isSuperAdmin();
+        }
+
+        return in_array($propertyId, $ids, true);
     }
 
     private function invoicesExcel(Request $request, string $format): BinaryFileResponse
     {
-        $export = new InvoicesExport($request->status, $request->from, $request->to);
+        $export = new InvoicesExport($request->status, $request->from, $request->to, $request->user()->scopedPropertyIds());
         $filename = 'invoices-'.now()->format('Ymd').".{$format}";
 
         return Excel::download($export, $filename);
@@ -65,7 +70,7 @@ class ExportController extends Controller
 
     private function occupancyExcel(Request $request, string $format): BinaryFileResponse
     {
-        $export = new OccupancyExport($request->from, $request->to);
+        $export = new OccupancyExport($request->from, $request->to, $request->user()->scopedPropertyIds());
         $filename = 'occupancy-'.now()->format('Ymd').".{$format}";
 
         return Excel::download($export, $filename);
@@ -73,7 +78,10 @@ class ExportController extends Controller
 
     private function invoicePdf(Request $request): Response
     {
+        $propertyIds = $request->user()->scopedPropertyIds();
         $invoices = Invoice::with(['lease.occupant', 'lease.room.property'])
+            ->when($propertyIds !== null, fn ($q) => $q->whereHas('lease.room',
+                fn ($r) => $r->whereIn('property_id', $propertyIds ?: [0])))
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->from, fn ($q) => $q->where('due_date', '>=', $request->from))
             ->when($request->to, fn ($q) => $q->where('due_date', '<=', $request->to))

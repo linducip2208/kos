@@ -14,11 +14,15 @@ class OccupancyExport implements FromQuery, WithHeadings, WithMapping, WithStyle
     public function __construct(
         private ?string $from = null,
         private ?string $to   = null,
+        /** null = semua properti (owner/super_admin), array = batasi ke ID properti ini */
+        private ?array $propertyIds = null,
     ) {}
 
     public function query()
     {
         return Lease::with(['occupant', 'room.property'])
+            ->when($this->propertyIds !== null, fn ($q) => $q->whereHas('room',
+                fn ($r) => $r->whereIn('property_id', $this->propertyIds ?: [0])))
             ->when($this->from, fn ($q) => $q->where('start_date', '>=', $this->from))
             ->when($this->to,   fn ($q) => $q->where('start_date', '<=', $this->to))
             ->orderBy('start_date');
