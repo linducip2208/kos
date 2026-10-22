@@ -126,7 +126,7 @@
                         {{-- Photo --}}
                         <div class="relative h-52 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
                             @if(!empty($prop->photos[0]))
-                                <img src="{{ asset('storage/' . $prop->photos[0]) }}"
+                                <img src="{{ photo_url($prop->photos[0]) }}"
                                      alt="{{ $prop->name }}"
                                      loading="lazy" onerror="this.style.display='none'"
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">

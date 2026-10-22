@@ -12,7 +12,7 @@
             <div class="swiper-wrapper">
                 @foreach($property->photos as $photo)
                     <div class="swiper-slide">
-                        <img src="{{ asset('storage/' . $photo) }}"
+                        <img src="{{ photo_url($photo) }}"
                              alt="{{ $property->name }}"
                              loading="lazy" onerror="this.style.display='none'"
                              class="w-full h-full object-cover opacity-90">
@@ -152,7 +152,7 @@
                                         {{-- Room photo --}}
                                         <div class="md:col-span-2 relative h-48 md:h-auto bg-slate-200 overflow-hidden">
                                             @if(!empty($type->photos[0]))
-                                                <img src="{{ asset('storage/' . $type->photos[0]) }}"
+                                                <img src="{{ photo_url($type->photos[0]) }}"
                                                      alt="{{ $type->name }}"
                                                      loading="lazy" onerror="this.style.display='none'"
                                                      class="w-full h-full object-cover">

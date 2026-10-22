@@ -16,6 +16,25 @@ if (!function_exists('setting_set')) {
     }
 }
 
+if (!function_exists('photo_url')) {
+    /**
+     * URL publik untuk path foto. Menerima path relatif storage
+     * ('seed/mass/ext-01.jpg') maupun URL penuh (data lama picsum)
+     * agar tidak pernah menghasilkan '/storage/https://...'.
+     */
+    function photo_url(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return asset('storage/'.ltrim($path, '/'));
+    }
+}
+
 if (!function_exists('active_theme')) {
     function active_theme(string $area): string
     {
