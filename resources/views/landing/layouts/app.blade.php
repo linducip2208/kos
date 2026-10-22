@@ -275,13 +275,16 @@
     @media print { #purchase-popup { display: none !important; } }
 </style>
 <div id="purchase-popup-wrapper"></div>
+@php
+    $salesWaDigits = preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', '')));
+@endphp
 <script>
 (function () {
     'use strict';
     var KEY = 'purchasePopupDismissed';
     var COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 hari
     var SHOW_AFTER_MS = 5000;
-    var SALES_WA = @json(preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', ''))));
+    var SALES_WA = @json($salesWaDigits);
 
     function shouldShow() {
         if (!SALES_WA) return false;
