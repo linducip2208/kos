@@ -163,7 +163,7 @@ class WhatsAppBlast extends Page implements HasForms, HasTable
                 fn ($q) => $q->where('status', 'overdue'))->get(),
             'expiring' => Occupant::whereHas('leases',
                 fn ($q) => $q->where('status', 'active')
-                    ->whereBetween('end_date', [now(), now()->addDays(30)]))->get(),
+                    ->whereBetween('end_date', [now()->startOfDay(), now()->addDays(30)->endOfDay()]))->get(),
             default => Occupant::whereHas('leases',
                 fn ($q) => $q->where('status', 'active'))->get(),
         };

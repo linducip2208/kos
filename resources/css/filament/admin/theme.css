@@ -225,3 +225,247 @@ body, html {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   FASE 2 — LANDSCAPE-FIRST REDESIGN (premium SaaS, flat, netral)
+   Prinsip: permukaan putih bersih di atas abu sangat muda, primary
+   blue profesional, border tipis, radius moderat, shadow ringan.
+   Gradient berlebihan dihilangkan; status konsisten via Color enum.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ───────── Design tokens ───────── */
+:root {
+    --km-surface: #ffffff;
+    --km-canvas: #f6f7f9;
+    --km-border: 229 231 235;          /* gray-200 */
+    --km-text: 17 24 39;               /* gray-900 */
+    --km-text-muted: 107 114 128;      /* gray-500 */
+    --km-radius-sm: 8px;
+    --km-radius-md: 12px;
+    --km-radius-lg: 14px;
+    --km-shadow-xs: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+    --km-shadow-sm: 0 1px 3px 0 rgba(16, 24, 40, 0.06), 0 1px 2px -1px rgba(16, 24, 40, 0.06);
+    --km-shadow-md: 0 4px 12px -2px rgba(16, 24, 40, 0.08), 0 2px 6px -2px rgba(16, 24, 40, 0.06);
+    --km-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+/* ───────── Canvas & main width (landscape) ───────── */
+.fi-body, .fi-main {
+    background-color: var(--km-canvas);
+}
+
+@media (min-width: 1280px) {
+    .fi-main {
+        max-width: none;
+    }
+    .fi-main-ctn {
+        max-width: 1720px;
+        margin-inline: auto;
+        padding-inline: clamp(1rem, 2vw, 2rem);
+    }
+}
+
+/* Halaman pendek landscape: header kompak agar konten terlihat */
+@media (min-width: 1024px) and (max-height: 800px) {
+    .fi-header {
+        padding-block: 0.75rem;
+    }
+    .fi-page-header-heading {
+        font-size: 1.35rem;
+    }
+}
+
+/* ───────── Flat surfaces: hilangkan gradient ───────── */
+.fi-topbar {
+    background: rgb(255 255 255 / 0.96);
+    border-bottom: 1px solid rgb(var(--km-border));
+    box-shadow: var(--km-shadow-xs);
+}
+
+.fi-topbar a.fi-logo {
+    background: none;
+    -webkit-text-fill-color: rgb(29 78 216);
+    color: rgb(29 78 216);
+    font-weight: 800;
+}
+
+.fi-sidebar {
+    background: #ffffff;
+    border-right: 1px solid rgb(var(--km-border));
+}
+
+/* Sidebar scroll mandiri + active state kuat */
+.fi-sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(191 219 254) transparent;
+}
+
+.fi-sidebar-nav .fi-sidebar-item.fi-active > a {
+    background: rgb(37 99 235 / 0.1);
+    color: rgb(29 78 216);
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgb(37 99 235 / 0.22);
+}
+
+/* Tombol primer flat */
+.fi-btn.fi-btn-primary {
+    background: #2563eb;
+    box-shadow: var(--km-shadow-xs);
+    border: 1px solid #1d4ed8;
+}
+
+.fi-btn.fi-btn-primary:hover {
+    background: #1d4ed8;
+    transform: none;
+    box-shadow: var(--km-shadow-sm);
+}
+
+/* Kartu/section flat */
+.fi-section {
+    background: var(--km-surface);
+    border: 1px solid rgb(var(--km-border));
+    box-shadow: var(--km-shadow-xs);
+}
+
+.fi-section:hover {
+    box-shadow: var(--km-shadow-sm);
+}
+
+/* ───────── KPI stats: hierarki + anti-overflow ───────── */
+.fi-wi-stats-overview-stat {
+    background: var(--km-surface);
+    border: 1px solid rgb(var(--km-border));
+    box-shadow: var(--km-shadow-xs);
+    min-width: 0;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: none;
+    box-shadow: var(--km-shadow-sm);
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+    overflow-wrap: anywhere;
+}
+
+.fi-wi-stats-overview-stat-description {
+    color: rgb(var(--km-text-muted));
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ───────── Tabel: sticky header + scroll lokal ───────── */
+.fi-ta-ctn {
+    background: var(--km-surface);
+    border: 1px solid rgb(var(--km-border));
+    border-radius: var(--km-radius-md);
+    overflow: auto;
+    max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .fi-ta-ctn {
+        max-height: calc(100vh - 19rem);
+    }
+    .fi-ta-ctn thead th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #f8fafc;
+    }
+}
+
+.fi-ta-header-cell {
+    background: #f8fafc;
+    white-space: nowrap;
+}
+
+.fi-ta-cell {
+    vertical-align: middle;
+}
+
+/* Baris terpilih & hover tetap terbaca */
+.fi-ta-row.fi-selected {
+    background: rgb(37 99 235 / 0.06);
+}
+
+/* ───────── Form: fokus jelas, section mudah dipindai ───────── */
+.fi-fo-field-wrp-label > span {
+    font-weight: 600;
+    color: rgb(var(--km-text));
+}
+
+.fi-fo-field-wrp-hint,
+.fi-fo-field-wrp-hint span {
+    color: rgb(var(--km-text-muted));
+}
+
+/* ───────── Focus visible global (keyboard) ───────── */
+.fi-btn:focus-visible,
+.fi-sidebar-nav a:focus-visible,
+.fi-sidebar-nav button:focus-visible,
+.fi-ta-header-cell-sort-btn:focus-visible,
+.fi-input-wrp:focus-visible,
+a:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    box-shadow: var(--km-focus-ring);
+}
+
+/* ───────── Dropdown/modal tidak tertutup container ───────── */
+.fi-dropdown-panel {
+    max-height: min(24rem, calc(100vh - 4rem));
+    overflow-y: auto;
+}
+
+.fi-modal-window {
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    border-radius: var(--km-radius-lg);
+}
+
+/* ───────── Empty state konsisten ───────── */
+.fi-ta-empty-state {
+    padding-block: 2.5rem;
+}
+
+/* ───────── Dark mode: samakan permukaan ───────── */
+.dark .fi-topbar {
+    background: rgb(15 23 42 / 0.96);
+    border-bottom-color: rgb(30 41 59);
+}
+
+.dark .fi-sidebar {
+    background: #0f172a;
+    border-right-color: rgb(30 41 59);
+}
+
+.dark .fi-section,
+.dark .fi-ta-ctn,
+.dark .fi-wi-stats-overview-stat {
+    background: #111c33;
+    border-color: rgb(30 41 59);
+}
+
+.dark .fi-ta-header-cell,
+.dark .fi-ta-ctn thead th {
+    background: #0b1426;
+}
+
+/* ───────── Tablet landscape ───────── */
+@media (min-width: 768px) and (max-width: 1279px) {
+    .fi-main-ctn {
+        padding-inline: 1rem;
+    }
+}
+
+/* ───────── Cegah overflow horizontal halaman ───────── */
+.fi-main,
+.fi-main-ctn,
+.fi-page {
+    min-width: 0;
+    overflow-x: clip;
+}

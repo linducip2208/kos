@@ -33,6 +33,11 @@ class BlogPostResource extends Resource
 
     protected static ?string $model = BlogPost::class;
 
+    protected static array $tablePreloads = [
+        'category',
+            'author',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?int $navigationSort = 10;

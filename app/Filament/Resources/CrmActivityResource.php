@@ -24,6 +24,11 @@ class CrmActivityResource extends Resource
 
     protected static ?string $model = CrmActivity::class;
 
+    protected static array $tablePreloads = [
+        'bookingRequest',
+            'user',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-ellipsis';
 
     protected static ?int $navigationSort = 55;

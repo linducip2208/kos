@@ -17,6 +17,10 @@ class AuditLogResource extends Resource
 
     protected static ?string $model = AuditLog::class;
 
+    protected static array $tablePreloads = [
+        'user',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?int $navigationSort = 90;

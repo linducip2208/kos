@@ -25,6 +25,10 @@ class ContactSubmissionResource extends Resource
 
     protected static ?string $model = ContactSubmission::class;
 
+    protected static array $tablePreloads = [
+        'property',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
 
     protected static ?int $navigationSort = 62;

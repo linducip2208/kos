@@ -21,6 +21,10 @@ class PaymentTransactionResource extends Resource
 
     protected static ?string $model = PaymentTransaction::class;
 
+    protected static array $tablePreloads = [
+        'invoice',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?int $navigationSort = 20;

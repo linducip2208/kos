@@ -63,13 +63,13 @@ trait AuthorizesAccess
         $propertyIds = $user?->scopedPropertyIds();
 
         if (! $user || $propertyIds === null) {
-            return $query;
+            return static::applyTablePreloads($query);
         }
 
         $model = class_basename(static::getModel());
         $direct = ['Room', 'RoomType', 'Facility', 'Expense', 'BookingRequest', 'Announcement', 'VisitorLog'];
         if (in_array($model, $direct, true)) {
-            return $query->whereIn('property_id', $propertyIds ?: [0]);
+            return static::applyTablePreloads($query->whereIn('property_id', $propertyIds ?: [0]));
         }
 
         $relations = [
@@ -87,7 +87,26 @@ trait AuthorizesAccess
         ];
 
         if (isset($relations[$model])) {
-            return $query->whereHas($relations[$model], fn (Builder $relation) => $relation->whereIn('property_id', $propertyIds ?: [0]));
+            return static::applyTablePreloads($query->whereHas($relations[$model], fn (Builder $relation) => $relation->whereIn('property_id', $propertyIds ?: [0])));
+        }
+
+        return static::applyTablePreloads($query);
+    }
+
+    /**
+     * N+1 guard: preload relasi kolom tabel + agregat withSum bila resource
+     * mendeklarasikan `protected static array $tablePreloads / $tableSums`.
+     */
+    protected static function applyTablePreloads(Builder $query): Builder
+    {
+        if (property_exists(static::class, 'tablePreloads') && is_array(static::$tablePreloads) && static::$tablePreloads !== []) {
+            $query->with(static::$tablePreloads);
+        }
+
+        if (property_exists(static::class, 'tableSums') && is_array(static::$tableSums)) {
+            foreach (static::$tableSums as $relation => $column) {
+                $query->withSum($relation, $column);
+            }
         }
 
         return $query;

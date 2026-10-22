@@ -27,6 +27,10 @@ class RoomTypeResource extends Resource
 
     protected static ?string $model = RoomType::class;
 
+    protected static array $tablePreloads = [
+        'property',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
 
     protected static ?int $navigationSort = 20;
