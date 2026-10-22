@@ -19,10 +19,18 @@ class SettingSeeder extends Seeder
             ['group' => 'general', 'key' => 'lease_prefix',     'value' => 'LSE',                   'type' => 'string'],
             ['group' => 'general', 'key' => 'reminder_days',    'value' => '3',                     'type' => 'integer'],
             ['group' => 'general', 'key' => 'late_fee_percent', 'value' => '5',                     'type' => 'integer'],
-            // WhatsApp
+            // WhatsApp (group 'notif' = yang dibaca WhatsAppService; 'whatsapp' dipertahankan untuk kompatibilitas lama)
+            ['group' => 'notif', 'key' => 'whatsapp_enabled', 'value' => '0', 'type' => 'boolean'],
+            ['group' => 'notif', 'key' => 'whatsapp_api_key', 'value' => '', 'type' => 'string'],
+            ['group' => 'notif', 'key' => 'whatsapp_sender', 'value' => '', 'type' => 'string'],
+            ['group' => 'notif', 'key' => 'whatsapp_api_url', 'value' => 'https://chatgo.whitelabel.co.id', 'type' => 'string'],
             ['group' => 'whatsapp', 'key' => 'fonnte_token',   'value' => '',  'type' => 'string'],
             ['group' => 'whatsapp', 'key' => 'enabled',        'value' => '0', 'type' => 'boolean'],
             ['group' => 'whatsapp', 'key' => 'sender_number',  'value' => '',  'type' => 'string'],
+            // Marketing (purchase popup dimatikan default agar tidak bocor ke publik)
+            ['group' => 'general', 'key' => 'marketing_purchase_popup', 'value' => '0', 'type' => 'boolean'],
+            ['group' => 'general', 'key' => 'contact_whatsapp', 'value' => '', 'type' => 'string'],
+            ['group' => 'general', 'key' => 'contact_whatsapp_sales', 'value' => '', 'type' => 'string'],
             // Utility rates
             ['group' => 'utility', 'key' => 'electricity_rate', 'value' => '1500', 'type' => 'integer'],
             ['group' => 'utility', 'key' => 'water_rate',       'value' => '5000', 'type' => 'integer'],

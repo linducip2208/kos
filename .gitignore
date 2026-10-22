@@ -27,5 +27,4 @@ Thumbs.db
 
 # License pairing v3 — encrypted lock file, never commit
 storage/app/.license.lock
-sampah/
-sampah/
+/sampah/

@@ -350,6 +350,7 @@
                     </h2>
                     <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100">
                         <iframe
+                            title="Peta lokasi {{ $property->name }}"
                             src="https://maps.google.com/maps?q={{ $property->latitude }},{{ $property->longitude }}&z=15&output=embed"
                             width="100%"
                             height="320"

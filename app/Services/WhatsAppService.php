@@ -21,6 +21,27 @@ class WhatsAppService
 
     public function send(string $number, string $message, string $type = 'custom', ?object $notifiable = null): bool
     {
+        // Jalur antrean: catat log lalu dispatch job agar request tidak blokir.
+        if (config('queue.default') !== 'sync') {
+            $normalized = $this->normalizeNumber($number);
+            WhatsappLog::create([
+                'to_number'       => $normalized,
+                'to_name'         => $notifiable?->name ?? null,
+                'message'         => $message,
+                'type'            => $type,
+                'notifiable_type' => $notifiable ? get_class($notifiable) : null,
+                'notifiable_id'   => $notifiable?->id ?? null,
+                'status'          => 'queued',
+            ]);
+            \App\Jobs\SendWhatsAppMessage::dispatch($normalized, $message, $type);
+            return true;
+        }
+
+        return $this->sendNow($number, $message, $type, $notifiable);
+    }
+
+    public function sendNow(string $number, string $message, string $type = 'custom', ?object $notifiable = null): bool
+    {
         $number = $this->normalizeNumber($number);
 
         $log = WhatsappLog::create([
@@ -137,9 +158,14 @@ class WhatsAppService
 
     public function blast(array $numbers, string $message): int
     {
+        if (config('queue.default') !== 'sync') {
+            \App\Jobs\SendWhatsAppBlast::dispatch(array_values($numbers), $message);
+            return count($numbers);
+        }
+
         $sent = 0;
         foreach ($numbers as $number) {
-            if ($this->send($number, $message, 'blast')) {
+            if ($this->sendNow($number, $message, 'blast')) {
                 $sent++;
             }
         }

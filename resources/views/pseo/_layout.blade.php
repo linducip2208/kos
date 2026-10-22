@@ -35,17 +35,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'] },
-                    colors: { primary: { DEFAULT: '#2563eb', 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' } },
-                }
-            }
-        }
-    </script>
+    @vite(['resources/css/app.css'])
+    
 </head>
 <body class="bg-slate-50 font-sans antialiased">
 
@@ -55,9 +46,11 @@
             <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
             </div>
-            <span>Kos Kosan Pro</span>
+            <span>{{ setting('app_name', 'Kos Kosan Pro') }}</span>
         </a>
-        <a href="https://wa.me/6281296052010" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-600 transition-colors">WhatsApp</a>
+        @if(setting('contact_whatsapp_sales', setting('contact_whatsapp', '')))
+        <a href="https://wa.me/{{ preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', ''))) }}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-600 transition-colors">WhatsApp</a>
+        @endif
     </div>
 </header>
 

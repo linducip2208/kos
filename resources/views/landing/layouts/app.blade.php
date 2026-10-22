@@ -11,22 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-    {{-- Tailwind --}}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: { DEFAULT: '#2563eb', 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
-                    },
-                }
-            }
-        }
-    </script>
+    {{-- App CSS via Vite (Tailwind v4). Jalankan `npm run build` sebelum deploy. --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Swiper --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
@@ -96,6 +82,7 @@
 </head>
 
 <body class="bg-slate-50 font-sans text-slate-800 antialiased" x-data>
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:px-3 focus:py-2 focus:rounded-lg focus:text-sm">Lewati ke konten utama</a>
 
 {{-- ═══════════════════ NAVBAR ═══════════════════ --}}
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
@@ -147,7 +134,7 @@
         </div>
 
         {{-- Mobile menu button --}}
-        <button @click="open = !open" class="md:hidden p-2 rounded-lg" aria-label="Buka/tutup menu navigasi" aria-expanded="false"
+        <button @click="open = !open" :aria-expanded="open.toString()" class="md:hidden p-2 rounded-lg" aria-label="Buka/tutup menu navigasi"
                 :class="scrolled ? 'text-slate-700' : 'text-white'">
             <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -170,7 +157,9 @@
 </nav>
 
 {{-- PAGE CONTENT --}}
+<main id="main-content">
 @yield('content')
+</main>
 
 {{-- ═══════════════════ FOOTER ═══════════════════ --}}
 <footer class="bg-slate-900 text-slate-400">
@@ -274,8 +263,9 @@
     });
 </script>
 
-{{-- ════════════════════════════ PURCHASE POPUP ════════════════════════════ --}}
-{{-- Untuk menghilangkan popup ini secara permanen, hapus seluruh blok antara komentar PURCHASE POPUP dan /PURCHASE POPUP --}}
+{{-- ════════════════════════════ PURCHASE POPUP (opsional, default nonaktif) ════════════════════════════ --}}
+{{-- Aktifkan via setting `marketing_purchase_popup=true` + `contact_whatsapp_sales`. Nomor tidak lagi hardcode. --}}
+@if(setting('marketing_purchase_popup', false))
 <style>
     @keyframes purchase-popup-in {
         from { opacity: 0; transform: translateY(20px) scale(.95); }
@@ -291,8 +281,10 @@
     var KEY = 'purchasePopupDismissed';
     var COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 hari
     var SHOW_AFTER_MS = 5000;
+    var SALES_WA = @json(preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', ''))));
 
     function shouldShow() {
+        if (!SALES_WA) return false;
         try {
             var until = parseInt(localStorage.getItem(KEY) || '0', 10);
             return Date.now() > until;
@@ -305,6 +297,7 @@
     }
     function render() {
         if (!shouldShow()) return;
+        var displayWa = SALES_WA.replace(/^62/, '0');
         var html =
             '<div id="purchase-popup" role="dialog" aria-label="Penawaran aplikasi kos" class="fixed bottom-6 left-6 z-50 max-w-xs w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">' +
               '<div style="background:linear-gradient(135deg,#10b981,#0d9488);" class="px-5 py-4 flex items-start justify-between gap-3">' +
@@ -319,8 +312,8 @@
               '</div>' +
               '<div class="p-5">' +
                 '<div class="text-xs text-slate-500 mb-1">WhatsApp</div>' +
-                '<div class="text-2xl font-extrabold text-slate-800 mb-3 tracking-tight">081296052010</div>' +
-                '<a href="https://wa.me/6281296052010?text=Halo%2C%20saya%20tertarik%20untuk%20membeli%20aplikasi%20Kos%20Kosan%20Pro" target="_blank" rel="noopener"' +
+                '<div class="text-2xl font-extrabold text-slate-800 mb-3 tracking-tight">' + displayWa + '</div>' +
+                '<a href="https://wa.me/' + SALES_WA + '?text=Halo%2C%20saya%20tertarik%20untuk%20membeli%20aplikasi%20kos" target="_blank" rel="noopener"' +
                    ' class="block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition">Chat WhatsApp Sekarang</a>' +
                 '<p style="font-size:11px;" class="text-slate-400 mt-3 mb-0 text-center">Tutup untuk sembunyikan 7 hari.</p>' +
               '</div>' +
@@ -338,6 +331,7 @@
     }
 })();
 </script>
+@endif
 {{-- /PURCHASE POPUP --}}
 
 </body>

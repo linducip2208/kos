@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aktivasi Aplikasi</title>
-<script src="https://cdn.tailwindcss.com"></script>
+@vite(['resources/css/app.css'])
 <style>
   @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(99,102,241,.4)} 70%{box-shadow:0 0 0 12px rgba(99,102,241,0)} 100%{box-shadow:0 0 0 0 rgba(99,102,241,0)} }
   .pulse-ring { animation: pulse-ring 2.5s cubic-bezier(.66,0,0,1) infinite }

@@ -32,9 +32,9 @@ class SettingController extends Controller
         foreach ($request->settings as $item) {
             $group = $item['group'] ?? 'general';
             Setting::set($item['key'], $item['value'], $group);
+            // Setting::set() sudah forget "setting:{group}:{key}" — hapus sisa cache grup bila ada.
+            Cache::forget("settings.group.{$group}");
         }
-
-        Cache::flush();
 
         return response()->json(['message' => 'Pengaturan disimpan.']);
     }

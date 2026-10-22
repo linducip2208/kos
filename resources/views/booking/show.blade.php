@@ -53,13 +53,13 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" value="{{ old('name') }}" required
+                            <label for="booking-name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                            <input id="booking-name" type="text" name="name" value="{{ old('name') }}" required
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 @error('name') border-red-400 @enderror">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">No. HP <span class="text-red-500">*</span></label>
-                            <input type="text" name="phone" value="{{ old('phone') }}" required
+                            <label for="booking-phone" class="block text-sm font-medium text-gray-700 mb-1">No. HP <span class="text-red-500">*</span></label>
+                            <input id="booking-phone" type="text" name="phone" value="{{ old('phone') }}" required
                                    placeholder="08xxxxxxxxxx"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 @error('phone') border-red-400 @enderror">
                         </div>
@@ -67,13 +67,13 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" name="email" value="{{ old('email') }}"
+                            <label for="booking-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input id="booking-email" type="email" name="email" value="{{ old('email') }}"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
-                            <input type="text" name="whatsapp" value="{{ old('whatsapp') }}"
+                            <label for="booking-wa" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+                            <input id="booking-wa" type="text" name="whatsapp" value="{{ old('whatsapp') }}"
                                    placeholder="08xxxxxxxxxx (jika berbeda dengan HP)"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                         </div>
@@ -81,14 +81,14 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rencana Masuk <span class="text-red-500">*</span></label>
-                            <input type="date" name="desired_move_in" value="{{ old('desired_move_in') }}" required
+                            <label for="booking-movein" class="block text-sm font-medium text-gray-700 mb-1">Rencana Masuk <span class="text-red-500">*</span></label>
+                            <input id="booking-movein" type="date" name="desired_move_in" value="{{ old('desired_move_in') }}" required
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 @error('desired_move_in') border-red-400 @enderror">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Durasi Sewa <span class="text-red-500">*</span></label>
-                            <select name="billing_cycle" required
+                            <label for="booking-cycle" class="block text-sm font-medium text-gray-700 mb-1">Durasi Sewa <span class="text-red-500">*</span></label>
+                            <select id="booking-cycle" name="billing_cycle" required
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 @foreach([
                                     'daily'     => 'Harian',
@@ -107,8 +107,8 @@
 
                     @if($roomTypes->isNotEmpty())
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kamar yang Diminati</label>
-                            <select name="room_type_id"
+                            <label for="booking-roomtype" class="block text-sm font-medium text-gray-700 mb-1">Tipe Kamar yang Diminati</label>
+                            <select id="booking-roomtype" name="room_type_id"
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 <option value="">— Belum tahu / semua tipe —</option>
                                 @foreach($roomTypes as $rt)
@@ -125,8 +125,8 @@
                     @endif
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Pesan / Pertanyaan</label>
-                        <textarea name="message" rows="3" placeholder="Tanyakan tentang kamar, fasilitas, atau ketersediaan..."
+                        <label for="booking-message" class="block text-sm font-medium text-gray-700 mb-1">Pesan / Pertanyaan</label>
+                        <textarea id="booking-message" name="message" rows="3" placeholder="Tanyakan tentang kamar, fasilitas, atau ketersediaan..."
                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">{{ old('message') }}</textarea>
                     </div>
 

@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\PaymentTransaction;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PaymentGatewayService
@@ -79,20 +81,21 @@ class PaymentGatewayService
             ];
         }
 
-        $ch = curl_init($baseUrl);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'Accept: application/json',
-                'Authorization: Basic ' . base64_encode($serverKey . ':'),
-            ],
-        ]);
-        $response = json_decode(curl_exec($ch), true);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $ch = null;
+        try {
+            $httpResponse = Http::timeout(10)->connectTimeout(5)->retry(2, 500)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Basic ' . base64_encode($serverKey . ':'),
+                ])->post($baseUrl, $payload);
+        } catch (\Exception $e) {
+            Log::error('Midtrans request failed: ' . $e->getMessage(), ['order_id' => $trx->order_id]);
+            $trx->update(['status' => 'failed', 'gateway_response' => ['error' => $e->getMessage()]]);
+            return ['success' => false, 'message' => 'Gateway timeout, coba lagi'];
+        }
+        $response = $httpResponse->json();
+        $httpCode = $httpResponse->status();
 
         if ($httpCode === 201 && isset($response['redirect_url'])) {
             $trx->update([
@@ -145,18 +148,17 @@ class PaymentGatewayService
             'expired_time'   => now()->addHours(24)->timestamp,
         ];
 
-        $ch = curl_init($baseUrl);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $apiKey,
-            ],
-        ]);
-        $response = json_decode(curl_exec($ch), true);
-        curl_close($ch);
+        try {
+            $httpResponse = Http::timeout(10)->connectTimeout(5)->retry(2, 500)
+                ->withToken($apiKey)
+                ->acceptJson()
+                ->post($baseUrl, $payload);
+        } catch (\Exception $e) {
+            Log::error('Tripay request failed: ' . $e->getMessage(), ['order_id' => $trx->order_id]);
+            $trx->update(['status' => 'failed', 'gateway_response' => ['error' => $e->getMessage()]]);
+            return ['success' => false, 'message' => 'Gateway timeout, coba lagi'];
+        }
+        $response = $httpResponse->json();
 
         if (($response['success'] ?? false) && isset($response['data']['checkout_url'])) {
             $trx->update([
@@ -208,7 +210,11 @@ class PaymentGatewayService
 
     private function handleMidtransCallback(array $payload): bool
     {
+        // Opsional: batasi IP webhook via env WEBHOOK_ALLOWED_IPS (koma).
+        if (!$this->ipAllowed()) return false;
+
         $serverKey    = setting('midtrans_server_key', '', 'payment');
+        if ($serverKey === '') return false; // fail-closed bila key kosong
         $orderId      = $payload['order_id'] ?? '';
         $statusCode   = $payload['status_code'] ?? '';
         $grossAmount  = $payload['gross_amount'] ?? '';
@@ -242,7 +248,10 @@ class PaymentGatewayService
 
     private function handleTripayCallback(array $payload): bool
     {
+        if (!$this->ipAllowed()) return false;
+
         $privateKey  = setting('tripay_private_key', '', 'payment');
+        if ($privateKey === '') return false;
         $signature   = hash_hmac('sha256', $payload['merchant_ref'] . $payload['amount'], $privateKey);
 
         if (($payload['signature'] ?? null) !== $signature) return false;
@@ -277,5 +286,13 @@ class PaymentGatewayService
             'payment_channel' => $trx->gateway,
             'payment_ref'     => $trx->order_id,
         ]);
+    }
+
+    private function ipAllowed(): bool
+    {
+        $allowed = array_filter(array_map('trim', explode(',', (string) env('WEBHOOK_ALLOWED_IPS', ''))));
+        if ($allowed === []) return true; // tidak dikonfigurasi = terima semua (validasi signature tetap jalan)
+        $ip = request()->ip();
+        return in_array($ip, $allowed, true);
     }
 }

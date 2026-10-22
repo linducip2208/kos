@@ -3,9 +3,9 @@
 ## 1. Persyaratan Server
 
 - PHP 8.3+
-- MySQL 8.0+ / MariaDB 10.6+
+- MySQL 8.0+
 - Composer 2.x
-- Node.js 20+ & NPM
+- Node.js 18+ & NPM
 - Apache/Nginx dengan mod_rewrite
 
 ---

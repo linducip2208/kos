@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Block ALL routes (admin, user, storefront, anything) until the app is paired
+ * Block ALL routes (web + api, admin, storefront) until the app is paired
  * to a license. Only `/__pair*` and a small dev-allowlist are accessible
  * without a valid .license.lock for the current host.
  */
@@ -30,6 +30,13 @@ class RequirePair
             return $next($request);
         }
 
+        // API: kembalikan JSON 423 agar client mobile tidak dapat redirect HTML.
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Aplikasi belum dipairing lisensi.',
+            ], 423);
+        }
+
         // Not paired (or invalid/tampered) — redirect to wizard
         return redirect()->to('/__pair');
     }
@@ -41,9 +48,11 @@ class RequirePair
         // Always allow the wizard itself
         if (str_starts_with($path, '/__pair')) return true;
 
-        // Health check / debug
+        // Health check
         if ($path === '/up') return true;
-        if (str_starts_with($path, '/_debugbar')) return true;
+
+        // Debugbar hanya boleh di-bypass saat debug aktif (jangan di prod).
+        if (str_starts_with($path, '/_debugbar') && config('app.debug')) return true;
 
         // Localhost dev bypass
         if (config('license.dev_bypass') && app()->environment('local')) {

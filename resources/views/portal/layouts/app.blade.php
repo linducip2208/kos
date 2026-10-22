@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Portal Penyewa') — {{ setting('app_name', 'Kos Manager') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
@@ -15,7 +15,8 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen" x-data="{ navOpen: false }">
+<body class="bg-gray-100 min-h-screen font-sans" x-data="{ navOpen: false }">
+<a href="#portal-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-3 focus:py-2 focus:rounded-lg focus:text-sm">Lewati ke konten utama</a>
 
 <nav class="bg-white shadow-sm sticky top-0 z-10">
     <div class="max-w-4xl mx-auto px-4 flex items-center justify-between h-14">
@@ -33,7 +34,7 @@
         </div>
 
         {{-- Mobile hamburger --}}
-        <button @click="navOpen = !navOpen" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-gray-100" aria-label="Buka/tutup menu">
+        <button @click="navOpen = !navOpen" :aria-expanded="navOpen.toString()" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-gray-100" aria-label="Buka/tutup menu">
             <svg x-show="!navOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -53,7 +54,7 @@
     </div>
 </nav>
 
-<div class="max-w-4xl mx-auto px-4 py-4 md:py-6">
+<div class="max-w-4xl mx-auto px-4 py-4 md:py-6" id="portal-content">
 
     @if(session('success'))
         <div class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
