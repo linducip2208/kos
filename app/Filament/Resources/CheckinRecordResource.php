@@ -19,6 +19,12 @@ class CheckinRecordResource extends Resource
 
     protected static ?string $model = CheckinRecord::class;
 
+    protected static array $tablePreloads = [
+        'occupant',
+            'room',
+            'performedBy',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-key';
 
     protected static ?int $navigationSort = 40;

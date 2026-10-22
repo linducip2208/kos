@@ -91,10 +91,11 @@ class Invoice extends Model
 
     /**
      * Total yang harus dibayar (total + penalty − refund).
+     * Memakai hasil withSum bila sudah di-preload (lihat InvoiceResource::$tableSums).
      */
     public function getPayableAmountAttribute(): float
     {
-        $refunded = (float) $this->verifiedRefunds()->sum('amount');
+        $refunded = (float) ($this->verified_refunds_sum_amount ?? $this->verifiedRefunds()->sum('amount'));
 
         return max(0, round($this->getTotalWithPenaltyAttribute() - $refunded, 2));
     }
@@ -105,7 +106,7 @@ class Invoice extends Model
      */
     public function getPaidAmountAttribute(): float
     {
-        $fromRecords = (float) $this->verifiedPayments()->sum('amount');
+        $fromRecords = (float) ($this->verified_payments_sum_amount ?? $this->verifiedPayments()->sum('amount'));
 
         if ($fromRecords === 0.0 && $this->status === 'paid') {
             return $this->getPayableAmountAttribute();

@@ -28,6 +28,11 @@ class RoomChecklistResource extends Resource
 
     protected static ?string $model = RoomChecklist::class;
 
+    protected static array $tablePreloads = [
+        'lease.occupant',
+            'room',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
 
     protected static ?int $navigationSort = 35;

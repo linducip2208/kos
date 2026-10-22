@@ -26,6 +26,10 @@ class FacilityResource extends Resource
 
     protected static ?string $model = Facility::class;
 
+    protected static array $tablePreloads = [
+        'property',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
 
     protected static ?int $navigationSort = 35;

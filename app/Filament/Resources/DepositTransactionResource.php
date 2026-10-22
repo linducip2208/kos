@@ -21,6 +21,10 @@ class DepositTransactionResource extends Resource
 
     protected static ?string $model = DepositTransaction::class;
 
+    protected static array $tablePreloads = [
+        'deposit.tenant',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-receipt-percent';
 
     protected static ?int $navigationSort = 26;

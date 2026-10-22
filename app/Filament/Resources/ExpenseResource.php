@@ -23,6 +23,10 @@ class ExpenseResource extends Resource
 
     protected static ?string $model = Expense::class;
 
+    protected static array $tablePreloads = [
+        'property',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-down';
 
     protected static ?int $navigationSort = 30;

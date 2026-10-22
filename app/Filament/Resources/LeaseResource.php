@@ -35,6 +35,11 @@ class LeaseResource extends Resource
 
     protected static ?string $model = Lease::class;
 
+    protected static array $tablePreloads = [
+        'occupant',
+            'room.property',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?int $navigationSort = 20;

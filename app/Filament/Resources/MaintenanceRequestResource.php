@@ -29,6 +29,13 @@ class MaintenanceRequestResource extends Resource
 
     protected static ?string $model = MaintenanceRequest::class;
 
+    protected static array $tablePreloads = [
+        'room',
+            'occupant',
+            'assignedTo',
+            'vendor',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
     protected static ?int $navigationSort = 10;

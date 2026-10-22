@@ -27,6 +27,11 @@ class DepositResource extends Resource
 
     protected static ?string $model = Deposit::class;
 
+    protected static array $tablePreloads = [
+        'tenant',
+            'lease',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
 
     protected static ?int $navigationSort = 25;

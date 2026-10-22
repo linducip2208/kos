@@ -24,6 +24,10 @@ class AnnouncementResource extends Resource
 
     protected static ?string $model = Announcement::class;
 
+    protected static array $tablePreloads = [
+        'property',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-megaphone';
 
     protected static ?int $navigationSort = 60;

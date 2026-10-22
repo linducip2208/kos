@@ -33,6 +33,12 @@ class InvoiceResource extends Resource
 
     protected static ?string $model = Invoice::class;
 
+    protected static array $tablePreloads = [
+        'lease.occupant',
+            'lease.room',
+    ];
+    protected static array $tableSums = ['verifiedPayments' => 'amount', 'verifiedRefunds' => 'amount'];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
 
     protected static ?int $navigationSort = 10;

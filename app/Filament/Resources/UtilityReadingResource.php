@@ -31,6 +31,10 @@ class UtilityReadingResource extends Resource
 
     protected static ?string $model = UtilityReading::class;
 
+    protected static array $tablePreloads = [
+        'room',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bolt';
 
     protected static ?int $navigationSort = 20;

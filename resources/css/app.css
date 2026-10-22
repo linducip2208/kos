@@ -19,3 +19,8 @@
     --color-primary-900: #1e3a8a;
     --color-primary-DEFAULT: #2563eb;
 }
+
+html,
+body {
+    overflow-x: clip;
+}

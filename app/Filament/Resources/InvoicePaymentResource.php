@@ -25,6 +25,10 @@ class InvoicePaymentResource extends Resource
 
     protected static ?string $model = InvoicePayment::class;
 
+    protected static array $tablePreloads = [
+        'invoice.lease.occupant',
+    ];
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?int $navigationSort = 15;
