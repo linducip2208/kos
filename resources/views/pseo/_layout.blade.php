@@ -35,6 +35,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-180.png">
     @vite(['resources/css/app.css'])
     
 </head>
@@ -73,5 +76,11 @@
     </div>
 </footer>
 
+{{-- PWA service worker --}}
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+}
+</script>
 </body>
 </html>

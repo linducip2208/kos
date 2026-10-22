@@ -27,13 +27,13 @@ class SeedPhotosSeeder extends Seeder
 
         $map = [
             'Kos Bahagia Pusat|Standar' => ['seed/rooms/standar-1.jpg', 'seed/rooms/standar-2.jpg'],
-            'Kos Bahagia Pusat|Deluxe'  => ['seed/rooms/deluxe-1.jpg'],
-            'Kos Bahagia Pusat|VIP'     => ['seed/rooms/vip-1.jpg', 'seed/rooms/vip-2.jpg'],
+            'Kos Bahagia Pusat|Deluxe' => ['seed/rooms/deluxe-1.jpg'],
+            'Kos Bahagia Pusat|VIP' => ['seed/rooms/vip-1.jpg', 'seed/rooms/vip-2.jpg'],
             'Kos Bahagia Selatan|Standar' => ['seed/rooms/deluxe-2.jpg'],
         ];
 
         foreach (RoomType::with('property')->get() as $type) {
-            $key = $type->property->name . '|' . $type->name;
+            $key = $type->property->name.'|'.$type->name;
             if (isset($map[$key])) {
                 $type->update(['photos' => $map[$key]]);
             }

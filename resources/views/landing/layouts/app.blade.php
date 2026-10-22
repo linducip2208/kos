@@ -11,7 +11,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-    {{-- App CSS via Vite (Tailwind v4). Jalankan `npm run build` sebelum deploy. --}}
+    {{-- PWA --}}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-180.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Swiper --}}
@@ -337,5 +340,11 @@
 @endif
 {{-- /PURCHASE POPUP --}}
 
+{{-- PWA service worker (halaman publik saja; /admin & /api selalu network) --}}
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+}
+</script>
 </body>
 </html>

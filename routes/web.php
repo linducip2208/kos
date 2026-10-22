@@ -11,6 +11,9 @@ use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\PrintController;
 use Illuminate\Support\Facades\Route;
 
+// Halaman offline PWA (di-cache service worker; mandiri tanpa aset build)
+Route::view('/offline', 'offline')->name('offline');
+
 // Landing Page
 Route::get('/', [LandingController::class, 'home'])->name('landing.home');
 Route::get('/property/{property}', [LandingController::class, 'property'])->name('landing.property');
