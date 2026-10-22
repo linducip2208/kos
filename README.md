@@ -169,10 +169,10 @@ Akses di: `http://localhost:8000`
 ### Mobile API
 
 ```bash
-# Login — dapatkan token
-curl -X POST http://localhost:8000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"andi@gmail.com","password":"password"}'
+# Login — dapatkan token (login pakai nomor HP + password portal)
+curl -X POST http://localhost:8000/api/v1/tenant/auth/login \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"phone":"081234000001","password":"password"}'
 
 # Gunakan token di header
 curl http://localhost:8000/api/tenant/dashboard \
