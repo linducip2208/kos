@@ -1,8 +1,16 @@
 Sumber foto (Wikimedia Commons, lisensi bebas — hanya untuk data demo lokal):
-- Melrose Apartment Building, Galveston (alt-1.jpg)
-- The Guest House, geograph.org.uk 6389364 (alt-3.jpg)
-- Bedroom, Interior of apartment in Brisbane, 2025, 01/02 (standar-1/2.jpg)
-- 2025.07.13 Interior bedroom Hotel Hlybokae 01/02 (deluxe-1/2.jpg)
-- Morning, Interior - Luce (vip-1.jpg)
-- LeHavre MaisonDel'Armateur Bedroom 1 (vip-2.jpg)
+- Melrose Apartment Building, Galveston (properties/alt-1.jpg)
+- The Guest House, geograph.org.uk 6389364 (properties/alt-3.jpg)
+- Bedroom, Interior of apartment in Brisbane, 2025, 01/02 (rooms/standar-1/2.jpg)
+- 2025.07.13 Interior bedroom Hotel Hlybokae 01/02 (rooms/deluxe-1/2.jpg)
+- Morning, Interior - Luce (rooms/vip-1.jpg)
+- LeHavre MaisonDel'Armateur Bedroom 1 (rooms/vip-2.jpg)
+- seed/mass/ext-*.jpg: guest house / hotel / homestay / motel exteriors
+  (Phuktal Zanskar, Oak Ridge Alexander Inn restoration, C.V. Raman IIT Mandi,
+  Hotel National Moscow, Bath & Lescar Hotel Sheffield, Summit Hotel,
+  Connaught London, Residence Bassac Laos, Eiffel Tower apt, Kowloon,
+  Vitrolles, Gemoor Khar, Blue Mountain, Peafowl Farm, Kasara Salikim x2,
+  Lopez Paradise, Karima, Sakleshpur, Caiguna Roadhouse, Roys/Frontier/
+  Western/Chelsea motels)
+- seed/mass/room-h1.jpg, room-h2.jpg: Lopez Paradise Homestay rooms Honnavar
 Lihat halaman file masing-masing di commons.wikimedia.org untuk atribusi penulis.

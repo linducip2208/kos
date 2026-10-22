@@ -123,13 +123,25 @@ class MassDataSeeder extends Seeder
         $rows = [];
         $now  = now();
 
+        // Slug unik: tiru observer Property::creating (bulk insert melewati Eloquent).
+        $usedSlugs = DB::table('properties')->pluck('slug')->flip()->all();
+
         for ($i = 1; $i <= $count; $i++) {
             [$city, $province] = $this->cities[array_rand($this->cities)];
             $name   = 'Kos ' . ['Indah','Bahagia','Sejahtera','Mawar','Cendana','Permata','Anggrek','Harmoni','Asri','Kencana'][$i % 10] . ' ' . $city;
             $street = $this->streets[array_rand($this->streets)] . ' No. ' . rand(1, 250);
 
+            $base = Str::slug($name . ' ' . $i) ?: 'kos';
+            $slug = $base;
+            $n = 2;
+            while (isset($usedSlugs[$slug])) {
+                $slug = $base . '-' . $n++;
+            }
+            $usedSlugs[$slug] = true;
+
             $rows[] = [
                 'name'        => $name . ' #' . $i,
+                'slug'        => $slug,
                 'address'     => $street . ', RT ' . str_pad((string) rand(1, 15), 2, '0', STR_PAD_LEFT) . '/RW ' . str_pad((string) rand(1, 10), 2, '0', STR_PAD_LEFT),
                 'city'        => $city,
                 'province'    => $province,
@@ -317,6 +329,7 @@ class MassDataSeeder extends Seeder
                 'price'         => $room['price_monthly'],
                 'deposit'       => $room['price_monthly'],
                 'deposit_returned' => 0,
+                'deposit_returned_at' => null,
                 'billing_cycle' => 'monthly',
                 'billing_date'  => 1,
                 'status'        => 'active',
