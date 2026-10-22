@@ -23,5 +23,34 @@ class Login extends BaseLogin
                 RenderHook::make(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER),
             ]);
     }
-}
 
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return 'Masuk';
+    }
+
+    public function getSubheading(): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return 'Butuh akun? Hubungi administrator kos Anda.';
+    }
+
+    protected function getEmailFormComponent(): Component
+    {
+        return parent::getEmailFormComponent()->label('Alamat Email');
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return parent::getPasswordFormComponent()->label('Kata Sandi');
+    }
+
+    protected function getRememberFormComponent(): Component
+    {
+        return parent::getRememberFormComponent()->label('Ingat saya');
+    }
+
+    protected function getAuthenticateFormAction(): \Filament\Actions\Action
+    {
+        return parent::getAuthenticateFormAction()->label('Masuk');
+    }
+}

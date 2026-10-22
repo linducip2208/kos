@@ -81,17 +81,11 @@
                 <p class="text-slate-500 text-sm mt-1">Manajemen Kos Modern</p>
             </div>
 
-            <div class="mb-2">
-                <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">Masuk</h1>
-                <p class="text-slate-500 mt-2 text-sm">
-                    Butuh akun? Hubungi administrator kos Anda.
-                </p>
-            </div>
-
-            {{-- Filament Login Form --}}
+            {{-- Filament Login Form (heading + subheading dirender dari Login::getHeading) --}}
             {{ $slot }}
 
-            {{-- Demo Accounts --}}
+            {{-- Demo Accounts — hanya di environment lokal --}}
+            @if(app()->isLocal())
             <div class="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="text-lg">🧪</span>
@@ -117,6 +111,7 @@
                 </div>
                 <p class="text-[10px] text-slate-400 mt-3">Hanya untuk development lokal — jangan gunakan di production.</p>
             </div>
+            @endif
         </div>
     </div>
 </div>

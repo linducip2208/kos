@@ -14,6 +14,7 @@
                     <div class="swiper-slide">
                         <img src="{{ asset('storage/' . $photo) }}"
                              alt="{{ $property->name }}"
+                             loading="lazy" onerror="this.style.display='none'"
                              class="w-full h-full object-cover opacity-90">
                     </div>
                 @endforeach
@@ -153,6 +154,7 @@
                                             @if(!empty($type->photos[0]))
                                                 <img src="{{ asset('storage/' . $type->photos[0]) }}"
                                                      alt="{{ $type->name }}"
+                                                     loading="lazy" onerror="this.style.display='none'"
                                                      class="w-full h-full object-cover">
                                             @else
                                                 <div class="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center">
@@ -285,7 +287,7 @@
                                         <p class="text-slate-600 text-sm leading-relaxed flex-1 italic mb-4">"{{ $t->content }}"</p>
                                         <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
                                             @if($t->avatar)
-                                                <img src="{{ asset('storage/' . $t->avatar) }}" alt="{{ $t->name }}" class="w-9 h-9 rounded-full object-cover">
+                                                <img src="{{ asset('storage/' . $t->avatar) }}" alt="{{ $t->name }}" loading="lazy" onerror="this.style.display='none'" class="w-9 h-9 rounded-full object-cover bg-slate-200">
                                             @else
                                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($t->name) }}&background=2563eb&color=fff&size=36" alt="{{ $t->name }}" class="w-9 h-9 rounded-full">
                                             @endif

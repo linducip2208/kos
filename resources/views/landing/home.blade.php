@@ -11,7 +11,7 @@
     <div class="absolute top-1/4 left-10 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <div class="relative w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
         {{-- Left: text --}}
         <div class="text-white">
@@ -138,6 +138,7 @@
                             @if(!empty($prop->photos[0]))
                                 <img src="{{ asset('storage/' . $prop->photos[0]) }}"
                                      alt="{{ $prop->name }}"
+                                     loading="lazy" onerror="this.style.display='none'"
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             @else
                                 <div class="absolute inset-0 gradient-hero flex items-center justify-center">
@@ -341,7 +342,7 @@
 
                             <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
                                 @if($t->avatar)
-                                    <img src="{{ asset('storage/' . $t->avatar) }}" alt="{{ $t->name }}" class="w-11 h-11 rounded-full object-cover">
+                                    <img src="{{ asset('storage/' . $t->avatar) }}" alt="{{ $t->name }}" loading="lazy" onerror="this.style.display='none'" class="w-11 h-11 rounded-full object-cover bg-slate-200">
                                 @else
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($t->name) }}&background=2563eb&color=fff&size=44" alt="{{ $t->name }}" class="w-11 h-11 rounded-full">
                                 @endif
