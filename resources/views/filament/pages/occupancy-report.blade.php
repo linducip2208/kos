@@ -1,6 +1,4 @@
-@extends('filament::layouts.app')
-
-@section('content')
+<x-filament-panels::page>
 <div class="p-6">
     <h2 class="text-2xl font-bold text-slate-900 mb-6">Laporan Okupansi Kamar</h2>
 
@@ -53,4 +51,4 @@
         </table>
     </div>
 </div>
-@endsection
+</x-filament-panels::page>

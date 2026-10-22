@@ -35,10 +35,12 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 h-14 overflow-x-auto text-sm font-medium">
         <a href="/" class="text-primary-600 font-extrabold shrink-0">{{ setting('app_name', 'Kos Manager') }}</a>
         <a href="#demo" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Akun Demo</a>
+        <a href="#galeri" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Galeri</a>
         <a href="#alamat" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Alamat</a>
         <a href="#struktur" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Struktur Menu</a>
         <a href="#tutorial" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Tutorial</a>
         <a href="#fitur" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Fitur</a>
+        <a href="#api" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">API</a>
     </div>
 </nav>
 
@@ -78,6 +80,56 @@
                 </tbody>
             </table>
         </div>
+
+        <h3 class="text-xl font-bold text-slate-800 mt-10 mb-2">Akun Portal Penyewa</h3>
+        <p class="text-slate-500 text-sm mb-6">Login ke <a href="{{ $portalUrl }}/login" class="text-primary-600 font-semibold hover:underline">{{ $portalUrl }}/login</a> pakai <strong>No. HP + password</strong>.</p>
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white rounded-xl shadow-sm border border-slate-200 text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">Nama</th>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">No. HP</th>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">Password</th>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-mono text-xs">
+                    @foreach($portalAccounts as $acc)
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3 font-semibold text-slate-800">{{ $acc['name'] }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ $acc['phone'] }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ $acc['password'] }}</td>
+                        <td class="px-5 py-3 text-slate-500">{{ $acc['note'] }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{-- Galeri Screenshot --}}
+    <section id="galeri" class="reveal">
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Galeri Tampilan</h2>
+        <p class="text-slate-500 text-sm mb-8">Screenshot asli dari aplikasi yang sedang berjalan. Klik gambar untuk buka halamannya.</p>
+
+        @foreach($gallery as $g)
+        <h3 class="text-xl font-bold text-primary-700 mb-4 mt-10">{{ $g['group'] }}</h3>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($g['items'] as $shot)
+            <a href="{{ $baseUrl }}{{ $shot['path'] }}" class="group block">
+                <div class="browser-mock group-hover:shadow-xl group-hover:border-primary-200 transition-all">
+                    <div class="bar">
+                        <div class="dots"><span style="background:#ef4444"></span><span style="background:#f59e0b"></span><span style="background:#22c55e"></span></div>
+                        <div class="url">{{ $baseUrl }}{{ $shot['path'] }}</div>
+                    </div>
+                    <img src="{{ asset('images/docs/' . $shot['file']) }}" alt="Screenshot {{ $shot['title'] }}" loading="lazy"
+                         class="w-full aspect-[1366/900] object-cover object-top bg-slate-100">
+                </div>
+                <p class="font-semibold text-sm text-slate-800 mt-2 group-hover:text-primary-600">{{ $shot['title'] }}</p>
+            </a>
+            @endforeach
+        </div>
+        @endforeach
     </section>
 
     {{-- Struktur Menu --}}
@@ -178,6 +230,41 @@
             </div>
         </div>
         @endforeach
+    </section>
+
+    {{-- API untuk Mobile (Flutter) --}}
+    <section id="api" class="reveal">
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">REST API v1</h2>
+        <p class="text-slate-500 text-sm mb-6">Autentikasi Sanctum (Bearer token). Login mengembalikan <span class="font-mono">token</span> — kirim di header <span class="font-mono">Authorization: Bearer &lt;token&gt;</span>. Base URL: <span class="font-mono font-semibold text-slate-700">{{ $baseUrl }}/api</span>. Batas login: 10x/menit.</p>
+        <div class="bg-slate-900 rounded-xl p-5 mb-6 overflow-x-auto">
+            <p class="text-xs text-slate-400 mb-2 font-mono"># Contoh login penyewa</p>
+            <pre class="font-mono text-xs text-green-300 leading-relaxed">curl -X POST {{ $baseUrl }}/api/v1/tenant/auth/login \
+  -H "Accept: application/json" \
+  -d '{"phone":"081234000001","password":"password"}'
+
+# → {"token":"...","occupant":{"id":1,"name":"Andi Prasetyo",...}}</pre>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white rounded-xl shadow-sm border border-slate-200 text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">Method</th>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">Endpoint</th>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wider">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs">
+                    @foreach($apiEndpoints as $ep)
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3"><span class="font-mono font-bold px-2 py-0.5 rounded {{ $ep['method'] === 'GET' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">{{ $ep['method'] }}</span></td>
+                        <td class="px-5 py-3 font-mono text-slate-700 break-all">{{ $ep['url'] }}</td>
+                        <td class="px-5 py-3 text-slate-500">{{ $ep['desc'] }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">Endpoint admin lengkap (CRUD properti/kamar/penghuni/sewa/invoice/user, dashboard, laporan, settings, export): <span class="font-mono">/api/v1/admin/*</span> — lihat <span class="font-mono">routes/api.php</span>.</p>
     </section>
 
     {{-- CTA --}}

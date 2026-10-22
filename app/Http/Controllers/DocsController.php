@@ -14,6 +14,66 @@ class DocsController extends Controller
         ];
     }
 
+    protected function portalAccounts(): array
+    {
+        return [
+            ['name' => 'Andi Prasetyo (contoh)', 'phone' => '081234000001', 'password' => 'password', 'note' => 'Kontrak aktif Kos Bahagia Pusat kamar 101 + 4 invoice'],
+            ['name' => 'Siti Nurhaliza', 'phone' => '082345000002', 'password' => 'password', 'note' => 'Akun penghuni aktif'],
+            ['name' => 'Budi Santoso', 'phone' => '083456000003', 'password' => 'password', 'note' => 'Akun penghuni aktif'],
+            ['name' => '1000+ penghuni lain', 'phone' => 'lihat menu Penghuni', 'password' => 'password', 'note' => 'Semua akun portal demo pakai password sama'],
+        ];
+    }
+
+    protected function gallery(): array
+    {
+        return [
+            [
+                'group' => 'Tampilan Publik',
+                'items' => [
+                    ['file' => 'landing-home.jpg', 'title' => 'Landing Page', 'path' => '/'],
+                    ['file' => 'landing-property.jpg', 'title' => 'Detail Properti + Booking', 'path' => '/property/kos-bahagia-pusat'],
+                    ['file' => 'blog.jpg', 'title' => 'Blog & Artikel', 'path' => '/blog'],
+                ],
+            ],
+            [
+                'group' => 'Portal Penyewa',
+                'items' => [
+                    ['file' => 'portal-login.jpg', 'title' => 'Login Portal (No HP)', 'path' => '/portal/login'],
+                    ['file' => 'portal-dashboard.jpg', 'title' => 'Dashboard Penyewa', 'path' => '/portal'],
+                    ['file' => 'portal-invoices.jpg', 'title' => 'Riwayat Tagihan', 'path' => '/portal/invoices'],
+                    ['file' => 'portal-maintenance.jpg', 'title' => 'Lapor Kerusakan', 'path' => '/portal/maintenance'],
+                    ['file' => 'portal-profile.jpg', 'title' => 'Profil & Password', 'path' => '/portal/profile'],
+                ],
+            ],
+            [
+                'group' => 'Panel Admin',
+                'items' => [
+                    ['file' => 'admin-login.jpg', 'title' => 'Login Admin', 'path' => '/admin/login'],
+                    ['file' => 'admin-dashboard.jpg', 'title' => 'Dashboard + Statistik', 'path' => '/admin'],
+                    ['file' => 'admin-rooms.jpg', 'title' => 'Data Kamar', 'path' => '/admin/rooms'],
+                ],
+            ],
+        ];
+    }
+
+    protected function apiEndpoints(): array
+    {
+        return [
+            ['method' => 'POST', 'url' => '/api/v1/tenant/auth/login', 'desc' => 'Login penyewa (phone + password) → token Sanctum'],
+            ['method' => 'POST', 'url' => '/api/v1/admin/auth/login', 'desc' => 'Login admin (email + password) → token Sanctum'],
+            ['method' => 'GET', 'url' => '/api/v1/public/properties', 'desc' => 'Daftar properti publik (tanpa login)'],
+            ['method' => 'GET', 'url' => '/api/v1/public/properties/{slug}', 'desc' => 'Detail properti + kamar tersedia'],
+            ['method' => 'GET', 'url' => '/api/v1/tenant/dashboard', 'desc' => 'Ringkasan lease, tagihan, maintenance'],
+            ['method' => 'GET', 'url' => '/api/v1/tenant/lease', 'desc' => 'Kontrak aktif penyewa'],
+            ['method' => 'GET', 'url' => '/api/v1/tenant/invoices', 'desc' => 'Daftar tagihan (paginasi)'],
+            ['method' => 'GET', 'url' => '/api/v1/tenant/maintenance', 'desc' => 'Daftar laporan kerusakan'],
+            ['method' => 'POST', 'url' => '/api/v1/tenant/maintenance', 'desc' => 'Buat laporan kerusakan'],
+            ['method' => 'GET', 'url' => '/api/v1/admin/properties', 'desc' => 'CRUD properti (admin, Bearer token)'],
+            ['method' => 'GET', 'url' => '/api/v1/admin/dashboard/summary', 'desc' => 'Ringkasan dashboard admin'],
+            ['method' => 'GET', 'url' => '/api/v1/admin/reports/occupancy', 'desc' => 'Laporan okupansi (filter tanggal)'],
+        ];
+    }
+
     protected function tutorial(): array
     {
         return [
@@ -66,7 +126,7 @@ class DocsController extends Controller
                 'title' => 'Manajemen Properti & Kamar',
                 'description' => 'Kelola banyak properti kos dalam satu dashboard. Setiap properti punya tipe kamar, fasilitas, dan harga yang berbeda.',
                 'bullets' => ['Multi-properti dalam satu akun', 'Tipe kamar dengan fasilitas kustom', 'Status kamar real-time (tersedia/terisi/maintenance)', 'Upload foto properti & kamar', 'Deskripsi dan alamat lengkap'],
-                'screenshot' => 'property-list.svg',
+                'screenshot' => 'admin-properties.jpg',
                 'path' => '/admin/properties',
             ],
             [
@@ -74,7 +134,7 @@ class DocsController extends Controller
                 'title' => 'Data Penghuni Lengkap',
                 'description' => 'Database penghuni dengan data KTP, kontak darurat, dan riwayat sewa. Setiap penghuni dapat akses portal mandiri.',
                 'bullets' => ['Data KTP & identitas', 'Kontak darurat', 'Riwayat sewa per penghuni', 'Portal login mandiri', 'Upload dokumen pendukung'],
-                'screenshot' => 'occupant-list.svg',
+                'screenshot' => 'admin-occupants.jpg',
                 'path' => '/admin/occupants',
             ],
             [
@@ -82,7 +142,7 @@ class DocsController extends Controller
                 'title' => 'Sewa & Kontrak Otomatis',
                 'description' => 'Atur periode sewa dengan tanggal mulai dan selesai. Sistem otomatis generate invoice setiap bulan sesuai kontrak.',
                 'bullets' => ['Periode sewa fleksibel (harian/mingguan/bulanan/tahunan)', 'Auto-generate invoice bulanan', 'Perpanjangan kontrak otomatis', 'E-Contract dengan tanda tangan digital', 'Notifikasi H-30 sebelum kontrak habis'],
-                'screenshot' => 'lease-list.svg',
+                'screenshot' => 'admin-leases.jpg',
                 'path' => '/admin/leases',
             ],
             [
@@ -90,7 +150,7 @@ class DocsController extends Controller
                 'title' => 'Invoice & Pembayaran',
                 'description' => 'Invoice otomatis dengan rincian sewa + utilitas + biaya lain. Pembayaran via tunai, transfer, atau payment gateway.',
                 'bullets' => ['Invoice otomatis per bulan', 'Rincian: sewa + listrik + air + lain-lain', 'Payment gateway Midtrans & Tripay', 'Status pembayaran real-time (lunas/sebagian/belum)', 'Cetak PDF invoice & kwitansi'],
-                'screenshot' => 'invoice-list.svg',
+                'screenshot' => 'admin-invoices.jpg',
                 'path' => '/admin/invoices',
             ],
             [
@@ -98,7 +158,7 @@ class DocsController extends Controller
                 'title' => 'Deposit & Ledger',
                 'description' => 'Kelola uang deposit penghuni dengan ledger transparan. Setiap potongan dan pengembalian tercatat rapi.',
                 'bullets' => ['Deposit per kontrak sewa', 'Ledger mutasi (masuk/keluar)', 'Potongan kerusakan otomatis', 'Pengembalian deposit', 'Riwayat lengkap per penghuni'],
-                'screenshot' => 'deposit-list.svg',
+                'screenshot' => 'admin-deposits.jpg',
                 'path' => '/admin/deposits',
             ],
             [
@@ -106,7 +166,7 @@ class DocsController extends Controller
                 'title' => 'Maintenance & Perbaikan',
                 'description' => 'Catat dan lacak semua permintaan perbaikan. Penghuni bisa submit request maintenance langsung dari portal.',
                 'bullets' => ['Request maintenance dari admin & penghuni', 'Prioritas (rendah/sedang/tinggi/urgent)', 'Tracking status perbaikan', 'Biaya perbaikan + vendor', 'History maintenance per kamar'],
-                'screenshot' => 'maintenance-list.svg',
+                'screenshot' => 'admin-maintenance.jpg',
                 'path' => '/admin/maintenance-requests',
             ],
             [
@@ -114,7 +174,7 @@ class DocsController extends Controller
                 'title' => 'Meteran Listrik & Air',
                 'description' => 'Catat angka meter tiap bulan. Tagihan utilitas otomatis dihitung dari selisih pemakaian × tarif.',
                 'bullets' => ['Pembacaan meter per kamar', 'Tarif per properti (listrik/air)', 'Otomatis masuk invoice', 'Riwayat pemakaian', 'Deteksi pemakaian abnormal'],
-                'screenshot' => 'meter-list.svg',
+                'screenshot' => 'admin-meters.jpg',
                 'path' => '/admin/utility-readings',
             ],
             [
@@ -122,15 +182,15 @@ class DocsController extends Controller
                 'title' => 'Booking Online & E-Contract',
                 'description' => 'Calon penghuni booking dari landing page publik. Setelah disetujui, kontrak digital ditandatangani online.',
                 'bullets' => ['Form booking publik per properti', 'Approval manager → jadi lease', 'E-Contract + tanda tangan digital', 'Checklist check-in/out kamar', 'Pindah kamar (room transfer)'],
-                'screenshot' => 'booking-list.svg',
-                'path' => '/admin/booking-requests',
+                'screenshot' => 'landing-property.jpg',
+                'path' => '/property/kos-bahagia-pusat',
             ],
             [
                 'group' => 'Laporan',
                 'title' => 'Laporan Keuangan Lengkap',
                 'description' => 'Dashboard laporan dengan chart interaktif. Filter tanggal, properti, dan download PDF/Excel.',
                 'bullets' => ['Ringkasan pendapatan & piutang', 'Chart revenue bulanan/tahunan', 'Laporan P&L (Profit & Loss)', 'Filter per properti', 'Export PDF & Excel'],
-                'screenshot' => 'financial-report.svg',
+                'screenshot' => 'admin-financial.jpg',
                 'path' => '/admin/financial-report',
             ],
             [
@@ -138,7 +198,7 @@ class DocsController extends Controller
                 'title' => 'Okupansi & Analitik',
                 'description' => 'Pantau tingkat keterisian per properti, kamar kosong, dan tren hunian dari dashboard operasional.',
                 'bullets' => ['Tingkat hunian per properti', 'Daftar kamar kosong siap jual', 'Kontrak hampir habis (H-30)', 'Invoice jatuh tempo', 'Export Excel okupansi'],
-                'screenshot' => 'occupancy-report.svg',
+                'screenshot' => 'admin-occupancy.jpg',
                 'path' => '/admin',
             ],
             [
@@ -146,7 +206,7 @@ class DocsController extends Controller
                 'title' => 'WhatsApp Blast & Reminder',
                 'description' => 'Kirim tagihan, pengingat jatuh tempo, dan pengumuman massal via WhatsApp otomatis.',
                 'bullets' => ['Reminder H-3 otomatis', 'Notice keterlambatan + denda', 'Blast pengumuman ke semua penghuni', 'Template pesan kustom', 'Log status terkirim/gagal'],
-                'screenshot' => 'whatsapp-blast.svg',
+                'screenshot' => 'admin-whatsapp.jpg',
                 'path' => '/admin/whatsapp-blast',
             ],
             [
@@ -154,7 +214,7 @@ class DocsController extends Controller
                 'title' => 'Portal & Mobile API',
                 'description' => 'Penghuni mandiri: lihat tagihan, bayar online, lapor kerusakan, dan update profil tanpa hubungi admin.',
                 'bullets' => ['Login portal penyewa', 'Dashboard tagihan & kontrak', 'Bayar via Midtrans/Tripay', 'Lapor maintenance + foto', 'REST API untuk aplikasi mobile'],
-                'screenshot' => 'portal-dashboard.svg',
+                'screenshot' => 'portal-dashboard.jpg',
                 'path' => '/portal',
             ],
         ];
@@ -182,6 +242,9 @@ class DocsController extends Controller
             'apiUrl' => $baseUrl . '/api',
             'whatsapp' => setting('owner_phone', '', 'general') ?: '6281296052010',
             'demoAccounts' => $this->demoAccounts(),
+            'portalAccounts' => $this->portalAccounts(),
+            'gallery' => $this->gallery(),
+            'apiEndpoints' => $this->apiEndpoints(),
             'tutorial' => $this->tutorial(),
             'features' => $this->features(),
         ]);
