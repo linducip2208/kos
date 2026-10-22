@@ -49,54 +49,44 @@
             </div>
         </div>
 
-        {{-- Right: floating stat cards --}}
-        <div class="hidden lg:flex flex-col gap-5 items-end">
+        {{-- Right: hero photo --}}
+        <div class="relative" data-aos="fade-left">
             @php
                 $totalAvailable = $properties->sum('available_rooms');
-                $totalRooms = $properties->sum('total_rooms');
             @endphp
 
-            <div class="glass rounded-2xl px-6 py-5 w-64 float-anim" style="animation-delay:0s">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-extrabold text-white">{{ $totalAvailable }}</div>
-                        <div class="text-xs text-blue-200">Kamar Tersedia</div>
-                    </div>
-                </div>
-            </div>
+            <div class="absolute -inset-4 bg-gradient-to-tr from-blue-500/30 to-fuchsia-500/20 rounded-[2rem] blur-2xl pointer-events-none"></div>
 
-            <div class="glass rounded-2xl px-6 py-5 w-64 float-anim" style="animation-delay:1.5s">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-extrabold text-white">{{ $properties->count() }}</div>
-                        <div class="text-xs text-blue-200">Lokasi Properti</div>
-                    </div>
-                </div>
-            </div>
+            <figure class="relative rounded-[1.75rem] overflow-hidden shadow-2xl shadow-black/40 ring-1 ring-white/25">
+                <img src="{{ asset('images/hero-kos.jpg') }}"
+                     alt="Gedung kos eksklusif 3 lantai yang bersih dan nyaman"
+                     class="w-full aspect-[4/3] object-cover"
+                     fetchpriority="high"
+                     onerror="this.style.display='none'">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/5 to-transparent pointer-events-none"></div>
 
-            <div class="glass rounded-2xl px-6 py-5 w-64 float-anim" style="animation-delay:3s">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-extrabold text-white">4.9 ★</div>
-                        <div class="text-xs text-blue-200">Rating Penyewa</div>
-                    </div>
+                {{-- Top badges --}}
+                <div class="absolute top-4 left-4 inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-sm font-semibold text-white">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    {{ $totalAvailable }} Kamar Tersedia
                 </div>
-            </div>
+                <div class="absolute top-4 right-4 inline-flex items-center gap-1.5 glass px-4 py-2 rounded-full text-sm font-bold text-white">
+                    <svg class="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    4.9 <span class="font-medium text-blue-100">Rating</span>
+                </div>
+
+                {{-- Bottom info bar --}}
+                <figcaption class="absolute bottom-0 inset-x-0 p-5 flex items-end justify-between gap-3">
+                    <div class="text-white">
+                        <div class="text-2xl font-extrabold leading-none">{{ $properties->count() }} Lokasi</div>
+                        <div class="text-xs text-blue-100 mt-1">Properti kos aktif & terverifikasi</div>
+                    </div>
+                    <a href="#properti" class="shrink-0 inline-flex items-center gap-2 bg-white text-primary-700 text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition shadow-lg">
+                        Jelajahi
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </a>
+                </figcaption>
+            </figure>
         </div>
     </div>
 
