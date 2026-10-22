@@ -3,7 +3,7 @@
  * - Navigasi publik: network-first → cache → halaman /offline.
  * - Aset statis (build, ikon, gambar, font): stale-while-revalidate.
  */
-const VERSION = 'kos-v1';
+const VERSION = 'kos-v2';
 const STATIC_CACHE = `km-static-${VERSION}`;
 const PAGE_CACHE = `km-pages-${VERSION}`;
 const OFFLINE_URL = '/offline';
