@@ -20,7 +20,7 @@ class Occupant extends Authenticatable
         'name', 'email', 'phone', 'whatsapp', 'id_number', 'id_type',
         'id_photo', 'selfie_photo', 'address', 'occupation', 'workplace',
         'emergency_contact', 'notes',
-        'portal_password', 'portal_active', 'portal_last_login',
+        'portal_password', 'portal_active', 'portal_last_login', 'fcm_token',
     ];
 
     protected $hidden = ['portal_password', 'remember_token'];

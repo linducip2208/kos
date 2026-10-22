@@ -43,7 +43,7 @@ class PaymentService
                 'reference' => $reference,
                 'proof_path' => $data['proof_path'] ?? null,
                 'paid_at' => Carbon::parse($data['paid_at'] ?? now()),
-                'received_by' => $data['received_by'] ?? auth()->id(),
+                'received_by' => array_key_exists('received_by', $data) ? $data['received_by'] : auth()->id(),
                 'status' => $status,
                 'notes' => $data['notes'] ?? null,
                 'payment_transaction_id' => $data['payment_transaction_id'] ?? null,

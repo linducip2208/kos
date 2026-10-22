@@ -6,7 +6,7 @@
     "start_url": "/?source=pwa",
     "scope": "/",
     "display": "standalone",
-    "orientation": "portrait",
+    "orientation": "any",
     "background_color": "#ffffff",
     "theme_color": "#2563eb",
     "lang": "id",
@@ -27,6 +27,23 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Cari Kos",
+            "url": "/#properti",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Portal Penyewa",
+            "url": "/portal",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Dokumentasi",
+            "url": "/docs",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
         }
     ]
 }

@@ -8,6 +8,10 @@ use App\Http\Controllers\Api\LeaseController as TenantLeaseController;
 use App\Http\Controllers\Api\MaintenanceController as TenantMaintenanceController;
 use App\Http\Controllers\Api\NotificationController as TenantNotificationController;
 use App\Http\Controllers\Api\PropertyController as PublicPropertyController;
+use App\Http\Controllers\Api\BookingController as ApiBookingController;
+use App\Http\Controllers\Api\ContractController as ApiContractController;
+use App\Http\Controllers\Api\DeviceController as TenantDeviceController;
+use App\Http\Controllers\Api\PaymentController as TenantPaymentController;
 use Illuminate\Support\Facades\Route;
 
 // ═══════════════════════════════════════════════════════════════════
@@ -18,8 +22,11 @@ Route::prefix('v1')->group(function () {
 
     // ── Public ───────────────────────────────────────────────────────
     Route::prefix('public')->group(function () {
-        Route::get('properties',              [PublicPropertyController::class, 'index']);
-        Route::get('properties/{property}',   [PublicPropertyController::class, 'show']);
+        Route::get ('properties',              [PublicPropertyController::class, 'index']);
+        Route::get ('properties/{property}',   [PublicPropertyController::class, 'show']);
+        Route::post('bookings/{property}',     [ApiBookingController::class, 'store'])->middleware('throttle:10,1');
+        Route::get ('contract/{token}',        [ApiContractController::class, 'show']);
+        Route::post('contract/{token}/sign',   [ApiContractController::class, 'sign'])->middleware('throttle:10,1');
     });
 
     // ── Admin Auth ────────────────────────────────────────────────────
@@ -114,13 +121,22 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'active.account'])->prefix('tenant')->group(function () {
         Route::post ('auth/logout',   [TenantAuthController::class, 'logout']);
         Route::get  ('auth/me',       [TenantAuthController::class, 'me']);
+        Route::put  ('profile',       [TenantAuthController::class, 'updateProfile']);
+        Route::post ('profile/password', [TenantAuthController::class, 'changePassword']);
 
         Route::get ('dashboard',      [TenantDashboardController::class, 'index']);
         Route::get ('lease',          [TenantLeaseController::class, 'active']);
         Route::get ('invoices',       [TenantInvoiceController::class, 'index']);
         Route::get ('invoices/{id}',  [TenantInvoiceController::class, 'show']);
+        Route::post('invoices/{id}/pay',   [TenantPaymentController::class, 'pay']);
+        Route::post('invoices/{id}/proof',  [TenantPaymentController::class, 'proof']);
         Route::get ('maintenance',    [TenantMaintenanceController::class, 'index']);
         Route::post('maintenance',    [TenantMaintenanceController::class, 'store']);
+        Route::get ('maintenance/{id}',        [TenantMaintenanceController::class, 'show']);
+        Route::post('maintenance/{id}/cancel', [TenantMaintenanceController::class, 'cancel']);
+
+        Route::post  ('devices',      [TenantDeviceController::class, 'store']);
+        Route::delete('devices',      [TenantDeviceController::class, 'destroy']);
 
         Route::get   ('notifications',           [TenantNotificationController::class, 'index']);
         Route::get   ('notifications/unread-count', [TenantNotificationController::class, 'unreadCount']);

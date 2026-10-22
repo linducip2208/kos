@@ -43,6 +43,43 @@ class AuthController extends Controller
         return response()->json(['occupant' => $this->occupantData($request->user())]);
     }
 
+    public function updateProfile(Request $request)
+    {
+        $occupant = $request->user();
+        $request->validate([
+            'name'     => 'required|max:255',
+            'phone'    => 'required|max:20|unique:occupants,phone,'.$occupant->id,
+            'email'    => 'nullable|email|max:255',
+            'whatsapp' => 'nullable|max:20',
+        ]);
+
+        $occupant->update($request->only('name', 'phone', 'email', 'whatsapp'));
+
+        return response()->json([
+            'message'  => 'Profil berhasil diperbarui.',
+            'occupant' => $this->occupantData($occupant->fresh()),
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => 'required|min:6|confirmed',
+        ]);
+
+        $occupant = $request->user();
+
+        if (!Hash::check($request->current_password, $occupant->portal_password)) {
+            return response()->json(['message' => 'Password saat ini tidak cocok.'], 422);
+        }
+
+        $occupant->setPortalPassword($request->password);
+        $occupant->save();
+
+        return response()->json(['message' => 'Password berhasil diubah.']);
+    }
+
     private function occupantData(Occupant $o): array
     {
         return [

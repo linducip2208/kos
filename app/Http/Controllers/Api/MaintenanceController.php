@@ -31,17 +31,53 @@ class MaintenanceController extends Controller
         ]);
     }
 
+    public function show(Request $request, int $id)
+    {
+        $record = $request->user()->maintenanceRequests()->with('room')->findOrFail($id);
+
+        return response()->json([
+            'id'          => $record->id,
+            'title'       => $record->title,
+            'description' => $record->description,
+            'priority'    => $record->priority,
+            'status'      => $record->status,
+            'photos'      => collect($record->photos ?? [])->map(fn ($p) => photo_url($p))->values()->all(),
+            'room_number' => $record->room?->room_number,
+            'created_at'  => $record->created_at,
+        ]);
+    }
+
+    public function cancel(Request $request, int $id)
+    {
+        $record = $request->user()->maintenanceRequests()->findOrFail($id);
+
+        if (! in_array($record->status, ['open', 'triage'], true)) {
+            return response()->json(['message' => 'Laporan yang sudah diproses tidak dapat dibatalkan.'], 422);
+        }
+
+        $record->update(['status' => 'cancelled']);
+
+        return response()->json(['message' => 'Laporan berhasil dibatalkan.']);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|max:255',
             'description' => 'required',
             'priority' => 'nullable|in:low,medium,high,urgent',
+            'photos' => 'nullable|array|max:4',
+            'photos.*' => 'image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
         $occupant = $request->user();
         $lease = $occupant->leases()->where('status', 'active')->first();
         abort_unless($lease, 422, 'Penyewa belum memiliki kontrak aktif.');
+
+        $paths = [];
+        foreach ($request->file('photos', []) as $file) {
+            $paths[] = $file->store('maintenance/photos', 'public');
+        }
 
         $record = MaintenanceRequest::create([
             'room_id' => $lease->room_id,
@@ -50,6 +86,7 @@ class MaintenanceController extends Controller
             'description' => $request->description,
             'priority' => $request->priority ?? 'medium',
             'status' => 'open',
+            'photos' => $paths,
         ]);
 
         $record->load('room');

@@ -6,6 +6,9 @@
     <title>@yield('title', 'Portal Penyewa') — {{ setting('app_name', 'Kos Manager') }}</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="/icons/apple-touch-180.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

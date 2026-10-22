@@ -7,7 +7,7 @@
 @if($activeLease)
 <div class="bg-white rounded-xl shadow-sm p-5 mb-4">
     <h2 class="font-semibold text-gray-700 mb-3">Kamar Anda</h2>
-    <div class="grid grid-cols-2 gap-3 text-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <div>
             <span class="text-gray-500">Properti</span>
             <div class="font-medium">{{ $activeLease->room->property->name ?? '-' }}</div>
