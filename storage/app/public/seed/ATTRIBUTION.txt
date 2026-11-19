@@ -1,16 +1,19 @@
-Sumber foto (Wikimedia Commons, lisensi bebas — hanya untuk data demo lokal):
-- Melrose Apartment Building, Galveston (properties/alt-1.jpg)
-- The Guest House, geograph.org.uk 6389364 (properties/alt-3.jpg)
-- Bedroom, Interior of apartment in Brisbane, 2025, 01/02 (rooms/standar-1/2.jpg)
-- 2025.07.13 Interior bedroom Hotel Hlybokae 01/02 (rooms/deluxe-1/2.jpg)
-- Morning, Interior - Luce (rooms/vip-1.jpg)
-- LeHavre MaisonDel'Armateur Bedroom 1 (rooms/vip-2.jpg)
-- seed/mass/ext-*.jpg: guest house / hotel / homestay / motel exteriors
-  (Phuktal Zanskar, Oak Ridge Alexander Inn restoration, C.V. Raman IIT Mandi,
-  Hotel National Moscow, Bath & Lescar Hotel Sheffield, Summit Hotel,
-  Connaught London, Residence Bassac Laos, Eiffel Tower apt, Kowloon,
-  Vitrolles, Gemoor Khar, Blue Mountain, Peafowl Farm, Kasara Salikim x2,
-  Lopez Paradise, Karima, Sakleshpur, Caiguna Roadhouse, Roys/Frontier/
-  Western/Chelsea motels)
-- seed/mass/room-h1.jpg, room-h2.jpg: Lopez Paradise Homestay rooms Honnavar
-Lihat halaman file masing-masing di commons.wikimedia.org untuk atribusi penulis.
+Foto demo AI-generated (ComfyUI lokal, bebas lisensi, khusus data demo).
+Generator: D:/ComfyUI/comfy_gen_kos_v2.py (v2, gaya foto HP) + v3/v4/v5 (fix).
+Checkpoint: Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors, 30 steps, CFG 5.
+- public/images/hero-kos.jpg: tampak depan kos 2 lantai atap genteng + motor (v3 seed 12)
+- seed/mass/ext-01.jpg (v2 seed 21): gang kos + motor berderet
+- seed/mass/ext-02.jpg (v2 seed 22): lorong parkir kos + jemuran
+- seed/mass/ext-03.jpg (v2 seed 23): rumah kos teralis + motor
+- seed/mass/ext-05.jpg (v2 seed 25): kos hijau + motor
+- seed/mass/ext-06..28: salinan rotasi dari 4 eksterior di atas
+- seed/rooms/standar-1.jpg (v3 seed 33): kamar 3x3 sprei bunga + 2 bantal
+- seed/rooms/standar-2.jpg (v2 seed 32): kamar biru + meja belajar
+- seed/rooms/deluxe-1.jpg (v2 seed 41): kamar queen + AC split
+- seed/rooms/deluxe-2.jpg (v3 seed 43): queen + LED TV + balkon hijau
+- seed/rooms/vip-1.jpg (v4 seed 57): king cover biru + LED TV + AC di dinding
+- seed/rooms/vip-2.jpg (v5 seed 59): RUANG TAMU studio VIP (sofa + LED TV) — pasangan galeri vip-1
+- seed/mass/room-h1.jpg = copy standar-2, room-h2.jpg = copy vip-1 (kamar, bukan ruang tamu)
+- seed/properties/alt-1.jpg = copy ext-02, alt-3.jpg = copy ext-03
+Aturan: foto sampul tipe VIP selalu kamar (vip-1/room-h2); vip-2 hanya foto ke-2 galeri.
+Foto Commons lama yang ngaco (biara Himalaya, hotel US, lukisan, museum Prancis) sudah dibuang.

@@ -2,21 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\BookingRequest;
-use App\Models\ContactSubmission;
-use App\Models\EContract;
-use App\Models\Faq;
 use App\Models\Invoice;
-use App\Models\Lease;
-use App\Models\MaintenanceRequest;
 use App\Models\Occupant;
 use App\Models\Property;
-use App\Models\Room;
-use App\Models\RoomChecklist;
-use App\Models\RoomType;
-use App\Models\Testimonial;
 use App\Models\User;
-use App\Models\UtilityReading;
+use Filament\Facades\Filament;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\Request;
@@ -50,15 +40,15 @@ class SmokeTestCommand extends Command
         $this->line('<fg=cyan>│  SMOKE TEST — Kos Manager Web Diagnostics   │</>');
         $this->line('<fg=cyan>└─────────────────────────────────────────────┘</>');
 
-        if (!$only || $only === 'public') {
+        if (! $only || $only === 'public') {
             $this->testPublic();
         }
 
-        if (!$only || $only === 'admin') {
+        if (! $only || $only === 'admin') {
             $this->testAdmin();
         }
 
-        if (!$only || $only === 'portal') {
+        if (! $only || $only === 'portal') {
             $this->testPortal();
         }
 
@@ -73,10 +63,10 @@ class SmokeTestCommand extends Command
 
         $urls = ['/'];
         if ($p = Property::where('is_active', true)->first()) {
-            $urls[] = "/property/{$p->id}";
-            $urls[] = "/booking/{$p->id}";
+            $urls[] = "/property/{$p->getRouteKey()}";
+            $urls[] = "/booking/{$p->getRouteKey()}";
         }
-        $urls[] = '/license-invalid';
+        $urls[] = '/offline';
         $urls[] = '/admin/login';
         $urls[] = '/portal/login';
 
@@ -92,64 +82,66 @@ class SmokeTestCommand extends Command
         $this->section('ADMIN PANEL');
 
         $admin = User::first();
-        if (!$admin) {
+        if (! $admin) {
             $this->results[] = ['admin', '—', '—', 'NO_USER', 'Tidak ada user admin di tabel users'];
+
             return;
         }
 
-        // Index pages
-        $indexes = [
-            '/admin', '/admin/properties', '/admin/rooms', '/admin/room-types',
-            '/admin/occupants', '/admin/leases', '/admin/invoices',
-            '/admin/booking-requests', '/admin/e-contracts', '/admin/maintenance-requests',
-            '/admin/utility-readings', '/admin/room-checklists', '/admin/contact-submissions',
-            '/admin/testimonials', '/admin/faqs',
-            '/admin/whats-app-blast', '/admin/financial-report',
-            '/admin/general-settings', '/admin/payment-gateway-settings',
-            '/admin/license-settings', '/admin/plugin-management', '/admin/theme-management',
-        ];
-        foreach ($indexes as $url) {
-            $this->hitUrl('admin', $url, $admin);
+        $panel = Filament::getPanel('admin') ?? Filament::getDefaultPanel();
+
+        // Semua custom pages (dashboard, laporan, settings, ...) — otomatis
+        // tercakup saat ada page baru, tanpa daftar manual.
+        foreach ($panel->getPages() as $page) {
+            if (str_contains($page, '\\Auth\\')) {
+                continue; // login/logout sudah dicakup di segmen public
+            }
+            try {
+                $this->hitUrl('admin', $this->pathOf($page::getUrl(panel: $panel->getId())), $admin);
+            } catch (Throwable $e) {
+                $this->results[] = ['admin', class_basename($page), '—', 'SKIP', 'URL tidak bisa dibuat: '.substr($e->getMessage(), 0, 80)];
+            }
         }
 
-        // Create pages (yang punya form create)
-        $creates = [
-            '/admin/properties/create', '/admin/rooms/create', '/admin/room-types/create',
-            '/admin/occupants/create', '/admin/leases/create', '/admin/invoices/create',
-            '/admin/booking-requests/create', '/admin/e-contracts/create',
-            '/admin/maintenance-requests/create', '/admin/utility-readings/create',
-            '/admin/room-checklists/create', '/admin/testimonials/create', '/admin/faqs/create',
-        ];
-        foreach ($creates as $url) {
-            $this->hitUrl('admin', $url, $admin);
-        }
+        // Semua resources: index + create + edit — otomatis tercakup saat ada
+        // resource baru. getUrl() memakai route key model (mis. slug properti).
+        foreach ($panel->getResources() as $resource) {
+            $short = class_basename($resource);
 
-        // Edit pages — pakai record pertama dari tiap model
-        $edits = [
-            ['/admin/properties/{id}/edit',           Property::class],
-            ['/admin/rooms/{id}/edit',                Room::class],
-            ['/admin/room-types/{id}/edit',           RoomType::class],
-            ['/admin/occupants/{id}/edit',            Occupant::class],
-            ['/admin/leases/{id}/edit',               Lease::class],
-            ['/admin/invoices/{id}/edit',             Invoice::class],
-            ['/admin/booking-requests/{id}/edit',     BookingRequest::class],
-            ['/admin/e-contracts/{id}/edit',          EContract::class],
-            ['/admin/maintenance-requests/{id}/edit', MaintenanceRequest::class],
-            ['/admin/utility-readings/{id}/edit',     UtilityReading::class],
-            ['/admin/room-checklists/{id}/edit',      RoomChecklist::class],
-            ['/admin/contact-submissions/{id}/edit',  ContactSubmission::class],
-            ['/admin/testimonials/{id}/edit',         Testimonial::class],
-            ['/admin/faqs/{id}/edit',                 Faq::class],
-        ];
-        foreach ($edits as [$pattern, $model]) {
-            $rec = $model::first();
-            if (!$rec) {
-                $this->results[] = ['admin', str_replace('{id}', '?', $pattern), '—', 'SKIP', 'Belum ada record di ' . class_basename($model)];
+            try {
+                $this->hitUrl('admin', $this->pathOf($resource::getUrl('index', panel: $panel->getId())), $admin);
+            } catch (Throwable $e) {
+                $this->results[] = ['admin', $short.'::index', '—', 'SKIP', substr($e->getMessage(), 0, 80)];
+
                 continue;
             }
-            $url = str_replace('{id}', (string) $rec->id, $pattern);
-            $this->hitUrl('admin', $url, $admin);
+
+            try {
+                $this->hitUrl('admin', $this->pathOf($resource::getUrl('create', panel: $panel->getId())), $admin);
+            } catch (Throwable $e) {
+                $this->results[] = ['admin', $short.'::create', '—', 'SKIP', 'Tidak ada halaman create'];
+            }
+
+            try {
+                $model = $resource::getModel();
+                $rec = $model::first();
+                if (! $rec) {
+                    $this->results[] = ['admin', $short.'::edit', '—', 'SKIP', 'Belum ada record di '.class_basename($model)];
+
+                    continue;
+                }
+                $this->hitUrl('admin', $this->pathOf($resource::getUrl('edit', ['record' => $rec], panel: $panel->getId())), $admin);
+            } catch (Throwable $e) {
+                $this->results[] = ['admin', $short.'::edit', '—', 'SKIP', 'Tidak ada halaman edit'];
+            }
         }
+    }
+
+    private function pathOf(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+
+        return $path ?: $url;
     }
 
     /* ───────────────────────── portal ───────────────────────── */
@@ -161,8 +153,9 @@ class SmokeTestCommand extends Command
         $occupant = Occupant::whereHas('leases', fn ($q) => $q->where('status', 'active'))->first()
                   ?? Occupant::first();
 
-        if (!$occupant) {
+        if (! $occupant) {
             $this->results[] = ['portal', '—', '—', 'NO_USER', 'Tidak ada Occupant di database'];
+
             return;
         }
 
@@ -207,24 +200,28 @@ class SmokeTestCommand extends Command
             $code = $response->getStatusCode();
 
             if ($code >= 500) {
-                $this->results[] = [$panel, $url, $code, 'FAIL', 'HTTP ' . $code];
+                $this->results[] = [$panel, $url, $code, 'FAIL', 'HTTP '.$code];
                 $this->line("  <fg=red>✗ {$code}</> {$url}");
-            } elseif ($code >= 400 && $code !== 403 && $code !== 404) {
-                $this->results[] = [$panel, $url, $code, 'WARN', 'HTTP ' . $code];
+            } elseif ($code === 404) {
+                // 404 = URL salah atau record tersaring scoping — harus FAIL agar ketahuan.
+                $this->results[] = [$panel, $url, $code, 'FAIL', 'HTTP 404 Not Found'];
+                $this->line("  <fg=red>✗ 404</> {$url}");
+            } elseif ($code >= 400) {
+                $this->results[] = [$panel, $url, $code, 'WARN', 'HTTP '.$code];
                 $this->line("  <fg=yellow>! {$code}</> {$url}");
             } else {
                 $this->results[] = [$panel, $url, $code, 'OK', null];
                 $this->line("  <fg=green>✓ {$code}</> {$url}");
             }
         } catch (Throwable $e) {
-            $msg = trim(str_replace(["\n","\r"], ' ', substr($e->getMessage(), 0, 200)));
-            $loc = basename($e->getFile()) . ':' . $e->getLine();
-            $this->results[] = [$panel, $url, '500', 'EXCEPTION', class_basename($e) . " @ {$loc} → {$msg}"];
+            $msg = trim(str_replace(["\n", "\r"], ' ', substr($e->getMessage(), 0, 200)));
+            $loc = basename($e->getFile()).':'.$e->getLine();
+            $this->results[] = [$panel, $url, '500', 'EXCEPTION', class_basename($e)." @ {$loc} → {$msg}"];
             $this->line("  <fg=red>✗ EXC</> {$url}");
-            $this->line("        <fg=red>" . class_basename($e) . " @ {$loc}</>");
+            $this->line('        <fg=red>'.class_basename($e)." @ {$loc}</>");
             $this->line("        <fg=red>{$msg}</>");
             if ($this->option('verbose-errors')) {
-                $this->line('        <fg=gray>' . substr($e->getTraceAsString(), 0, 1500) . '</>');
+                $this->line('        <fg=gray>'.substr($e->getTraceAsString(), 0, 1500).'</>');
             }
         }
     }
@@ -258,6 +255,7 @@ class SmokeTestCommand extends Command
         if (empty($errors)) {
             $this->newLine();
             $this->info('  ✓ Semua page sehat!');
+
             return self::SUCCESS;
         }
 

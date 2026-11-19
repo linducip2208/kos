@@ -35,8 +35,9 @@ class InvoiceResource extends Resource
 
     protected static array $tablePreloads = [
         'lease.occupant',
-            'lease.room',
+        'lease.room',
     ];
+
     protected static array $tableSums = ['verifiedPayments' => 'amount', 'verifiedRefunds' => 'amount'];
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
@@ -116,7 +117,7 @@ class InvoiceResource extends Resource
 
             Section::make('Status')->schema([
                 Select::make('status')
-                    ->options(['draft' => 'Draft', 'sent' => 'Terkirim', 'paid' => 'Lunas', 'overdue' => 'Jatuh Tempo', 'cancelled' => 'Dibatalkan'])
+                    ->options(['draft' => 'Draft', 'sent' => 'Terkirim', 'partial' => 'Sebagian Dibayar', 'paid' => 'Lunas', 'overdue' => 'Jatuh Tempo', 'cancelled' => 'Dibatalkan'])
                     ->default('draft')->required(),
             ]),
         ]);
@@ -143,12 +144,12 @@ class InvoiceResource extends Resource
                 TextColumn::make('total')->label('Total')->money('IDR'),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn ($s) => match ($s) {
-                        'draft' => 'gray', 'sent' => 'info', 'paid' => 'success',
+                        'draft' => 'gray', 'sent' => 'info', 'partial' => 'warning', 'paid' => 'success',
                         default => 'danger',
                     })
                     ->formatStateUsing(fn ($s) => match ($s) {
-                        'draft' => 'Draft', 'sent' => 'Terkirim', 'paid' => 'Lunas',
-                        'overdue' => 'Tunggakan', 'cancelled' => 'Batal', default => $s,
+                        'draft' => 'Draft', 'sent' => 'Terkirim', 'partial' => 'Sebagian',
+                        'paid' => 'Lunas', 'overdue' => 'Tunggakan', 'cancelled' => 'Batal', default => $s,
                     }),
             ])
             ->filters([
@@ -156,7 +157,7 @@ class InvoiceResource extends Resource
                     ->options(fn () => Lease::with('occupant')
                         ->get()->pluck('lease_number', 'id'))->searchable(),
                 SelectFilter::make('status')->options([
-                    'draft' => 'Draft', 'sent' => 'Terkirim', 'paid' => 'Lunas',
+                    'draft' => 'Draft', 'sent' => 'Terkirim', 'partial' => 'Sebagian Dibayar', 'paid' => 'Lunas',
                     'overdue' => 'Tunggakan', 'cancelled' => 'Batal',
                 ]),
             ])

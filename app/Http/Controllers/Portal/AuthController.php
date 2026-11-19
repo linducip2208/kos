@@ -15,20 +15,21 @@ class AuthController extends Controller
         if (Auth::guard('portal')->check()) {
             return redirect()->route('portal.dashboard');
         }
+
         return view('portal.auth.login');
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'phone'    => 'required',
+            'phone' => 'required',
             'password' => 'required',
         ]);
 
         $occupant = Occupant::where('phone', $request->phone)
             ->where('portal_active', true)->first();
 
-        if (!$occupant || !Hash::check($request->password, $occupant->portal_password)) {
+        if (! $occupant || ! $occupant->portal_password || ! Hash::check($request->password, $occupant->portal_password)) {
             return back()->withErrors(['phone' => 'Nomor HP atau password salah.'])->withInput();
         }
 
@@ -43,6 +44,7 @@ class AuthController extends Controller
         Auth::guard('portal')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('portal.login');
     }
 }

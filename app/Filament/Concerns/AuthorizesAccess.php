@@ -56,6 +56,32 @@ trait AuthorizesAccess
         return Gate::allows(static::viewPermission());
     }
 
+    /**
+     * Jika record ada tapi tersaring scoping properti, tampilkan 403 yang
+     * menjelaskan penyebabnya (bukan 404 misterius).
+     */
+    public static function resolveRecordRouteBinding(int|string $key, ?\Closure $modifyQuery = null): ?Model
+    {
+        $record = parent::resolveRecordRouteBinding($key, $modifyQuery);
+
+        if ($record !== null) {
+            return $record;
+        }
+
+        $user = auth()->user();
+        $ids = $user?->scopedPropertyIds();
+
+        if ($ids !== null) {
+            $exists = static::getModel()::whereKey($key)->exists();
+
+            if ($exists) {
+                abort(403, 'Data di luar properti yang ditugaskan ke Anda.');
+            }
+        }
+
+        return null;
+    }
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -87,6 +113,13 @@ trait AuthorizesAccess
         ];
 
         if (isset($relations[$model])) {
+            // Occupant: penyewa tanpa riwayat sewa tetap bisa dikelola (tidak hilang/404).
+            if ($model === 'Occupant') {
+                return static::applyTablePreloads($query->where(fn (Builder $q) => $q
+                    ->whereHas($relations[$model], fn (Builder $relation) => $relation->whereIn('property_id', $propertyIds ?: [0]))
+                    ->orWhereDoesntHave('leases')));
+            }
+
             return static::applyTablePreloads($query->whereHas($relations[$model], fn (Builder $relation) => $relation->whereIn('property_id', $propertyIds ?: [0])));
         }
 

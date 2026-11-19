@@ -51,12 +51,17 @@ LICENSE_SERVER_URL=https://whitelabel.co.id
 ```
 
 ### Generate key & migrate
+
 ```bash
 php artisan key:generate
 php artisan migrate --force
-php artisan db:seed --force
 php artisan storage:link
 ```
+
+> ⚠️ JANGAN `php artisan db:seed` di production — seeder berisi akun demo
+> (`admin@kos.test` / `password`) dan data contoh. Buat akun admin via
+> panel `/admin` atau command resmi, lalu hapus/nonaktifkan akun demo bila
+> database berasal dari dump development.
 
 ### Set permission
 ```bash

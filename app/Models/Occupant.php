@@ -3,10 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +13,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Occupant extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name', 'email', 'phone', 'whatsapp', 'id_number', 'id_type',
@@ -27,12 +26,19 @@ class Occupant extends Authenticatable
 
     protected $casts = [
         'emergency_contact' => 'array',
-        'portal_active'     => 'boolean',
+        'portal_active' => 'boolean',
         'portal_last_login' => 'datetime',
     ];
 
-    public function getAuthPasswordName(): string { return 'portal_password'; }
-    public function getAuthPassword(): string     { return $this->portal_password; }
+    public function getAuthPasswordName(): string
+    {
+        return 'portal_password';
+    }
+
+    public function getAuthPassword(): ?string
+    {
+        return $this->portal_password;
+    }
 
     public function leases(): HasMany
     {
@@ -66,6 +72,6 @@ class Occupant extends Authenticatable
 
     public function hasPortalAccess(): bool
     {
-        return !is_null($this->portal_password) && $this->portal_active;
+        return ! is_null($this->portal_password) && $this->portal_active;
     }
 }

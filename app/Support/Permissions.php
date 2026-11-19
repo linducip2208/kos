@@ -192,7 +192,7 @@ class Permissions
         };
     }
 
-    public static function roleColor(string $role): string
+    public static function roleColor(?string $role): string
     {
         return match ($role) {
             'super_admin', 'owner' => 'success',

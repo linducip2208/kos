@@ -48,21 +48,39 @@ Sistem manajemen kos berbasis web dibangun dengan **Laravel 13** dan **Filament 
 | Pemeliharaan | Lihat & buat laporan kerusakan |
 | Profil | Update data pribadi & ganti password |
 
-### Mobile API (`/api`)
+### Mobile API (`/api/v1` + legacy compat)
+
+> Rute kanonis berversi di bawah `/api/v1`. Rute lama tanpa versi
+> (`/api/auth/login`, `/api/tenant/...`, `/api/properties`) tetap
+> dipertahankan sebagai redirect kompatibilitas — lihat `routes/api.php`.
 
 | Endpoint | Method | Keterangan |
 |---|---|---|
-| `/api/auth/login` | POST | Login penyewa, mendapat token |
-| `/api/auth/logout` | POST | Logout (hapus token) |
-| `/api/tenant/me` | GET | Data profil penyewa |
-| `/api/tenant/dashboard` | GET | Ringkasan dashboard |
-| `/api/tenant/lease` | GET | Detail kontrak aktif |
-| `/api/tenant/invoices` | GET | Daftar tagihan |
-| `/api/tenant/invoices/{id}` | GET | Detail tagihan |
-| `/api/tenant/maintenance` | GET | Daftar laporan pemeliharaan |
-| `/api/tenant/maintenance` | POST | Buat laporan baru |
-| `/api/properties` | GET | Daftar properti (publik) |
-| `/api/properties/{id}` | GET | Detail properti (publik) |
+| `/api/v1/public/properties` | GET | Daftar properti (publik) |
+| `/api/v1/public/properties/{id}` | GET | Detail properti (publik) |
+| `/api/v1/public/bookings/{property}` | POST | Booking kamar (publik, throttle) |
+| `/api/v1/public/contract/{token}` | GET | Lihat kontrak digital via token |
+| `/api/v1/public/contract/{token}/sign` | POST | Tanda tangan kontrak (throttle) |
+| `/api/v1/tenant/auth/login` | POST | Login penyewa (phone + password), dapat token |
+| `/api/v1/tenant/auth/logout` | POST | Logout (hapus token) |
+| `/api/v1/tenant/auth/me` | GET | Data profil penyewa |
+| `/api/v1/tenant/dashboard` | GET | Ringkasan dashboard |
+| `/api/v1/tenant/lease` | GET | Detail kontrak aktif |
+| `/api/v1/tenant/invoices` | GET | Daftar tagihan |
+| `/api/v1/tenant/invoices/{id}` | GET | Detail tagihan |
+| `/api/v1/tenant/invoices/{id}/pay` | POST | Bayar invoice |
+| `/api/v1/tenant/invoices/{id}/proof` | POST | Upload bukti bayar |
+| `/api/v1/tenant/maintenance` | GET | Daftar laporan pemeliharaan |
+| `/api/v1/tenant/maintenance` | POST | Buat laporan baru |
+| `/api/v1/tenant/maintenance/{id}` | GET | Detail laporan |
+| `/api/v1/tenant/devices` | POST/DELETE | Daftarkan/hapus device FCM |
+| `/api/v1/tenant/notifications` | GET | Notifikasi penyewa |
+| `/api/v1/admin/auth/login` | POST | Login admin (throttle) |
+| `/api/v1/admin/dashboard/summary` | GET | Ringkasan dashboard admin |
+| `/api/v1/admin/properties`, `/rooms`, `/occupants`, `/leases`, `/invoices`, `/users` | GET/POST/PUT/DELETE | CRUD admin (auth:sanctum) |
+| `/api/v1/admin/reports/occupancy`, `/revenue`, `/overdue`, `/turnover` | GET | Laporan admin |
+| `/api/v1/admin/export`, `/export/invoices/{invoice}/pdf` | GET | Export Excel & PDF |
+| `/api/v1/admin/license`, `/license/activate`, `/validate`, `/revoke` | GET/POST | Lisensi pairing v3 |
 
 ### Online Booking (`/booking/{property}`)
 
@@ -175,9 +193,12 @@ curl -X POST http://localhost:8000/api/v1/tenant/auth/login \
   -d '{"phone":"081234000001","password":"password"}'
 
 # Gunakan token di header
-curl http://localhost:8000/api/tenant/dashboard \
+curl http://localhost:8000/api/v1/tenant/dashboard \
   -H "Authorization: Bearer {token}"
 ```
+
+> Rute lama (`/api/auth/login`, `/api/tenant/dashboard`, `/api/properties`)
+> tetap aktif untuk kompatibilitas dan mengarah ke controller yang sama.
 
 ---
 
@@ -233,30 +254,44 @@ php artisan test --filter=BookingTest
 ```
 app/
 ├── Filament/
-│   ├── Pages/          — FinancialReport, WhatsAppBlast, GeneralSettings
-│   ├── Resources/      — 11 resource Filament (CRUD)
-│   └── Widgets/        — StatsOverview, RoomStatus, RecentPayments
+│   ├── Pages/          — 11 halaman (FinancialReport, WhatsAppBlast, GeneralSettings, ...)
+│   ├── Resources/      — 34 resource Filament (Properti, Kamar, Penyewa, Lease,
+│   │                     Invoice, Deposit, Expense, Blog, EContract, Checklist, ...)
+│   └── Widgets/        — 9 widget (StatsOverview, RoomStatus, RecentPayments, ...)
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Api/        — Mobile API controllers
-│   │   └── Portal/     — Portal penyewa controllers
-│   └── Middleware/     — PortalAuth
-├── Models/             — 12 Eloquent models
-└── Services/           — InvoiceService, EContractService, WhatsAppService
+│   │   ├── Api/        — Api v1: Public / Admin / Tenant + legacy compat
+│   │   └── Portal/     — Portal penyewa (Blade)
+│   └── Middleware/     — PortalAuth, ActiveAccount, ...
+├── Models/             — 38 Eloquent models ($fillable eksplisit)
+├── Services/           — 14 service (InvoiceService, EContractService,
+│                         WhatsAppService, PaymentGatewayService/Midtrans+Tripay, ...)
+├── Support/            — Permissions (role kanonis) + DashboardMetricsService, ...
+├── Policies/           — kosong (otorisasi via Permissions + Gate + AuthorizesAccess)
+└── Console/Commands/   — 19 command (invoices:*, lease:*, backup:*, license:*, ...)
 
 database/
-├── migrations/         — 23 migration files
-├── seeders/            — 11 seeders
-└── factories/          — 8 factories
+├── migrations/         — 51 migration files
+├── seeders/            — 16 seeders
+└── factories/          — 13 factories
 
 routes/
-├── web.php             — Portal penyewa + booking + webhook
-└── api.php             — Mobile API endpoints
+├── web.php             — Landing, portal, booking, print/PDF-Excel, blog, docs,
+│                         sitemap, pSEO, webhook Midtrans/Tripay, kontrak token
+├── api.php             — Api v1 (public/admin/tenant) + legacy compat
+├── console.php         — 7 jadwal (license:validate, invoices:*, lease:*,
+│                         backup:run, seo:indexnow, ...)
+├── pair-routes.php     — License Pairing v3 (/__pair)
+└── Lisensi pairing v3: App\Services\LicenseClient + middleware RequirePair (grup web)
 
-tests/
-├── Unit/
-└── Feature/
+tests/                   — 49 file test (Unit + Feature + Api)
+docs/                    — PROJECT_AUDIT, FEATURE_MATRIX, SECURITY_REVIEW,
+                           TEST_REPORT, DEPLOYMENT_RUNBOOK, PRODUCTION_READINESS, API
 ```
+
+Total rute: 268 (`php artisan route:list --except-vendor`).
+Detail modul per fitur: `docs/FEATURE_MATRIX.md`.
+Detail endpoint: `docs/API.md`.
 
 ---
 

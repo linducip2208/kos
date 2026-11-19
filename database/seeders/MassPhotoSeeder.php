@@ -8,9 +8,9 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Ganti foto picsum acak (MassDataSeeder) dengan foto lokal yang relevan.
- * Idempoten: hanya menyentuh baris yang photos-nya mengandung 'picsum'.
- * File yang belum terunduh dilewati otomatis (Storage::exists).
+ * Foto seed AI-generated lokal (ComfyUI SDXL RealVisXL — lihat
+ * storage/app/public/seed/ATTRIBUTION.txt). Idempoten: hanya menyentuh
+ * baris yang photos-nya mengandung 'picsum'.
  *
  * php artisan db:seed --class=MassPhotoSeeder
  */
@@ -21,14 +21,14 @@ class MassPhotoSeeder extends Seeder
         $disk = Storage::disk('public');
 
         $exteriors = collect(range(1, 28))
-            ->map(fn ($i) => 'seed/mass/ext-' . str_pad((string) $i, 2, '0', STR_PAD_LEFT) . '.jpg')
+            ->map(fn ($i) => 'seed/mass/ext-'.str_pad((string) $i, 2, '0', STR_PAD_LEFT).'.jpg')
             ->filter(fn ($p) => $disk->exists($p))
             ->values();
 
         $byType = [
             'Standar' => ['seed/rooms/standar-1.jpg', 'seed/rooms/standar-2.jpg', 'seed/mass/room-h1.jpg'],
-            'Deluxe'  => ['seed/rooms/deluxe-1.jpg', 'seed/rooms/deluxe-2.jpg'],
-            'VIP'     => ['seed/rooms/vip-1.jpg', 'seed/rooms/vip-2.jpg', 'seed/mass/room-h2.jpg'],
+            'Deluxe' => ['seed/rooms/deluxe-1.jpg', 'seed/rooms/deluxe-2.jpg'],
+            'VIP' => ['seed/rooms/vip-1.jpg', 'seed/mass/room-h2.jpg'], // room-h2 = copy vip-1 (kamar). vip-2 = ruang tamu, hanya untuk galeri.
         ];
         foreach ($byType as $k => $list) {
             $byType[$k] = collect($list)->filter(fn ($p) => $disk->exists($p))->values()->all();

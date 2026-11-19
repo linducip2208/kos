@@ -6,8 +6,8 @@ use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\AuditLogResource\Pages;
 use App\Models\AuditLog;
 use App\Support\NavigationGroups;
+use Filament\Actions;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -53,7 +53,7 @@ class AuditLogResource extends Resource
                 TextColumn::make('created_at')->label('Waktu')->dateTime('d M Y H:i:s')->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([Tables\Actions\ViewAction::make()])
+            ->actions([Actions\ViewAction::make()])
             ->bulkActions([]);
     }
 
