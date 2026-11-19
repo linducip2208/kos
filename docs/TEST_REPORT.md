@@ -2,10 +2,10 @@
 
 Tanggal: 2026-10-17 · Runner: `php artisan test` (PHPUnit, SQLite in-memory, sesuai `phpunit.xml`).
 
-## Hasil akhir (full suite) — sesi 100/100 (2026-10-18)
+## Hasil akhir (full suite) — sesi 100/100 (2026-10-18) → update 2026-11-20
 
-- **354 passed, 0 failed — 815 assertions — ±110 detik.**
-- Baseline sesi lalu: 295 passed / 628 assertions. Total sesi ini: **+59 test, +187 assertions.**
+- **375 passed, 0 failed — 911 assertions — ±72 detik.**
+- Baseline sesi lalu: 295 passed / 628 assertions. Sesi audit: 354 passed / 815 assertions. Total kini: **+21 test, +96 assertions** (AllCommandsTest + coverage baru).
 
 ## Test baru sesi ini (57)
 
