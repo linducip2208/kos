@@ -68,7 +68,7 @@ class GeneralSettings extends Page implements HasForms
             Section::make('Identitas Aplikasi')->schema([
                 Grid::make(2)->schema([
                     TextInput::make('app_name')->label('Nama Aplikasi')->required(),
-                    FileUpload::make('app_logo')->label('Logo Aplikasi')->image()->directory('app')->imagePreviewHeight('60'),
+                    FileUpload::make('app_logo')->label('Logo Aplikasi')->image()->disk('public')->visibility('public')->directory('app')->imagePreviewHeight('60'),
                     TextInput::make('invoice_prefix')->label('Prefix Invoice')->maxLength(10),
                     TextInput::make('lease_prefix')->label('Prefix Nomor Kontrak')->maxLength(10),
                     TextInput::make('reminder_days')->label('Reminder Tagihan (hari sebelum jatuh tempo)')

@@ -61,7 +61,7 @@ class ExpenseResource extends Resource
                 ]),
                 Grid::make(2)->schema([
                     Forms\Components\TextInput::make('vendor')->label('Vendor/Penyedia'),
-                    Forms\Components\FileUpload::make('receipt_path')->label('Bukti Pembayaran')->directory('expenses'),
+                    Forms\Components\FileUpload::make('receipt_path')->label('Bukti Pembayaran')->disk('public')->visibility('public')->directory('expenses'),
                 ]),
                 Forms\Components\TextInput::make('description')->label('Keterangan')->required()->columnSpanFull(),
                 Forms\Components\Textarea::make('notes')->label('Catatan')->rows(2)->columnSpanFull(),

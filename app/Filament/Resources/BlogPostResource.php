@@ -73,7 +73,7 @@ class BlogPostResource extends Resource
                 TextInput::make('meta_title')->label('Meta Title')->columnSpanFull(),
                 Textarea::make('meta_description')->label('Meta Description')->rows(2)->columnSpanFull(),
                 FileUpload::make('featured_image')->label('Gambar Unggulan')
-                    ->image()->directory('blog/featured')->columnSpanFull(),
+                    ->image()->disk('public')->visibility('public')->directory('blog/featured')->columnSpanFull(),
             ])->collapsed(),
 
             Section::make('Publikasi')->schema([

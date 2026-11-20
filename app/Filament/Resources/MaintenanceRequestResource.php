@@ -70,7 +70,7 @@ class MaintenanceRequestResource extends Resource
                 ]),
                 TextInput::make('title')->label('Judul Kerusakan')->required(),
                 Textarea::make('description')->label('Deskripsi')->rows(3)->required(),
-                FileUpload::make('photos')->label('Foto Kerusakan')->image()->multiple()->maxFiles(5)
+                FileUpload::make('photos')->label('Foto Kerusakan')->image()->multiple()->maxFiles(5)->disk('public')->visibility('public')
                     ->directory('maintenance/before'),
             ]),
 
@@ -108,7 +108,7 @@ class MaintenanceRequestResource extends Resource
                     DateTimePicker::make('sla_due_at')->label('Batas SLA'),
                 ]),
                 Textarea::make('resolution_notes')->label('Catatan Penyelesaian')->rows(2),
-                FileUpload::make('resolution_photos')->label('Foto Sesudah')->image()->multiple()->maxFiles(5)
+                FileUpload::make('resolution_photos')->label('Foto Sesudah')->image()->multiple()->maxFiles(5)->disk('public')->visibility('public')
                     ->directory('maintenance/after'),
             ]),
         ]);

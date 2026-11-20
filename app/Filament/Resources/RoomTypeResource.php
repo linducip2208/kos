@@ -78,6 +78,7 @@ class RoomTypeResource extends Resource
                     ->multiple()
                     ->reorderable()
                     ->maxFiles(8)
+                    ->disk('public')->visibility('public')
                     ->directory('room-types')
                     ->imagePreviewHeight('120')
                     ->panelLayout('grid')

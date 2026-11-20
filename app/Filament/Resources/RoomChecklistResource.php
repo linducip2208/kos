@@ -90,7 +90,7 @@ class RoomChecklistResource extends Resource
                     TextInput::make('damage_cost')->label('Biaya Kerusakan (Rp)')->numeric()->prefix('Rp')->default(0),
                     TextInput::make('deposit_refund')->label('Pengembalian Deposit (Rp)')->numeric()->prefix('Rp')->default(0),
                 ]),
-                FileUpload::make('photos')->label('Foto Dokumentasi')->image()->multiple()->directory('checklists'),
+                FileUpload::make('photos')->label('Foto Dokumentasi')->image()->multiple()->disk('public')->visibility('public')->directory('checklists'),
             ]),
         ]);
     }

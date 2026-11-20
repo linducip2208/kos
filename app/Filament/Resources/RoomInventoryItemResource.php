@@ -71,7 +71,7 @@ class RoomInventoryItemResource extends Resource
                         ->options(RoomInventoryItem::CONDITIONS)->default('good')->required(),
                     Forms\Components\TextInput::make('replacement_value')->label('Nilai Ganti (Rp)')->numeric()->prefix('Rp')->default(0),
                 ]),
-                Forms\Components\FileUpload::make('photo')->label('Foto')->image()->directory('inventory')->columnSpanFull(),
+                Forms\Components\FileUpload::make('photo')->label('Foto')->image()->disk('public')->visibility('public')->directory('inventory')->columnSpanFull(),
                 Forms\Components\Textarea::make('notes')->label('Catatan')->rows(2)->columnSpanFull(),
             ]),
         ]);

@@ -128,6 +128,7 @@ class RoomResource extends Resource
                 FileUpload::make('photos')
                     ->label('Upload Foto Kamar (opsional, override foto tipe)')
                     ->image()->multiple()->reorderable()->maxFiles(6)
+                    ->disk('public')->visibility('public')
                     ->directory('rooms')->imagePreviewHeight('100')->panelLayout('grid')
                     ->columnSpanFull(),
             ]),

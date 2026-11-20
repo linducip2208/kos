@@ -86,7 +86,7 @@ class UtilityReadingResource extends Resource
                     TextInput::make('amount')->label('Total Tagihan')->numeric()->prefix('Rp')->disabled()->dehydrated(),
                     DatePicker::make('reading_date')->label('Tanggal Baca')->default(now())->required(),
                 ]),
-                FileUpload::make('photo')->label('Foto Meteran')->image()->directory('utilities'),
+                FileUpload::make('photo')->label('Foto Meteran')->image()->disk('public')->visibility('public')->directory('utilities'),
             ]),
         ]);
     }

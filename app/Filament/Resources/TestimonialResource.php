@@ -70,7 +70,7 @@ class TestimonialResource extends Resource
                         ->default(5)->required(),
                     Toggle::make('is_active')->label('Tampilkan')->default(true),
                 ]),
-                FileUpload::make('avatar')->label('Foto (opsional)')->image()->directory('testimonials')->imagePreviewHeight('80')->columnSpanFull(),
+                FileUpload::make('avatar')->label('Foto (opsional)')->image()->disk('public')->visibility('public')->directory('testimonials')->imagePreviewHeight('80')->columnSpanFull(),
                 Textarea::make('content')->label('Isi Testimoni')->rows(4)->required()->columnSpanFull(),
             ]),
         ]);

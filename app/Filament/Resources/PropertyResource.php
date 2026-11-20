@@ -70,6 +70,7 @@ class PropertyResource extends Resource
                     ->multiple()
                     ->reorderable()
                     ->maxFiles(10)
+                    ->disk('public')->visibility('public')
                     ->directory('properties')
                     ->imagePreviewHeight('120')
                     ->panelLayout('grid')
