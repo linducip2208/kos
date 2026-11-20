@@ -132,7 +132,9 @@ class RoomTypeResource extends Resource
                     ->label('Lihat Kamar')
                     ->icon('heroicon-o-home')
                     ->url(fn (RoomType $r) => RoomResource::getUrl('index').'?tableFilters[room_type_id][value]='.$r->id),
+                Actions\DeleteAction::make(),
             ])
+            ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])
             ->defaultSort('property_id');
     }
 

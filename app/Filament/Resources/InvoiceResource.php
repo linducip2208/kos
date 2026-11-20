@@ -224,6 +224,7 @@ class InvoiceResource extends Resource
                 Actions\Action::make('payments_history')
                     ->label('Riwayat Bayar')->icon('heroicon-o-list-bullet')->color('gray')
                     ->url(fn (Invoice $r) => InvoicePaymentResource::getUrl('index').'?tableFilters[invoice_id][value]='.$r->id),
+                Actions\DeleteAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }

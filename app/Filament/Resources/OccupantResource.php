@@ -123,7 +123,9 @@ class OccupantResource extends Resource
                         ]);
                         Notification::make()->title('Akses portal diperbarui.')->success()->send();
                     }),
+                Actions\DeleteAction::make(),
             ])
+            ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])
             ->defaultSort('name');
     }
 

@@ -154,7 +154,8 @@ class MaintenanceRequestResource extends Resource
                     'urgent' => 'Urgent', 'high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah',
                 ]),
             ])
-            ->actions([Actions\EditAction::make()])
+            ->actions([Actions\EditAction::make(), Actions\DeleteAction::make()])
+            ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])
             ->defaultSort('created_at', 'desc');
     }
 

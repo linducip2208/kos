@@ -321,6 +321,7 @@ class LeaseResource extends Resource
                         }),
                 ])
                     ->label('Aksi')->icon('heroicon-o-ellipsis-vertical')->color('gray'),
+                Actions\DeleteAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }

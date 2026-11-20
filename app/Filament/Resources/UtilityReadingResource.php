@@ -149,7 +149,9 @@ class UtilityReadingResource extends Resource
                         app(UtilityService::class)->addToInvoice($record, $invoice);
                         Notification::make()->title('Tagihan utilitas ditambahkan ke invoice.')->success()->send();
                     }),
+                Actions\DeleteAction::make(),
             ])
+            ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])
             ->defaultSort('billing_period', 'desc');
     }
 

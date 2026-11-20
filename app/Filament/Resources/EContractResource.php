@@ -129,6 +129,7 @@ class EContractResource extends Resource
                         Notification::make()->title($sent ? 'Link tanda tangan terkirim via WhatsApp.' : 'Link dibuat, pengiriman WA gagal/nonaktif. Link: '.$link)
                             ->success()->send();
                     }),
+                Actions\DeleteAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }

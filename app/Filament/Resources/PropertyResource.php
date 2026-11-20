@@ -109,7 +109,9 @@ class PropertyResource extends Resource
                     ->label('Lihat Kamar')
                     ->icon('heroicon-o-home')
                     ->url(fn (Property $record) => RoomResource::getUrl('index').'?tableFilters[property_id][value]='.$record->id),
+                Actions\DeleteAction::make(),
             ])
+            ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])
             ->defaultSort('name');
     }
 

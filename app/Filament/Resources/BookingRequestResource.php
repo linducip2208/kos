@@ -132,7 +132,9 @@ class BookingRequestResource extends Resource
                     ->label('Hubungi WA')->icon('heroicon-o-chat-bubble-left')->color('success')
                     ->url(fn (BookingRequest $r) => 'https://wa.me/'.preg_replace('/\D/', '', $r->whatsapp ?? $r->phone))
                     ->openUrlInNewTab(),
+                Actions\DeleteAction::make(),
             ])
+            ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])
             ->defaultSort('created_at', 'desc');
     }
 

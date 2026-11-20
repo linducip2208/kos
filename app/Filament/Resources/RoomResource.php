@@ -227,6 +227,7 @@ class RoomResource extends Resource
             ])
             ->actions([
                 Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
                 Actions\Action::make('view_lease')
                     ->label('Kontrak')
                     ->icon('heroicon-o-document-text')

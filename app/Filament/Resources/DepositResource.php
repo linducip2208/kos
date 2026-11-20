@@ -158,6 +158,7 @@ class DepositResource extends Resource
                 Actions\Action::make('ledger')
                     ->label('Mutasi')->icon('heroicon-o-receipt-percent')
                     ->url(fn (Deposit $r) => DepositTransactionResource::getUrl('index').'?tableFilters[deposit_id][value]='.$r->id),
+                Actions\DeleteAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }
