@@ -40,7 +40,7 @@
                 <li>✓ E-Contract</li>
                 <li>✓ Maintenance System</li>
             </ul>
-            <a href="https://wa.me/{{ preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', ''))) }}" class="block mt-8 bg-white text-primary-700 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors">Beli Sekarang</a>
+            <a href="{{ ($waSales = preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', '')))) ? 'https://wa.me/'.$waSales.'?text='.urlencode('Halo, saya tertarik membeli aplikasi Kos Manager paket Growth') : route('landing.home').'#kontak' }}" class="block mt-8 bg-white text-primary-700 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors">Beli Sekarang</a>
         </div>
 
         <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 text-center">
@@ -57,7 +57,7 @@
                 <li>✓ API Mobile Ready</li>
                 <li>✓ Prioritas Support</li>
             </ul>
-            <a href="https://wa.me/{{ preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', ''))) }}" class="block mt-8 bg-slate-800 text-white py-3 rounded-xl font-semibold hover:bg-slate-900 transition-colors">Kontak Sales</a>
+            <a href="{{ ($waSales2 = preg_replace('/\D/', '', (string) setting('contact_whatsapp_sales', setting('contact_whatsapp', '')))) ? 'https://wa.me/'.$waSales2.'?text='.urlencode('Halo, saya tertarik dengan paket Whitelabel aplikasi Kos Manager') : route('landing.home').'#kontak' }}" class="block mt-8 bg-slate-800 text-white py-3 rounded-xl font-semibold hover:bg-slate-900 transition-colors">Kontak Sales</a>
         </div>
     </div>
 </div>

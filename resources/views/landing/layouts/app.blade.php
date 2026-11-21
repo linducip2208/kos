@@ -118,7 +118,7 @@
                :class="scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-white/80 hover:text-white'">
                 Beranda
             </a>
-            <a href="#fasilitas"
+            <a href="{{ route('landing.home') }}#fasilitas"
                class="text-sm font-medium transition-colors"
                :class="scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-white/80 hover:text-white'">
                 Fasilitas
@@ -155,7 +155,7 @@
     <div x-show="open" x-cloak x-transition
          class="md:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-3 shadow-xl">
         <a href="{{ route('landing.home') }}" class="block text-sm font-medium text-slate-700 py-2">Beranda</a>
-        <a href="#fasilitas" @click="open=false" class="block text-sm font-medium text-slate-700 py-2">Fasilitas</a>
+        <a href="{{ route('landing.home') }}#fasilitas" @click="open=false" class="block text-sm font-medium text-slate-700 py-2">Fasilitas</a>
         <a href="#kontak" @click="open=false" class="block text-sm font-medium text-slate-700 py-2">Kontak</a>
         <a href="{{ route('portal.login') }}" class="block text-sm font-medium text-slate-700 py-2">Portal Penyewa</a>
         <a href="{{ route('portal.login') }}" class="block text-center bg-primary-600 text-white px-4 py-2.5 rounded-xl font-semibold text-sm">Login Portal</a>

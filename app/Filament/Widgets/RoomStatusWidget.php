@@ -4,7 +4,6 @@ namespace App\Filament\Widgets;
 
 use App\Models\Property;
 use App\Models\Room;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -32,18 +31,14 @@ class RoomStatusWidget extends BaseWidget
                     ->label('Harga/Bulan')
                     ->getStateUsing(fn (Room $record) => $record->effective_price_monthly)
                     ->money('IDR'),
-                BadgeColumn::make('status')
-                    ->label('Status')
-                    ->colors([
-                        'success' => 'available',
-                        'danger'  => 'occupied',
-                        'warning' => 'maintenance',
-                        'info'    => 'reserved',
-                    ])
-                    ->formatStateUsing(fn ($s) => match ($s) {
-                        'available' => 'Tersedia', 'occupied' => 'Terisi',
-                        'maintenance' => 'Maintenance', 'reserved' => 'Dipesan', default => $s,
-                    }),
+                TextColumn::make('status')
+                    ->label('Status')->badge()
+                    ->color(fn ($s) => match ($s) {
+                        'available' => 'success', 'occupied' => 'danger',
+                        'maintenance' => 'warning', 'reserved' => 'info',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn ($s) => \App\Models\Room::STATUSES[$s] ?? $s),
                 TextColumn::make('activeLease.occupant.name')
                     ->label('Penyewa')
                     ->placeholder('—')

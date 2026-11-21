@@ -22,5 +22,15 @@
         <div class="col-span-full text-center py-20 text-slate-500">Belum ada kos {{ $typeLabel }} di {{ $cityName }}.</div>
         @endforelse
     </div>
+
+    <div class="mt-12 prose max-w-3xl mx-auto">
+        <h2>Kos {{ $typeLabel }} di {{ $cityName }} — Panduan Lengkap</h2>
+        <p>Mencari kos {{ $typeLabel }} di {{ $cityName }}? Daftar di atas berisi properti terverifikasi dengan fasilitas lengkap dan harga transparan. Semua kos {{ $typeLabel }} kami pastikan aman dan nyaman.</p>
+        <h3>Pertanyaan Umum</h3>
+        <h4>Berapa harga kos {{ $typeLabel }} di {{ $cityName }}?</h4>
+        <p>Harga bervariasi mulai Rp 500.000 hingga Rp 3.000.000 per bulan tergantung fasilitas dan lokasi di {{ $cityName }}.</p>
+        <h4>Bagaimana cara booking kos {{ $typeLabel }} di {{ $cityName }}?</h4>
+        <p>Klik properti di atas, pilih tipe kamar, lalu isi form booking online. Tim kami akan menghubungi dalam 1×24 jam.</p>
+    </div>
 </div>
 @endsection

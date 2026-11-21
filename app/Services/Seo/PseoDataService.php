@@ -6,7 +6,7 @@ class PseoDataService
 {
     public static function cities(): array
     {
-        return [
+        $cities = [
             'jakarta', 'bandung', 'surabaya', 'semarang', 'yogyakarta', 'malang', 'medan', 'makassar',
             'palembang', 'depok', 'tangerang', 'bekasi', 'bogor', 'denpasar', 'balikpapan', 'manado',
             'pekanbaru', 'padang', 'solo', 'purwokerto', 'cirebon', 'tasikmalaya', 'magelang', 'salatiga',
@@ -108,11 +108,15 @@ class PseoDataService
             'cimanuk', 'kaduhejo', 'mekarjaya', 'cimanuk-pandeglang',
             'sukaresmi', 'cimanuk',
         ];
+        // Bersihkan duplikat & slug sampah yang tidak layak ter-index.
+        $junk = ['nya', 'nymplung', 'nihil', 'dadahup', 'genteng', 'ibun', 'maya'];
+
+        return array_values(array_diff(array_unique($cities), $junk));
     }
 
     public static function campuses(): array
     {
-        return [
+        return array_values(array_unique([
             'ui', 'itb', 'ugm', 'unair', 'undip', 'ub', 'its', 'unpad', 'ipb', 'uns', 'unnes',
             'unhas', 'unud', 'unri', 'unsri', 'usu', 'unand', 'unib', 'untan', 'unmul',
             'unram', 'uncen', 'unsoed', 'unila', 'untirta', 'upi', 'unj', 'uin-jakarta',
@@ -129,7 +133,7 @@ class PseoDataService
             'president', 'ukrida', 'uk-petra', 'udayana', 'unwira',
             'politeknik-negeri-medan', 'politeknik-negeri-padang',
             'politeknik-negeri-malang', 'politeknik-negeri-bali',
-        ];
+        ]));
     }
 
     public static function facilities(): array

@@ -14,7 +14,7 @@ class Invoice extends Model
 
     public const STATUSES = [
         'draft'     => 'Draft',
-        'sent'      => 'Ter Kirim',
+        'sent'      => 'Terkirim',
         'partial'   => 'Sebagian Dibayar',
         'paid'      => 'Lunas',
         'overdue'   => 'Jatuh Tempo',

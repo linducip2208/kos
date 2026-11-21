@@ -22,7 +22,7 @@
         </div>
         <div>
             <span class="text-gray-500">Berakhir</span>
-            <div class="font-medium {{ $activeLease->end_date?->diffInDays(now()) < 30 ? 'text-red-600' : '' }}">
+            <div class="font-medium {{ $activeLease->end_date && $activeLease->end_date->diffInDays(now()) < 30 ? 'text-red-600' : '' }}">
                 {{ $activeLease->end_date?->format('d M Y') }}
                 @if($activeLease->end_date && $activeLease->end_date->isFuture())
                     <span class="text-xs text-gray-400">({{ $activeLease->end_date->diffForHumans() }})</span>
@@ -41,7 +41,7 @@
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 text-center">
         <div class="text-2xl font-bold text-orange-500">{{ $openMaintenance }}</div>
-        <div class="text-xs text-gray-500 mt-1">Laporan Maintenance</div>
+        <div class="text-xs text-gray-500 mt-1">Laporan Terbuka</div>
     </div>
 </div>
 

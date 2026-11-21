@@ -73,10 +73,11 @@ class RoomResource extends Resource
 
                         Select::make('room_type_id')
                             ->label('Tipe Kamar (opsional)')
-                            ->options(fn (Get $get) => RoomType::where('property_id', $get('property_id'))->pluck('name', 'id'))
+                            ->options(fn (Get $get) => RoomType::when($get('property_id'), fn ($q, $pid) => $q->where('property_id', $pid))->pluck('name', 'id'))
                             ->searchable()
                             ->live()
-                            ->helperText('Pilih tipe untuk mengisi harga & deskripsi otomatis')
+                            ->placeholder('Pilih properti dulu')
+                            ->helperText('Pilih properti dulu, lalu pilih tipe kamar')
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
                                 if (! $state) {
                                     return;
@@ -169,12 +170,7 @@ class RoomResource extends Resource
 
             Section::make('Status & Catatan')->schema([
                 Grid::make(2)->schema([
-                    Select::make('status')->label('Status')->options([
-                        'available' => 'Tersedia',
-                        'occupied' => 'Terisi',
-                        'maintenance' => 'Maintenance',
-                        'reserved' => 'Dipesan',
-                    ])->required(),
+                    Select::make('status')->label('Status')->options(\App\Models\Room::STATUSES)->required(),
                     Toggle::make('is_active')->label('Aktif')->default(true),
                 ]),
                 Textarea::make('notes')->label('Catatan Internal')->rows(2)
@@ -218,12 +214,7 @@ class RoomResource extends Resource
                     ->options(Property::pluck('name', 'id'))->searchable(),
                 SelectFilter::make('room_type_id')->label('Tipe Kamar')
                     ->options(RoomType::pluck('name', 'id'))->searchable(),
-                SelectFilter::make('status')->options([
-                    'available' => 'Tersedia',
-                    'occupied' => 'Terisi',
-                    'maintenance' => 'Maintenance',
-                    'reserved' => 'Dipesan',
-                ]),
+                SelectFilter::make('status')->label('Status')->options(\App\Models\Room::STATUSES),
             ])
             ->actions([
                 Actions\EditAction::make(),

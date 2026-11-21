@@ -3,7 +3,7 @@
 @section('content')
 <div class="bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        <h1 class="text-4xl font-extrabold text-white">10 Kos Terbaik di {{ $cityName }}</h1>
+        <h1 class="text-4xl font-extrabold text-white">Rekomendasi Kos Terbaik di {{ $cityName }}</h1>
         <p class="text-primary-100 mt-4 text-lg max-w-2xl mx-auto">Rekomendasi kos murah, strategis, dan nyaman di {{ $cityName }}. Fasilitas lengkap, harga terjangkau.</p>
     </div>
 </div>

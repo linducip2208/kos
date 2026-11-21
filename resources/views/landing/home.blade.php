@@ -383,7 +383,7 @@
         <div class="mt-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
             <div data-aos="fade-right">
                 <h3 class="text-2xl font-extrabold text-slate-900 mb-3">Kirim Pesan</h3>
-                <p class="text-slate-500 mb-6 text-sm leading-relaxed">Ada pertanyaan? Tim kami akan membalas dalam 1x24 jam kerja.</p>
+                <p class="text-slate-500 mb-6 text-sm leading-relaxed">Ada pertanyaan? Tim kami akan membalas dalam 1×24 jam kerja.</p>
                 <div class="space-y-4 text-sm">
                     @if(setting('contact_phone'))
                     <div class="flex items-center gap-3 text-slate-600">

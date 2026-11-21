@@ -18,9 +18,9 @@ class DocsController extends Controller
     {
         return [
             ['name' => 'Andi Prasetyo (contoh)', 'phone' => '081234000001', 'password' => 'password', 'note' => 'Kontrak aktif Kos Bahagia Pusat kamar 101 + 4 invoice'],
-            ['name' => 'Siti Nurhaliza', 'phone' => '082345000002', 'password' => 'password', 'note' => 'Akun penghuni aktif'],
+            ['name' => 'Siti Rahayu', 'phone' => '082345000002', 'password' => 'password', 'note' => 'Akun penghuni aktif'],
             ['name' => 'Budi Santoso', 'phone' => '083456000003', 'password' => 'password', 'note' => 'Akun penghuni aktif'],
-            ['name' => '1000+ penghuni lain', 'phone' => 'lihat menu Penghuni', 'password' => 'password', 'note' => 'Semua akun portal demo pakai password sama'],
+            ['name' => 'Dewi Lestari', 'phone' => '084567000004', 'password' => 'password', 'note' => 'Semua akun portal demo pakai password yang sama'],
         ];
     }
 

@@ -32,7 +32,7 @@ curl -X POST https://kos.whitelabel.co.id/api/v1/tenant/auth/login \
 |---|---|---|
 | GET | `/v1/public/properties` | List properti aktif: `id, slug, name, address, city, province, description, facilities[], photos[] (URL absolut), total_rooms, available_rooms, booking_url` |
 | GET | `/v1/public/properties/{slug\|id}` | Detail + `rooms[]` (kamar tersedia: nomor, lantai, ukuran, harga bulanan/tahunan, tipe + `type_photos[]`) |
-| POST | `/v1/public/bookings/{slug\|id}` | Booking kamar. Body: `name`, `phone`, `desired_move_in` (> hari ini), `billing_cycle` (monthly/quarterly/yearly), opsional `email, whatsapp, room_type_id, room_id, message`. → 201 `{message, id}` |
+| POST | `/v1/public/bookings/{slug\|id}` | Booking kamar. Body: `name`, `phone`, `desired_move_in` (> hari ini), `billing_cycle` (daily/weekly/monthly/quarterly/yearly), opsional `email, whatsapp, room_type_id, room_id, message`. → 201 `{message, id}` |
 | GET | `/v1/public/contract/{token}` | Data e-contract via token: status, lease, tanda tangan, `pdf_url`, `expires_at` |
 | POST | `/v1/public/contract/{token}` + `/sign` | Tanda tangan: multipart `signature` (PNG/JPG ≤2MB) + `agree=1`. Token hangus setelah dipakai. |
 

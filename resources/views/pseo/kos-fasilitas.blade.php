@@ -10,7 +10,7 @@
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @foreach($properties as $p)
+        @forelse($properties as $p)
         <a href="{{ route('landing.property', $p) }}" class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
             <div class="p-5">
                 <h3 class="font-bold text-slate-800">{{ $p->name }}</h3>
@@ -18,7 +18,9 @@
                 <span class="inline-block mt-3 text-primary-600 font-bold text-sm">Lihat Detail →</span>
             </div>
         </a>
-        @endforeach
+        @empty
+        <div class="col-span-full text-center py-20 text-slate-500">Belum ada properti dengan fasilitas ini. <a href="{{ route('landing.home') }}" class="text-primary-600 font-semibold hover:underline">Lihat semua kos →</a></div>
+        @endforelse
     </div>
 </div>
 @endsection

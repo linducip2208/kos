@@ -61,11 +61,11 @@ class MaintenanceRequestResource extends Resource
             Section::make('Detail Kerusakan')->schema([
                 Grid::make(2)->schema([
                     Select::make('room_id')->label('Kamar')
-                        ->options(Room::with('property')->get()->mapWithKeys(
-                            fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
+                        ->options(fn () => Room::with('property')->get()->mapWithKeys(
+                            fn ($r) => [$r->id => ($r->property?->name ?? '-').' - '.$r->room_number]
                         ))->searchable()->required(),
                     Select::make('priority')->label('Prioritas')
-                        ->options(['low' => 'Rendah', 'medium' => 'Sedang', 'high' => 'Tinggi', 'urgent' => 'Urgent'])
+                        ->options(\App\Models\MaintenanceRequest::PRIORITIES)
                         ->default('medium')->required(),
                 ]),
                 TextInput::make('title')->label('Judul Kerusakan')->required(),
@@ -77,11 +77,7 @@ class MaintenanceRequestResource extends Resource
             Section::make('Penanganan')->schema([
                 Grid::make(2)->schema([
                     Select::make('status')->label('Status')
-                        ->options([
-                            'open' => 'Terbuka', 'in_progress' => 'Dikerjakan',
-                            'waiting_parts' => 'Tunggu Part', 'completed' => 'Selesai',
-                            'cancelled' => 'Dibatalkan',
-                        ])->default('open')->required(),
+                        ->options(\App\Models\MaintenanceRequest::STATUSES)->default('open')->required(),
                     Select::make('assigned_to')->label('Ditugaskan ke')
                         ->options(User::pluck('name', 'id'))->searchable()->nullable(),
                 ]),
@@ -97,10 +93,7 @@ class MaintenanceRequestResource extends Resource
                             ]),
                         ])
                         ->createOptionUsing(fn (array $data) => Vendor::create(['name' => $data['name'], 'phone' => $data['phone'] ?? null, 'contact_person' => $data['contact_person'] ?? null, 'is_active' => true])->id),
-                    Select::make('category')->label('Kategori')->options([
-                        'general' => 'Umum', 'plumbing' => 'Perpipaan/Air', 'electrical' => 'Kelistrikan',
-                        'ac' => 'AC', 'cleaning' => 'Cleaning', 'furniture' => 'Furniture',
-                    ])->default('general'),
+                    Select::make('category')->label('Kategori')->options(\App\Models\MaintenanceRequest::CATEGORIES)->default('general'),
                 ]),
                 Grid::make(3)->schema([
                     TextInput::make('estimated_cost')->label('Estimasi Biaya')->numeric()->prefix('Rp'),
@@ -119,7 +112,7 @@ class MaintenanceRequestResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => $record->room->property->name.' - '.$record->room->room_number)
+                    ->formatStateUsing(fn ($record) => ($record->room?->property?->name ?? '-').' - '.($record->room?->room_number ?? '-'))
                     ->searchable()->sortable(),
                 TextColumn::make('title')->label('Kerusakan')->searchable()->limit(40),
                 TextColumn::make('priority')->label('Prioritas')->badge()
@@ -144,15 +137,10 @@ class MaintenanceRequestResource extends Resource
                 TextColumn::make('created_at')->label('Dilaporkan')->since()->sortable(),
             ])
             ->filters([
-                SelectFilter::make('status')->options([
-                    'open' => 'Terbuka', 'in_progress' => 'Dikerjakan',
-                    'waiting_parts' => 'Tunggu Part', 'completed' => 'Selesai',
-                ]),
+                SelectFilter::make('status')->label('Status')->options(\App\Models\MaintenanceRequest::STATUSES),
                 SelectFilter::make('vendor_id')->label('Vendor')
                     ->options(fn () => Vendor::pluck('name', 'id'))->searchable(),
-                SelectFilter::make('priority')->options([
-                    'urgent' => 'Urgent', 'high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah',
-                ]),
+                SelectFilter::make('priority')->label('Prioritas')->options(\App\Models\MaintenanceRequest::PRIORITIES),
             ])
             ->actions([Actions\EditAction::make(), Actions\DeleteAction::make()])
             ->bulkActions([Actions\BulkActionGroup::make([Actions\DeleteBulkAction::make()])])

@@ -85,7 +85,7 @@ class WhatsAppBlast extends Page implements HasForms, HasTable
                 ->options(fn () => MessageTemplate::orderBy('name')->pluck('name', 'id'))
                 ->live()
                 ->afterStateUpdated(fn ($state, $set) => $set('message',
-                    $state ? (string) MessageTemplate::find($state)?->content : '')),
+                    $state ? (string) MessageTemplate::find($state)?->message : '')),
             Textarea::make('message')
                 ->label('Isi Pesan')
                 ->rows(6)

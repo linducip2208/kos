@@ -28,7 +28,7 @@ class BookingController extends Controller
             'email' => 'nullable|email',
             'whatsapp' => 'nullable|max:20',
             'desired_move_in' => 'required|date|after:today',
-            'billing_cycle' => 'required|in:monthly,quarterly,yearly',
+            'billing_cycle' => 'required|in:daily,weekly,monthly,quarterly,yearly',
             'room_type_id' => 'nullable|exists:room_types,id',
             'room_id' => 'nullable|exists:rooms,id',
             'message' => 'nullable|max:1000',

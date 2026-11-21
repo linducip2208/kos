@@ -132,16 +132,21 @@ class PaymentGatewaySettings extends Page implements HasForms
         $data = $this->form->getState();
 
         Setting::set('payment_gateway_active', $data['payment_gateway_active']);
-        Setting::set('invoice_penalty_percent', $data['invoice_penalty_percent'], 'general', 'integer');
-        Setting::set('midtrans_server_key', $data['midtrans_server_key'], 'payment', 'encrypted');
-        Setting::set('midtrans_client_key', $data['midtrans_client_key'], 'payment');
-        Setting::set('midtrans_production', $data['midtrans_production'], 'payment', 'boolean');
-        Setting::set('tripay_api_key', $data['tripay_api_key'], 'payment', 'encrypted');
-        Setting::set('tripay_private_key', $data['tripay_private_key'], 'payment', 'encrypted');
-        Setting::set('tripay_merchant_code', $data['tripay_merchant_code'], 'payment');
-        Setting::set('tripay_default_channel', $data['tripay_default_channel'], 'payment');
-        Setting::set('tripay_production', $data['tripay_production'], 'payment', 'boolean');
-        Setting::set('manual_bank_info', $data['manual_bank_info'], 'payment');
+        Setting::set('invoice_penalty_percent', $data['invoice_penalty_percent'] ?? 0, 'general', 'integer');
+        // Hanya timpa kredensial gateway yang sedang aktif — section lain hidden & tidak dikirim.
+        if (($data['payment_gateway_active'] ?? null) === 'midtrans') {
+            Setting::set('midtrans_server_key', $data['midtrans_server_key'] ?? '', 'payment', 'encrypted');
+            Setting::set('midtrans_client_key', $data['midtrans_client_key'] ?? '', 'payment');
+            Setting::set('midtrans_production', $data['midtrans_production'] ?? false, 'payment', 'boolean');
+        } elseif (($data['payment_gateway_active'] ?? null) === 'tripay') {
+            Setting::set('tripay_api_key', $data['tripay_api_key'] ?? '', 'payment', 'encrypted');
+            Setting::set('tripay_private_key', $data['tripay_private_key'] ?? '', 'payment', 'encrypted');
+            Setting::set('tripay_merchant_code', $data['tripay_merchant_code'] ?? '', 'payment');
+            Setting::set('tripay_default_channel', $data['tripay_default_channel'] ?? 'BRIVA', 'payment');
+            Setting::set('tripay_production', $data['tripay_production'] ?? false, 'payment', 'boolean');
+        } else {
+            Setting::set('manual_bank_info', $data['manual_bank_info'] ?? '', 'payment');
+        }
 
         Notification::make()->title('Pengaturan payment gateway berhasil disimpan.')->success()->send();
     }

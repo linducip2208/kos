@@ -43,9 +43,9 @@
         <a href="/" class="text-primary-600 font-extrabold shrink-0">{{ setting('app_name', 'Kos Manager') }}</a>
         <a href="#demo" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Akun Demo</a>
         <a href="#galeri" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Galeri</a>
-        <a href="#alamat" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Alamat</a>
         <a href="#struktur" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Struktur Menu</a>
         <a href="#tutorial" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Tutorial</a>
+        <a href="#alamat" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Alamat</a>
         <a href="#fitur" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">Fitur</a>
         <a href="#api" class="text-slate-500 hover:text-primary-600 whitespace-nowrap transition-colors">API</a>
     </div>
@@ -192,7 +192,7 @@
             @foreach([
                 ['Admin Panel', $adminUrl, 'Kelola properti, sewa, keuangan'],
                 ['Portal Penyewa', $portalUrl, 'Login penghuni: tagihan & maintenance'],
-                ['API Mobile', $apiUrl . '/tenant/me', 'REST API + Sanctum token'],
+                ['API Mobile', $apiUrl . '/v1/tenant/auth/me', 'REST API v1 + Sanctum token'],
                 ['Dokumentasi', $baseUrl . '/docs', 'Halaman ini'],
             ] as $l)
             <a href="{{ $l[1] }}" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-200 hover:shadow-md transition-all block">

@@ -92,7 +92,8 @@ class VendorResource extends Resource
             ->filters([
                 SelectFilter::make('category')->label('Kategori')->options([
                     'plumbing' => 'Perpipaan', 'electrical' => 'Listrik', 'ac' => 'AC',
-                    'cleaning' => 'Cleaning', 'general' => 'Umum',
+                    'cleaning' => 'Cleaning', 'carpentry' => 'Furniture',
+                    'internet' => 'Internet', 'security' => 'Keamanan', 'general' => 'Umum',
                 ]),
                 TernaryFilter::make('is_active')->label('Aktif'),
             ])

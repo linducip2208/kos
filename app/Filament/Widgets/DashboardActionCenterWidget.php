@@ -48,7 +48,7 @@ class DashboardActionCenterWidget extends Widget
             }
         }
         if (Gate::allows('booking.view')) {
-            $count = BookingRequest::query()->whereIn('status', ['pending', 'inquiry', 'qualified', 'room_offered'])->count();
+            $count = BookingRequest::query()->whereIn('status', ['pending', 'contacted', 'approved'])->count();
             if ($count) {
                 $actions[] = ['label' => 'Booking menunggu respons', 'count' => $count, 'tone' => 'info', 'url' => BookingRequestResource::getUrl('index')];
             }

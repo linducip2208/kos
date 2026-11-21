@@ -60,11 +60,11 @@ class RoomChecklistResource extends Resource
                     Select::make('lease_id')->label('Kontrak Sewa')
                         ->options(
                             Lease::with(['occupant', 'room'])->get()
-                                ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant->name ?? '-').' — Kamar '.($l->room->room_number ?? '')])
+                                ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant?->name ?? '-').' — Kamar '.($l->room?->room_number ?? '')])
                         )->searchable()->required(),
                     Select::make('room_id')->label('Kamar')
-                        ->options(Room::with('property')->get()->mapWithKeys(
-                            fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
+                        ->options(fn () => Room::with('property')->get()->mapWithKeys(
+                            fn ($r) => [$r->id => ($r->property?->name ?? '-').' - '.$r->room_number]
                         ))->searchable()->required(),
                     Select::make('occupant_id')->label('Penyewa')
                         ->options(Occupant::pluck('name', 'id'))->searchable()->required(),

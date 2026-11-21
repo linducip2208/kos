@@ -70,7 +70,7 @@ class InvoiceResource extends Resource
                             Lease::with(['occupant', 'room'])
                                 ->where('status', 'active')
                                 ->get()
-                                ->mapWithKeys(fn ($l) => [$l->id => $l->occupant->name.' - '.$l->room->room_number.' ('.$l->lease_number.')'])
+                                ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant?->name ?? 'Tanpa penyewa').' - '.($l->room?->room_number ?? '-').' ('.$l->lease_number.')'])
                         )
                         ->searchable()
                         ->required()

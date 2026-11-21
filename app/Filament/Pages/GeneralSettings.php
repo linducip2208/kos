@@ -59,6 +59,7 @@ class GeneralSettings extends Page implements HasForms
             'whatsapp_enabled' => setting('whatsapp_enabled', false, 'notif'),
             'whatsapp_api_key' => setting('whatsapp_api_key', '', 'notif'),
             'whatsapp_sender' => setting('whatsapp_sender', '', 'notif'),
+            'whatsapp_api_url' => setting('whatsapp_api_url', 'https://chatgo.whitelabel.co.id', 'notif'),
         ]);
     }
 
@@ -69,10 +70,10 @@ class GeneralSettings extends Page implements HasForms
                 Grid::make(2)->schema([
                     TextInput::make('app_name')->label('Nama Aplikasi')->required(),
                     FileUpload::make('app_logo')->label('Logo Aplikasi')->image()->disk('public')->visibility('public')->directory('app')->imagePreviewHeight('60'),
-                    TextInput::make('invoice_prefix')->label('Prefix Invoice')->maxLength(10),
-                    TextInput::make('lease_prefix')->label('Prefix Nomor Kontrak')->maxLength(10),
+                    TextInput::make('invoice_prefix')->label('Prefix Invoice')->maxLength(10)->required(),
+                    TextInput::make('lease_prefix')->label('Prefix Nomor Kontrak')->maxLength(10)->required(),
                     TextInput::make('reminder_days')->label('Reminder Tagihan (hari sebelum jatuh tempo)')
-                        ->numeric()->minValue(1)->maxValue(30),
+                        ->numeric()->minValue(1)->maxValue(30)->required(),
                 ]),
             ]),
 

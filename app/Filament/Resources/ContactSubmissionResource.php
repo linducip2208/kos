@@ -74,7 +74,8 @@ class ContactSubmissionResource extends Resource
                 Select::make('status')->label('Status')
                     ->options(['new' => 'Baru', 'read' => 'Dibaca', 'replied' => 'Dibalas'])
                     ->required(),
-                Textarea::make('reply')->label('Balasan (untuk catatan internal)')->rows(4)->columnSpanFull(),
+                Textarea::make('reply')->label('Balasan (catatan internal — tidak dikirim otomatis ke pengunjung)')->rows(4)->columnSpanFull()
+                    ->helperText('Hanya catatan internal. Hubungi pengunjung manual via WhatsApp/telepon.'),
             ]),
         ]);
     }

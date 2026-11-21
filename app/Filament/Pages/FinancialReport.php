@@ -73,7 +73,7 @@ class FinancialReport extends Page
 
     public function getOverdueSummary(): array
     {
-        $overdue = $this->scopedInvoices()->whereIn('status', ['sent', 'overdue'])->where('due_date', '<', now())->get();
+        $overdue = $this->scopedInvoices()->whereIn('status', ['sent', 'partial', 'overdue'])->where('due_date', '<', now())->get();
 
         return [
             'count' => $overdue->count(),

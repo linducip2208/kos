@@ -56,9 +56,10 @@ class EContractResource extends Resource
                 Select::make('lease_id')->label('Kontrak Sewa')
                     ->options(
                         Lease::with(['occupant', 'room.property'])->get()
-                            ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant->name ?? '-').' — '.($l->room->property->name ?? '').' '.($l->room->room_number ?? '')])
+                            ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant?->name ?? '-').' — '.($l->room?->property?->name ?? '').' '.($l->room?->room_number ?? '')])
                     )->searchable()->required(),
-                Textarea::make('content_html')->label('Isi Kontrak (HTML)')->rows(10),
+                Textarea::make('content_html')->label('Isi Kontrak (HTML)')->rows(10)->required()
+                    ->helperText('Isi kontrak wajib diisi — kontrak kosong tidak bisa ditandatangani.'),
             ]),
         ]);
     }

@@ -23,8 +23,7 @@ class LandingController extends Controller
         }
 
         $testimonials = Testimonial::active()
-            ->whereNull('property_id')
-            ->orWhere('is_active', true)
+            ->where(fn($q) => $q->whereNull('property_id'))
             ->limit(6)
             ->get();
 

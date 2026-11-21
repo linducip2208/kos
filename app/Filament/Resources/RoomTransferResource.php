@@ -70,11 +70,11 @@ class RoomTransferResource extends Resource
                 Tables\Columns\IconColumn::make('final_utility_done')->label('Utilitas Final')->boolean()->toggleable(),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn ($s) => $s === 'completed' ? 'success' : 'warning')
-                    ->formatStateUsing(fn ($s) => ucfirst($s)),
+                    ->formatStateUsing(fn ($s) => match ($s) { 'completed' => 'Selesai', 'pending' => 'Menunggu', default => $s }),
                 TextColumn::make('performedBy.name')->label('Oleh')->default('-')->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('status')->label('Status')->options(['completed' => 'Completed', 'pending' => 'Pending']),
+                SelectFilter::make('status')->label('Status')->options(['completed' => 'Selesai', 'pending' => 'Menunggu']),
             ])
             ->actions([
                 Actions\ViewAction::make(),

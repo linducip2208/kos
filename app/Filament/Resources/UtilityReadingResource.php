@@ -60,10 +60,16 @@ class UtilityReadingResource extends Resource
             Section::make('Data Pembacaan')->schema([
                 Grid::make(3)->schema([
                     Select::make('room_id')->label('Kamar')
-                        ->options(Room::with('property')->get()->mapWithKeys(
-                            fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
+                        ->options(fn () => Room::with('property')->get()->mapWithKeys(
+                            fn ($r) => [$r->id => ($r->property?->name ?? '-').' - '.$r->room_number]
                         ))->searchable()->required()->live()
                         ->afterStateUpdated(fn (Set $set, Get $get) => static::fillPreviousReading($set, $get)),
+                    Select::make('lease_id')->label('Kontrak (opsional — otomatis dari kamar aktif)')
+                        ->options(fn (Get $get) => \App\Models\Lease::with('occupant')
+                            ->when($get('room_id'), fn ($q, $rid) => $q->where('room_id', $rid))
+                            ->orderByDesc('created_at')->limit(20)->get()
+                            ->mapWithKeys(fn ($l) => [$l->id => $l->lease_number.' — '.($l->occupant?->name ?? '-')]))
+                        ->searchable()->placeholder('Otomatis dari kamar')->nullable(),
                     Select::make('type')->label('Jenis')
                         ->options(['electricity' => 'Listrik (kWh)', 'water' => 'Air (m³)', 'gas' => 'Gas (m³)'])
                         ->default('electricity')->required()->live()
@@ -100,6 +106,15 @@ class UtilityReadingResource extends Resource
                 ->orderByDesc('billing_period')->value('current_reading') ?? 0;
             $set('previous_reading', $prev);
         }
+        // Otomatis isi kontrak aktif kamar agar tombol "Tambah ke Invoice" bisa muncul.
+        if ($roomId && ! $get('lease_id')) {
+            $leaseId = \App\Models\Lease::where('room_id', $roomId)
+                ->whereIn('status', ['active', 'expiring_soon'])
+                ->orderByDesc('created_at')->value('id');
+            if ($leaseId) {
+                $set('lease_id', $leaseId);
+            }
+        }
     }
 
     private static function calcAmount(Get $get, Set $set): void
@@ -114,7 +129,7 @@ class UtilityReadingResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('room.room_number')->label('Kamar')
-                    ->formatStateUsing(fn ($record) => $record->room->property->name.' - '.$record->room->room_number),
+                    ->formatStateUsing(fn ($record) => ($record->room?->property?->name ?? '-').' - '.($record->room?->room_number ?? '-')),
                 TextColumn::make('type')->label('Jenis')->badge()
                     ->color(fn ($state) => match ($state) {
                         'electricity' => 'warning', 'water' => 'info', default => 'success'
@@ -138,9 +153,15 @@ class UtilityReadingResource extends Resource
                 Actions\EditAction::make(),
                 Actions\Action::make('add_to_invoice')
                     ->label('Tambah ke Invoice')->icon('heroicon-o-plus-circle')->color('success')
-                    ->visible(fn (UtilityReading $r) => ! $r->added_to_invoice && $r->lease_id)
+                    ->visible(fn (UtilityReading $r) => ! $r->added_to_invoice && ($r->lease_id || $r->room?->activeLease?->id))
                     ->action(function (UtilityReading $record) {
-                        $invoice = $record->lease->invoices()->whereIn('status', ['draft', 'sent'])->latest()->first();
+                        $lease = $record->lease ?? $record->room?->activeLease;
+                        if (! $lease) {
+                            Notification::make()->title('Tidak ada kontrak aktif untuk kamar ini.')->warning()->send();
+
+                            return;
+                        }
+                        $invoice = $lease->invoices()->whereIn('status', ['draft', 'sent'])->latest()->first();
                         if (! $invoice) {
                             Notification::make()->title('Tidak ada invoice aktif untuk kontrak ini.')->warning()->send();
 

@@ -124,6 +124,21 @@
                         </div>
                     @endif
 
+                    @if($rooms->isNotEmpty())
+                        <div>
+                            <label for="booking-room" class="block text-sm font-medium text-gray-700 mb-1">Kamar Spesifik (opsional)</label>
+                            <select id="booking-room" name="room_id"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <option value="">— Otomatis pilihkan kamar tersedia —</option>
+                                @foreach($rooms as $room)
+                                    <option value="{{ $room->id }}" {{ old('room_id') == $room->id ? 'selected' : '' }}>
+                                        Kamar {{ $room->room_number }}{{ $room->roomType ? ' — '.$room->roomType->name : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
                     <div>
                         <label for="booking-message" class="block text-sm font-medium text-gray-700 mb-1">Pesan / Pertanyaan</label>
                         <textarea id="booking-message" name="message" rows="3" placeholder="Tanyakan tentang kamar, fasilitas, atau ketersediaan..."

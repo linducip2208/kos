@@ -22,7 +22,7 @@ class SitemapController extends Controller
 
     protected function buildUrls(): array
     {
-        $base = rtrim(config('app.url'), '/');
+        $base = rtrim(request()->getSchemeAndHttpHost() ?: config('app.url'), '/');
         $urls = [];
         $now = now()->toAtomString();
 
@@ -51,8 +51,8 @@ class SitemapController extends Controller
             $add($base . '/alternatif/' . $p->slug, '0.6');
         }
 
-        // Best city
-        foreach (PseoDataService::cities() as $city) {
+        // Best city (dedupe: cities() may contain duplicates)
+        foreach (array_unique(PseoDataService::cities()) as $city) {
             $add($base . '/best/' . $city, '0.7');
             $add($base . '/kos-di-' . $city, '0.7');
         }
@@ -78,7 +78,7 @@ class SitemapController extends Controller
         }
 
         // City combos: facility (top cities × top facilities)
-        $sampleCities = array_slice(PseoDataService::cities(), 0, 100);
+        $sampleCities = array_slice(array_values(array_unique(PseoDataService::cities())), 0, 100);
         $topFacilities = array_slice(PseoDataService::facilities(), 0, 12);
         foreach ($sampleCities as $city) {
             foreach ($topFacilities as $fac) {

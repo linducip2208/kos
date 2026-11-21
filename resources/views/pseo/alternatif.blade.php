@@ -13,6 +13,7 @@
     <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 mb-8">
         <h2 class="text-2xl font-bold text-slate-800">{{ $property->name }}</h2>
         <p class="text-slate-500 mt-2">{{ $property->address }}</p>
+        <a href="{{ route('landing.property', $property) }}" class="inline-block mt-4 bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">Lihat Detail →</a>
     </div>
     @endif
 

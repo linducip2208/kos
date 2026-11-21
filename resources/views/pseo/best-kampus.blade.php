@@ -3,8 +3,8 @@
 @section('content')
 <div class="bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        <h1 class="text-4xl font-extrabold text-white">Kos Dekat {{ $kampusName }}</h1>
-        <p class="text-primary-100 mt-4 text-lg max-w-2xl mx-auto">Hunian strategis untuk mahasiswa {{ $kampusName }}. Dekat kampus, harga terjangkau, fasilitas lengkap.</p>
+        <h1 class="text-4xl font-extrabold text-white">Kos Dekat {{ \Illuminate\Support\Str::title(str_replace('-', ' ', $kampus)) }}@if(!empty($cityName)) di {{ $cityName }}@endif</h1>
+        <p class="text-primary-100 mt-4 text-lg max-w-2xl mx-auto">Hunian strategis untuk mahasiswa {{ \Illuminate\Support\Str::title(str_replace('-', ' ', $kampus)) }}@if(!empty($cityName)) di {{ $cityName }}@endif. Dekat kampus, harga terjangkau, fasilitas lengkap.</p>
     </div>
 </div>
 

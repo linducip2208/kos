@@ -66,18 +66,23 @@ class UtilityRateResource extends Resource
                         ->options(Property::pluck('name', 'id'))->searchable()
                         ->visible(fn (Get $get) => in_array($get('scope'), ['property', 'room']))
                         ->live()
-                        ->afterStateUpdated(fn (Set $set) => $set('room_id', null)),
+                        ->afterStateUpdated(function (Set $set) {
+                            $set('property_id', null);
+                            $set('room_id', null);
+                        })->required(fn (Get $get) => in_array($get('scope'), ['property', 'room'])),
                     Forms\Components\Select::make('room_type_id')->label('Tipe Kamar')
-                        ->options(RoomType::pluck('name', 'id'))->searchable()
-                        ->visible(fn (Get $get) => $get('scope') === 'room_type'),
+                        ->options(fn (Get $get) => RoomType::when($get('property_id'), fn ($q, $pid) => $q->where('property_id', $pid))->pluck('name', 'id'))->searchable()
+                        ->visible(fn (Get $get) => $get('scope') === 'room_type')
+                        ->required(fn (Get $get) => $get('scope') === 'room_type'),
                     Forms\Components\Select::make('room_id')->label('Kamar')
                         ->options(fn (Get $get) => Room::query()
                             ->when($get('property_id'), fn ($q, $pid) => $q->where('property_id', $pid))
                             ->with('property')->get()->mapWithKeys(
-                                fn ($r) => [$r->id => $r->property->name.' - '.$r->room_number]
+                                fn ($r) => [$r->id => ($r->property?->name ?? '-').' - '.$r->room_number]
                             ))
                         ->searchable()
-                        ->visible(fn (Get $get) => $get('scope') === 'room'),
+                        ->visible(fn (Get $get) => $get('scope') === 'room')
+                        ->required(fn (Get $get) => $get('scope') === 'room'),
                 ]),
             ]),
 

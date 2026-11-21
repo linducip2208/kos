@@ -62,7 +62,7 @@ class MessageTemplateResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Template')->searchable()->sortable(),
                 TextColumn::make('type')->label('Jenis')->badge()->formatStateUsing(fn ($s) => match ($s) {
-                    'invoice' => 'Tagihan', 'reminder' => 'Pengingat', 'overdue' => 'Jatuh Tempo', 'welcome' => 'Welcome', 'lease_renewal' => 'Kontrak', default => $s
+                    'invoice' => 'Tagihan', 'reminder' => 'Pengingat', 'overdue' => 'Jatuh Tempo', 'welcome' => 'Selamat Datang', 'lease_renewal' => 'Kontrak', default => $s
                 }),
                 TextColumn::make('message')->label('Pesan')->limit(50),
                 IconColumn::make('is_active')->label('Aktif')->boolean(),

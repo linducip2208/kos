@@ -93,7 +93,7 @@ class DepositResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('status')->label('Status')->options(Deposit::STATUSES),
-                SelectFilter::make('type')->label('Jenis')->options(['security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci']),
+                SelectFilter::make('type')->label('Jenis')->options(['security' => 'Jaminan', 'utility' => 'Utilitas', 'key' => 'Kunci', 'other' => 'Lainnya']),
             ])
             ->actions([
                 Actions\EditAction::make(),

@@ -107,7 +107,7 @@ class BlogPostResource extends Resource
                 SelectFilter::make('category_id')->label('Kategori')
                     ->options(BlogCategory::pluck('name', 'id')),
                 SelectFilter::make('is_published')->label('Status')
-                    ->options(['1' => 'Published', '0' => 'Draft']),
+                    ->options(['1' => 'Dipublikasikan', '0' => 'Draf']),
             ])
             ->actions([
                 Actions\EditAction::make(),

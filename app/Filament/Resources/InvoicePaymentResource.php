@@ -60,7 +60,7 @@ class InvoicePaymentResource extends Resource
                 Grid::make(2)->schema([
                     Forms\Components\Select::make('invoice_id')->label('Invoice')
                         ->options(Invoice::with('lease.occupant')->get()->pluck('invoice_number', 'id'))
-                        ->searchable()->required()->disabled(),
+                        ->searchable()->required()->disabled()->dehydrated(),
                     Forms\Components\TextInput::make('amount')->label('Nominal')->numeric()->prefix('Rp')->required(),
                     Forms\Components\Select::make('method')->label('Metode')
                         ->options(InvoicePayment::METHODS)->default('cash')->required(),

@@ -165,6 +165,18 @@ class ProgrammaticSeoController extends Controller
     // ───────── Bandingkan ─────────
     public function bandingkan(Request $request, $slug = null)
     {
+        // Form ?a=...&b=... → redirect ke slug kanonis a-vs-b
+        if (! $slug && $request->filled(['a', 'b'])) {
+            $toSlug = fn ($v) => trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($v)), '-');
+            $a = $toSlug($request->input('a'));
+            $b = $toSlug($request->input('b'));
+            if ($a && $b && $a !== $b) {
+                return redirect()->route('pseo.bandingkan', $a.'-vs-'.$b);
+            }
+
+            return redirect()->route('pseo.bandingkan.form')
+                ->withErrors(['compare' => 'Masukkan dua nama kos yang berbeda untuk dibandingkan.']);
+        }
         if ($slug && str_contains($slug, '-vs-')) {
             $parts = explode('-vs-', $slug);
             $a_slug = $parts[0]; $b_slug = $parts[1];
@@ -190,7 +202,9 @@ class ProgrammaticSeoController extends Controller
             route('pseo.bandingkan.form')
         );
 
-        return view('pseo.bandingkan-form', compact('seo'));
+        $propertyOptions = Property::active()->orderBy('name')->take(200)->get(['name', 'slug']);
+
+        return view('pseo.bandingkan-form', compact('seo', 'propertyOptions'));
     }
 
     // ───────── Source Code Selling ─────────

@@ -6,6 +6,13 @@
     <title>{{ $seo['title'] ?? 'Blog — Kos Manager' }}</title>
     <meta name="description" content="{{ $seo['description'] ?? '' }}">
     <link rel="canonical" href="{{ $seo['canonical'] ?? url()->current() }}">
+    <meta property="og:title" content="{{ $seo['title'] ?? 'Blog — Kos Manager' }}">
+    <meta property="og:description" content="{{ $seo['description'] ?? '' }}">
+    <meta property="og:url" content="{{ $seo['canonical'] ?? url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="{{ $seo['og_image'] ?? asset('images/hero-kos.jpg') }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ $seo['og_image'] ?? asset('images/hero-kos.jpg') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

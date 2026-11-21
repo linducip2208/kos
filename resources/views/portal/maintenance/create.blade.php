@@ -31,10 +31,10 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>
             <select name="priority" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="low">Rendah — tidak urgent</option>
-                <option value="medium" selected>Sedang — perlu segera</option>
-                <option value="high">Tinggi — mengganggu kenyamanan</option>
-                <option value="urgent">Urgent — darurat!</option>
+                <option value="low" {{ old('priority') === 'low' ? 'selected' : '' }}>Rendah — tidak urgent</option>
+                <option value="medium" {{ old('priority', 'medium') === 'medium' ? 'selected' : '' }}>Sedang — perlu segera</option>
+                <option value="high" {{ old('priority') === 'high' ? 'selected' : '' }}>Tinggi — mengganggu kenyamanan</option>
+                <option value="urgent" {{ old('priority') === 'urgent' ? 'selected' : '' }}>Mendesak — darurat!</option>
             </select>
         </div>
 

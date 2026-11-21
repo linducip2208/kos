@@ -49,11 +49,16 @@ class PaymentTransactionResource extends Resource
         return $schema->components([
             Section::make('Detail Pembayaran')->schema([
                 Grid::make(2)->schema([
-                    TextColumn::make('invoice.number')->label('Invoice'),
-                    TextColumn::make('amount')->label('Jumlah')->money('IDR'),
-                    TextColumn::make('payment_method')->label('Metode'),
-                    TextColumn::make('status')->label('Status')->badge(),
-                    TextColumn::make('paid_at')->label('Tanggal Bayar')->dateTime('d M Y H:i'),
+                    \Filament\Forms\Components\Placeholder::make('invoice_number')->label('Invoice')
+                        ->content(fn ($record) => $record?->invoice?->invoice_number ?? '-'),
+                    \Filament\Forms\Components\Placeholder::make('amount')->label('Jumlah')
+                        ->content(fn ($record) => $record ? 'Rp '.number_format((float) $record->amount, 0, ',', '.') : '-'),
+                    \Filament\Forms\Components\Placeholder::make('payment_type')->label('Tipe Pembayaran')
+                        ->content(fn ($record) => $record?->payment_type ?? '-'),
+                    \Filament\Forms\Components\Placeholder::make('status')->label('Status')
+                        ->content(fn ($record) => $record?->status ?? '-'),
+                    \Filament\Forms\Components\Placeholder::make('paid_at')->label('Tanggal Bayar')
+                        ->content(fn ($record) => $record?->paid_at?->format('d M Y H:i') ?? '-'),
                 ]),
             ]),
         ]);
@@ -64,9 +69,12 @@ class PaymentTransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable()->width(60),
-                TextColumn::make('invoice.number')->label('Invoice')->searchable(),
+                TextColumn::make('invoice.invoice_number')->label('Invoice')->searchable(),
                 TextColumn::make('amount')->label('Jumlah')->money('IDR')->sortable(),
-                TextColumn::make('payment_method')->label('Metode')->badge()->color('gray'),
+                TextColumn::make('payment_type')->label('Tipe')->badge()->color('gray')
+                    ->formatStateUsing(fn ($s) => $s ?? '-'),
+                TextColumn::make('channel')->label('Channel')->placeholder('-'),
+                TextColumn::make('gateway')->label('Gateway')->placeholder('-'),
                 TextColumn::make('status')->label('Status')
                     ->badge()
                     ->color(fn (string $s): string => match ($s) {
@@ -80,8 +88,12 @@ class PaymentTransactionResource extends Resource
                 SelectFilter::make('status')->options([
                     'success' => 'Sukses', 'pending' => 'Pending', 'failed' => 'Gagal',
                 ]),
-                SelectFilter::make('payment_method')->options([
-                    'cash' => 'Tunai', 'transfer' => 'Transfer', 'midtrans' => 'Midtrans', 'tripay' => 'Tripay',
+                SelectFilter::make('payment_type')->label('Tipe')->options([
+                    'qris' => 'QRIS', 'va' => 'Virtual Account', 'ewallet' => 'E-Wallet',
+                    'bank_transfer' => 'Transfer Bank', 'cash' => 'Tunai',
+                ]),
+                SelectFilter::make('gateway')->label('Gateway')->options([
+                    'midtrans' => 'Midtrans', 'tripay' => 'Tripay', 'manual' => 'Manual',
                 ]),
             ])
             ->actions([Actions\ViewAction::make()])

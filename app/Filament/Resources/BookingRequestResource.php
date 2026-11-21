@@ -107,7 +107,9 @@ class BookingRequestResource extends Resource
                 TextColumn::make('desired_move_in')->label('Rencana Masuk')->date('d/m/Y'),
                 TextColumn::make('billing_cycle')->label('Siklus')
                     ->formatStateUsing(fn ($s) => match ($s) {
-                        'monthly' => 'Bulanan', 'quarterly' => 'Triwulan', default => 'Tahunan'
+                        'daily' => 'Harian', 'weekly' => 'Mingguan',
+                        'monthly' => 'Bulanan', 'quarterly' => 'Triwulan',
+                        'yearly' => 'Tahunan', default => $s,
                     }),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn ($s) => match ($s) {
@@ -124,6 +126,7 @@ class BookingRequestResource extends Resource
                 SelectFilter::make('status')->options([
                     'pending' => 'Menunggu', 'contacted' => 'Dihubungi',
                     'approved' => 'Disetujui', 'rejected' => 'Ditolak',
+                    'converted' => 'Jadi Penyewa',
                 ]),
             ])
             ->actions([

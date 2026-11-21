@@ -60,7 +60,8 @@ class UserResource extends Resource
                 TextInput::make('password')->label('Password')->password()
                     ->dehydrateStateUsing(fn ($s) => $s ? Hash::make($s) : null)
                     ->dehydrated(fn ($s) => filled($s))
-                    ->nullable(),
+                    ->nullable()->minLength(8)->requiredOn('create')
+                    ->helperText('Minimal 8 karakter. Kosongkan saat edit jika tidak ingin mengubah password.'),
                 Toggle::make('is_active')->label('Aktif')->default(true),
             ]),
         ]);
