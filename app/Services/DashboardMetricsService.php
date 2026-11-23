@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Models\BookingRequest;
 use App\Models\Expense;
 use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 final class DashboardMetricsService
 {
@@ -18,6 +20,12 @@ final class DashboardMetricsService
     {
         $from ??= now()->startOfMonth();
         $to ??= now()->endOfDay();
+        $cacheKey = sprintf(
+            'dashboard-metrics:%d:%s:%s:%s',
+            $user->id, $from->format('Y-m-d'), $to->format('Y-m-d'), $propertyId ?? 'all'
+        );
+
+        return Cache::remember($cacheKey, 300, function () use ($user, $from, $to, $propertyId) {
         $propertyIds = $user->scopedPropertyIds();
         if ($propertyId !== null) {
             $propertyIds = $propertyIds === null ? [$propertyId] : array_values(array_intersect($propertyIds, [$propertyId]));
@@ -50,9 +58,17 @@ final class DashboardMetricsService
         if ($canFinance) {
             $invoices = Invoice::query()->whereHas('lease.room', fn ($q) => $propertyScope($q));
             $periodInvoices = (clone $invoices)->whereBetween('due_date', [$from->toDateString(), $to->toDateString()]);
+            // Kas diterima: 1 query agregat ke invoice_payments (hindari load semua invoice ke memori).
+            $collectedQuery = InvoicePayment::query()
+                ->where('type', 'payment')->where('status', 'verified')
+                ->whereBetween('paid_at', [$from, $to])
+                ->whereHas('invoice', function ($q) use ($from, $to, $propertyScope) {
+                    $q->whereBetween('due_date', [$from->toDateString(), $to->toDateString()])
+                        ->whereHas('lease.room', fn ($room) => $propertyScope($room));
+                });
             $metrics += [
                 'billed' => (float) $periodInvoices->sum('total'),
-                'collected' => (float) $periodInvoices->withSum(['verifiedPayments as collected_sum' => fn ($q) => $q->whereBetween('paid_at', [$from, $to])], 'amount')->get()->sum('collected_sum'),
+                'collected' => (float) $collectedQuery->sum('amount'),
                 'receivable' => (float) (clone $invoices)->whereIn('status', ['sent', 'partial', 'overdue'])->sum('total'),
                 'overdue_invoices' => (clone $invoices)->whereIn('status', ['sent', 'partial', 'overdue'])->where('due_date', '<', today())->count(),
                 'expenses' => (float) $propertyScope(Expense::query()->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()]))->sum('amount'),
@@ -60,32 +76,54 @@ final class DashboardMetricsService
         }
 
         return $metrics;
+        });
     }
 
     public function revenueTrend(User $user, Carbon $from, Carbon $to, ?int $propertyId = null): array
     {
         $propertyIds = $this->propertyIds($user, $propertyId);
-        $invoices = Invoice::query()->whereBetween('due_date', [$from->toDateString(), $to->toDateString()])
-            ->when($propertyIds !== null, fn ($query) => $query->whereHas('lease.room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0])));
 
-        $rows = collect();
-        for ($date = $from->copy()->startOfMonth(); $date->lte($to); $date->addMonth()) {
-            $month = $date->copy();
-            $monthInvoices = (clone $invoices)->whereYear('due_date', $month->year)->whereMonth('due_date', $month->month);
-            $rows->push([
-                'label' => $month->translatedFormat('M Y'),
-                'billed' => (float) $monthInvoices->sum('total'),
-                'collected' => (float) $monthInvoices->withSum(['verifiedPayments as collected_sum' => fn ($query) => $query->whereYear('paid_at', $month->year)->whereMonth('paid_at', $month->month)], 'amount')->get()->sum('collected_sum'),
-            ]);
-        }
+        return Cache::remember(
+            sprintf('revenue-trend:%d:%s:%s:%s', $user->id, $from->format('Y-m-d'), $to->format('Y-m-d'), $propertyId ?? 'all'),
+            300,
+            function () use ($from, $to, $propertyIds) {
+                $invoices = Invoice::query()->whereBetween('due_date', [$from->toDateString(), $to->toDateString()])
+                    ->when($propertyIds !== null, fn ($query) => $query->whereHas('lease.room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0])));
 
-        return $rows->all();
+                // Agregat per bulan: 2 query, tanpa hydrasi model.
+                $billedRows = (clone $invoices)
+                    ->selectRaw("DATE_FORMAT(due_date, '%Y-%m') as ym, SUM(total) as total")
+                    ->groupBy('ym')->pluck('total', 'ym');
+
+                $collectedRows = InvoicePayment::query()
+                    ->where('type', 'payment')->where('status', 'verified')
+                    ->whereBetween('paid_at', [$from, $to])
+                    ->when($propertyIds !== null, fn ($q) => $q->whereHas('invoice.lease.room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0])))
+                    ->selectRaw("DATE_FORMAT(paid_at, '%Y-%m') as ym, SUM(amount) as total")
+                    ->groupBy('ym')->pluck('total', 'ym');
+
+                $rows = [];
+                for ($date = $from->copy()->startOfMonth(); $date->lte($to); $date->addMonth()) {
+                    $key = $date->format('Y-m');
+                    $rows[] = [
+                        'label' => $date->translatedFormat('M Y'),
+                        'billed' => (float) ($billedRows[$key] ?? 0),
+                        'collected' => (float) ($collectedRows[$key] ?? 0),
+                    ];
+                }
+
+                return $rows;
+            }
+        );
     }
 
     public function receivableAging(User $user, ?int $propertyId = null): array
     {
         $propertyIds = $this->propertyIds($user, $propertyId);
+        // Preload withSum agar balance_due tidak memicu 2 query per invoice (N+1).
         $invoices = Invoice::query()->whereIn('status', ['sent', 'partial', 'overdue'])
+            ->withSum('verifiedPayments as verified_payments_sum_amount', 'amount')
+            ->withSum('verifiedRefunds as verified_refunds_sum_amount', 'amount')
             ->when($propertyIds !== null, fn ($query) => $query->whereHas('lease.room', fn ($room) => $room->whereIn('property_id', $propertyIds ?: [0])))->get();
         $buckets = ['Berjalan' => 0, '1–30 hari' => 0, '31–60 hari' => 0, '61–90 hari' => 0, '>90 hari' => 0];
         foreach ($invoices as $invoice) {

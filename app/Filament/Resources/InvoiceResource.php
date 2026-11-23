@@ -66,13 +66,10 @@ class InvoiceResource extends Resource
                 Grid::make(2)->schema([
                     Select::make('lease_id')
                         ->label('Kontrak')
-                        ->options(
-                            Lease::with(['occupant', 'room'])
-                                ->where('status', 'active')
-                                ->get()
-                                ->mapWithKeys(fn ($l) => [$l->id => ($l->occupant?->name ?? 'Tanpa penyewa').' - '.($l->room?->room_number ?? '-').' ('.$l->lease_number.')'])
-                        )
+                        ->relationship('lease', 'lease_number', modifyQueryUsing: fn ($query) => $query->with(['occupant', 'room']))
+                        ->getOptionLabelFromRecordUsing(fn ($record) => ($record->occupant?->name ?? 'Tanpa penyewa').' - '.($record->room?->room_number ?? '-').' ('.$record->lease_number.')')
                         ->searchable()
+                        ->preload(false)
                         ->required()
                         ->live()
                         ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
@@ -154,8 +151,7 @@ class InvoiceResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('lease_id')->label('Kontrak')
-                    ->options(fn () => Lease::with('occupant')
-                        ->get()->pluck('lease_number', 'id'))->searchable(),
+                    ->relationship('lease', 'lease_number')->searchable()->preload(false),
                 SelectFilter::make('status')->options([
                     'draft' => 'Draft', 'sent' => 'Terkirim', 'partial' => 'Sebagian Dibayar', 'paid' => 'Lunas',
                     'overdue' => 'Tunggakan', 'cancelled' => 'Batal',

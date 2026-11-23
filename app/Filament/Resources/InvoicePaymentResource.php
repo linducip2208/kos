@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Resources\InvoicePaymentResource\Pages;
-use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Services\PaymentService;
 use App\Support\NavigationGroups;
@@ -59,8 +58,8 @@ class InvoicePaymentResource extends Resource
             Section::make('Pembayaran')->schema([
                 Grid::make(2)->schema([
                     Forms\Components\Select::make('invoice_id')->label('Invoice')
-                        ->options(Invoice::with('lease.occupant')->get()->pluck('invoice_number', 'id'))
-                        ->searchable()->required()->disabled()->dehydrated(),
+                        ->relationship('invoice', 'invoice_number')
+                        ->searchable()->preload(false)->required()->disabled()->dehydrated(),
                     Forms\Components\TextInput::make('amount')->label('Nominal')->numeric()->prefix('Rp')->required(),
                     Forms\Components\Select::make('method')->label('Metode')
                         ->options(InvoicePayment::METHODS)->default('cash')->required(),
@@ -96,9 +95,8 @@ class InvoicePaymentResource extends Resource
                 TextColumn::make('reference')->label('Referensi')->default('-')->limit(20)->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('invoice_id')->label('Invoice')->options(
-                    fn () => Invoice::with('lease.occupant')->get()->pluck('invoice_number', 'id')
-                )->searchable(),
+                SelectFilter::make('invoice_id')->label('Invoice')->relationship('invoice', 'invoice_number')
+                    ->searchable()->preload(false),
                 SelectFilter::make('status')->label('Status')->options([
                     'verified' => 'Terverifikasi', 'pending_verification' => 'Menunggu Verifikasi', 'rejected' => 'Ditolak',
                 ]),
