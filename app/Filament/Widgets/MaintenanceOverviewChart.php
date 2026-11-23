@@ -17,6 +17,8 @@ class MaintenanceOverviewChart extends ChartWidget
 
     protected ?string $maxHeight = '300px';
 
+    protected int|string|array $columnSpan = 1;
+
     public static function canView(): bool
     {
         return Gate::allows('maintenance.view');
@@ -25,6 +27,27 @@ class MaintenanceOverviewChart extends ChartWidget
     public function getHeading(): ?string
     {
         return 'Status Pemeliharaan';
+    }
+
+    public function getDescription(): ?string
+    {
+        return 'Komposisi pekerjaan pemeliharaan berdasarkan status.';
+    }
+
+    protected function getOptions(): ?array
+    {
+        return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'cutout' => '62%',
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'labels' => ['boxWidth' => 12, 'boxHeight' => 12, 'padding' => 16, 'usePointStyle' => true],
+                ],
+                'tooltip' => ['padding' => 12, 'cornerRadius' => 10],
+            ],
+        ];
     }
 
     protected function getType(): string

@@ -469,3 +469,403 @@ a:focus-visible {
     min-width: 0;
     overflow-x: clip;
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   FASE 3 — PREMIUM PROPERTY-MANAGEMENT DASHBOARD REDESIGN
+   Karakter: modern enterprise SaaS, bersih, lapang, profesional.
+   Token: primary #2563EB / #1D4ED8, canvas #F5F7FB, teks #172033.
+   Hanya presentasi: tidak mengubah query, data, maupun visibilitas.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ───────── 3.1 Canvas & tipografi dashboard ───────── */
+.fi-main {
+    background-color: #f5f7fb;
+}
+
+.fi-page-header-heading {
+    color: #172033;
+    letter-spacing: -0.02em;
+}
+
+.fi-page-header-subheading {
+    color: #647b8b;
+}
+
+/* Bar filter dashboard tampil sebagai kartu kontrol */
+.fi-page > .fi-grid .fi-section:first-child,
+.fi-filters-form {
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+}
+
+/* ───────── 3.2 KPI cards premium ───────── */
+.fi-wi-stats-overview .fi-section {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.fi-wi-stats-overview-stat {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+    padding: 18px;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: rgb(37 99 235);
+    opacity: 0.9;
+}
+
+.fi-wi-stats-overview-stat-label-ctn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.fi-wi-stats-overview-stat-label-ctn svg {
+    width: 34px;
+    height: 34px;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgb(37 99 235 / 0.1);
+    color: rgb(29 78 216);
+    flex-shrink: 0;
+}
+
+.fi-wi-stats-overview-stat-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #647b8b;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fi-wi-stats-overview-stat-value {
+    color: #172033;
+    font-size: clamp(1.4rem, 1.15rem + 0.9vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-top: 10px;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-wi-stats-overview-stat-description {
+    color: #647b8b;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* ───────── 3.3 Action Center premium ───────── */
+.km-action-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    .km-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+    .km-action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.km-action-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid #e5eaf1;
+    border-top-width: 3px;
+    background: #fff;
+    box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    min-width: 0;
+}
+
+.km-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px rgba(16, 24, 40, 0.14);
+}
+
+.km-action-card--danger { border-top-color: #dc4444; }
+.km-action-card--warning { border-top-color: #e9a23b; }
+.km-action-card--info { border-top-color: #0ea5e9; }
+
+.km-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.km-action-card--danger .km-action-icon { background: rgb(220 68 68 / 0.1); color: #dc4444; }
+.km-action-card--warning .km-action-icon { background: rgb(233 162 59 / 0.14); color: #b45309; }
+.km-action-card--info .km-action-icon { background: rgb(14 165 233 / 0.1); color: #0ea5e9; }
+
+.km-action-svg { width: 22px; height: 22px; }
+
+.km-action-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.km-action-label {
+    font-size: 13.5px;
+    font-weight: 650;
+    color: #172033;
+    line-height: 1.35;
+}
+
+.km-action-hint {
+    font-size: 12px;
+    color: #647b8b;
+}
+
+.km-action-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 32px;
+    padding-inline: 10px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.km-action-card--danger .km-action-count { background: #dc4444; color: #fff; }
+.km-action-card--warning .km-action-count { background: #e9a23b; color: #fff; }
+.km-action-card--info .km-action-count { background: #0ea5e9; color: #fff; }
+
+/* Empty state profesional */
+.km-empty {
+    border: 1px dashed rgb(22 163 106 / 0.4);
+    background: rgb(22 163 106 / 0.05);
+    border-radius: 14px;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.km-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background: rgb(22 163 106 / 0.12);
+    color: #16a36a;
+    margin-bottom: 10px;
+}
+
+.km-empty-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #172033;
+    margin: 0 0 4px;
+}
+
+.km-empty-text {
+    font-size: 13px;
+    color: #647b8b;
+    margin: 0 auto;
+    max-width: 560px;
+}
+
+/* ───────── 3.4 Chart & section dashboard ───────── */
+.fi-wi-chart .fi-section-content,
+.fi-wi-table .fi-section-content {
+    padding: 18px;
+}
+
+.fi-wi-chart canvas {
+    max-width: 100%;
+}
+
+.fi-wi-chart .fi-section-header-heading,
+.fi-wi-table .fi-section-header-heading {
+    color: #172033;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.fi-wi-chart .fi-section-header-description,
+.fi-wi-table .fi-section-header-description {
+    color: #647b8b;
+}
+
+/* ───────── 3.5 Tabel operasional ───────── */
+.fi-ta-header-cell {
+    background: #f8fafc;
+    color: #647b8b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.fi-ta-row {
+    transition: background-color 120ms ease;
+}
+
+.fi-ta-row:hover {
+    background: rgb(37 99 235 / 0.035);
+}
+
+.fi-ta-cell {
+    color: #172033;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ───────── 3.6 Sidebar shell ───────── */
+.fi-sidebar {
+    background: #fff;
+    border-right: 1px solid #e5eaf1;
+}
+
+.fi-sidebar-header {
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.fi-sidebar-group-label {
+    color: #647b8b;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.fi-sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.fi-sidebar-item > a {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.fi-sidebar-item.fi-active > a {
+    background: rgb(37 99 235 / 0.1);
+    color: #1d4ed8;
+    font-weight: 650;
+    box-shadow: inset 0 0 0 1px rgb(37 99 235 / 0.22);
+}
+
+.fi-sidebar-item > a:hover {
+    background: rgb(37 99 235 / 0.06);
+}
+
+/* ───────── 3.7 Dark mode ───────── */
+.dark .fi-main { background-color: #0b1220; }
+
+.dark .fi-wi-stats-overview-stat,
+.dark .km-action-card {
+    background: #111c33;
+    border-color: rgb(30 41 59);
+}
+
+.dark .fi-wi-stats-overview-stat-value,
+.dark .km-action-label,
+.dark .km-empty-title {
+    color: #f1f5f9;
+}
+
+.dark .fi-wi-stats-overview-stat-label,
+.dark .fi-wi-stats-overview-stat-description,
+.dark .km-action-hint,
+.dark .km-empty-text {
+    color: #94a3b8;
+}
+
+/* Kontras heading kartu + header halaman (override light-only di atas) */
+.dark .fi-wi-chart .fi-section-header-heading,
+.dark .fi-wi-table .fi-section-header-heading,
+.dark .fi-page-header-heading {
+    color: #f1f5f9;
+}
+
+.dark .fi-wi-chart .fi-section-header-description,
+.dark .fi-wi-table .fi-section-header-description,
+.dark .fi-page-header-subheading,
+.dark .fi-sidebar-group-label {
+    color: #94a3b8;
+}
+
+.dark .fi-wi-stats-overview-stat-label-ctn svg {
+    background: rgb(37 99 235 / 0.18);
+    color: #93c5fd;
+}
+
+.dark .km-empty {
+    background: rgb(22 163 106 / 0.08);
+}
+
+.dark .fi-sidebar {
+    background: #0f172a;
+    border-right-color: rgb(30 41 59);
+}
+
+/* ───────── 3.8 Responsif: cegah overflow di semua target ───────── */
+.fi-wi-chart-canvas-ctn,
+.fi-ta-ctn {
+    max-width: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .fi-wi-stats-overview-stat { padding: 14px; }
+    .fi-wi-chart .fi-section-content,
+    .fi-wi-table .fi-section-content { padding: 14px; }
+    .km-action-card { padding: 14px; }
+}
+
+/* ───────── 3.9 Aksesibilitas ───────── */
+.km-action-card:focus-visible,
+.fi-sidebar-nav a:focus-visible,
+.fi-btn:focus-visible,
+a:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .km-action-card,
+    .km-action-card:hover,
+    .fi-wi-stats-overview-stat {
+        transform: none;
+        transition-duration: 0.01ms;
+    }
+}

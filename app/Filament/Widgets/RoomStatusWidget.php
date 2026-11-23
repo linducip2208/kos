@@ -2,22 +2,24 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Property;
 use App\Models\Room;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
 
 class RoomStatusWidget extends BaseWidget
 {
-    protected static ?int $sort            = 2;
-    protected static ?string $heading      = 'Status Kamar';
-    protected int | string | array $columnSpan = 'full';
+    protected static ?int $sort = 7;
+
+    protected static ?string $heading = 'Status Kamar';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Status Kamar')
+            ->description('Kondisi terkini seluruh kamar aktif: hunian, harga, penyewa, dan masa kontrak.')
             ->query(
                 Room::with(['property', 'activeLease.occupant'])
                     ->where('is_active', true)
@@ -33,12 +35,12 @@ class RoomStatusWidget extends BaseWidget
                     ->money('IDR'),
                 TextColumn::make('status')
                     ->label('Status')->badge()
-                    ->color(fn ($s) => match ($s) {
+                    ->color(fn ($state) => match ($state) {
                         'available' => 'success', 'occupied' => 'danger',
                         'maintenance' => 'warning', 'reserved' => 'info',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn ($s) => \App\Models\Room::STATUSES[$s] ?? $s),
+                    ->formatStateUsing(fn ($state) => Room::STATUSES[$state] ?? $state),
                 TextColumn::make('activeLease.occupant.name')
                     ->label('Penyewa')
                     ->placeholder('—')
@@ -48,6 +50,9 @@ class RoomStatusWidget extends BaseWidget
                     ->date('d/m/Y')
                     ->placeholder('—'),
             ])
-            ->paginated([10, 25, 50]);
+            ->paginated([10, 25, 50])
+            ->emptyStateHeading('Belum ada kamar aktif')
+            ->emptyStateDescription('Tambahkan properti dan kamar untuk melihat status hunian di sini.')
+            ->emptyStateIcon('heroicon-o-home');
     }
 }

@@ -10,12 +10,17 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class RecentPaymentsWidget extends BaseWidget
 {
-    protected static ?int $sort       = 3;
+    protected static ?int $sort = 8;
+
     protected static ?string $heading = 'Tagihan Terbaru & Tunggakan';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Tagihan Terbaru & Tunggakan')
+            ->description('Invoice terkini yang diurutkan berdasarkan urgensi pembayaran.')
             ->query(
                 Invoice::with(['lease.occupant', 'lease.room'])
                     ->whereIn('status', ['sent', 'overdue', 'paid'])
@@ -32,10 +37,13 @@ class RecentPaymentsWidget extends BaseWidget
                     ->color(fn (Invoice $r) => $r->is_overdue ? 'danger' : null),
                 BadgeColumn::make('status')->colors([
                     'info' => 'sent', 'danger' => 'overdue', 'success' => 'paid',
-                ])->formatStateUsing(fn ($s) => match ($s) {
-                    'sent' => 'Terkirim', 'overdue' => 'Tunggakan', 'paid' => 'Lunas', default => $s,
+                ])->formatStateUsing(fn ($state) => match ($state) {
+                    'sent' => 'Terkirim', 'overdue' => 'Tunggakan', 'paid' => 'Lunas', default => $state,
                 }),
             ])
-            ->paginated(false);
+            ->paginated(false)
+            ->emptyStateHeading('Tidak ada tagihan tertunda')
+            ->emptyStateDescription('Semua invoice sudah lunas. Tagihan baru akan muncul di sini.')
+            ->emptyStateIcon('heroicon-o-check-badge');
     }
 }

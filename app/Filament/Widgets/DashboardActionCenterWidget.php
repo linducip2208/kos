@@ -19,6 +19,8 @@ class DashboardActionCenterWidget extends Widget
 
     protected static ?int $sort = 2;
 
+    protected int|string|array $columnSpan = 'full';
+
     protected ?string $pollingInterval = '60s';
 
     public static function canView(): bool

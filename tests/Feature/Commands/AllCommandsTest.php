@@ -28,6 +28,7 @@ class AllCommandsTest extends TestCase
             'license:validate',
             'portal:set-password',
             'koskosan:create-owner',
+            'koskosan:remove-demo',
             'backup:run',
             'seo:indexnow',
             'plugin:list', 'plugin:install', 'plugin:activate',

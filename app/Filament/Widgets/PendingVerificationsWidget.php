@@ -3,16 +3,17 @@
 namespace App\Filament\Widgets;
 
 use App\Models\InvoicePayment;
-use App\Services\PaymentService;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
 class PendingVerificationsWidget extends BaseWidget
 {
-    protected static ?int $sort       = 4;
+    protected static ?int $sort = 9;
+
     protected static ?string $heading = 'Pembayaran Menunggu Verifikasi';
+
+    protected int|string|array $columnSpan = 'full';
 
     public static function canView(): bool
     {
@@ -22,6 +23,8 @@ class PendingVerificationsWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Pembayaran Menunggu Verifikasi')
+            ->description('Pembayaran masuk yang perlu diverifikasi sebelum dicatat sebagai kas.')
             ->query(
                 InvoicePayment::query()
                     ->where('status', 'pending_verification')
@@ -37,6 +40,9 @@ class PendingVerificationsWidget extends BaseWidget
                 TextColumn::make('method')->label('Metode')
                     ->formatStateUsing(fn ($s) => InvoicePayment::METHODS[$s] ?? $s),
             ])
-            ->paginated(false);
+            ->paginated(false)
+            ->emptyStateHeading('Tidak ada pembayaran menunggu')
+            ->emptyStateDescription('Semua pembayaran sudah diverifikasi.')
+            ->emptyStateIcon('heroicon-o-check-badge');
     }
 }

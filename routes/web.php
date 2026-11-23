@@ -85,6 +85,10 @@ Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'inde
 // Source Code Selling
 Route::get('/beli-aplikasi-kos', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCode'])->name('pseo.beli');
 Route::get('/beli-aplikasi-kos/di/{city}', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCodeByCity'])->name('pseo.beli.city');
+
+// Legal (syarat, ketentuan, privasi penjualan)
+Route::view('/syarat-ketentuan', 'pseo.terms')->name('legal.terms');
+Route::view('/kebijakan-privasi', 'pseo.privacy')->name('legal.privacy');
 Route::get('/beli-aplikasi-kos/fitur/{feature}', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCodeByFeature'])->name('pseo.beli.feature');
 Route::get('/source-code-kos/{feature}', [App\Http\Controllers\ProgrammaticSeoController::class, 'beliSourceCodeByFeature'])->name('pseo.sourcecode');
 

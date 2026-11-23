@@ -78,6 +78,8 @@
 <footer class="bg-slate-900 text-slate-400 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm">
         &copy; {{ date('Y') }} {{ setting('app_name', 'Kos Manager') }}. All rights reserved.
+        <span class="mx-2">•</span><a href="{{ route('legal.terms') }}" class="hover:text-white underline">Syarat &amp; Ketentuan</a>
+        <span class="mx-2">•</span><a href="{{ route('legal.privacy') }}" class="hover:text-white underline">Kebijakan Privasi</a>
     </div>
 </footer>
 

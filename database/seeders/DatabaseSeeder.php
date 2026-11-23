@@ -8,6 +8,17 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Pengaman penjualan: data demo (akun password lemah + contoh)
+        // dilarang keras di production. Gunakan
+        // `php artisan koskosan:create-owner` di server produksi.
+        if (app()->isProduction()) {
+            throw new \RuntimeException(
+                'DatabaseSeeder diblokir di environment production. '.
+                'Seeder berisi akun demo dan data contoh — jangan dijalankan di server produksi. '.
+                'Buat akun owner dengan: php artisan koskosan:create-owner'
+            );
+        }
+
         $this->call([
             UserSeeder::class,
             SettingSeeder::class,

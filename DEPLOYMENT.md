@@ -59,9 +59,17 @@ php artisan storage:link
 ```
 
 > ⚠️ JANGAN `php artisan db:seed` di production — seeder berisi akun demo
-> (`admin@kos.test` / `password`) dan data contoh. Buat akun admin via
-> panel `/admin` atau command resmi, lalu hapus/nonaktifkan akun demo bila
-> database berasal dari dump development.
+> (`admin@kos.test` / `password`) dan data contoh. Seeder bahkan **diblokir
+> otomatis** bila `APP_ENV=production`. Buat akun admin via
+> `php artisan koskosan:create-owner`, lalu bersihkan sisa akun demo bila
+> database berasal dari dump development:
+>
+> ```bash
+> php artisan koskosan:remove-demo --force
+> ```
+>
+> Checklist serah terima lengkap: `docs/GO_LIVE_CHECKLIST.md`.
+> Panduan kunci gateway/WA/email: `docs/PRODUCTION_KEYS.md`.
 
 ### Set permission
 ```bash

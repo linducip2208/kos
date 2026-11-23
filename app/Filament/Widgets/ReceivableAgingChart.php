@@ -17,6 +17,8 @@ class ReceivableAgingChart extends ChartWidget
 
     protected ?string $maxHeight = '300px';
 
+    protected int|string|array $columnSpan = 1;
+
     public static function canView(): bool
     {
         return Gate::allows('finance.report');
@@ -25,6 +27,31 @@ class ReceivableAgingChart extends ChartWidget
     public function getHeading(): ?string
     {
         return 'Umur Piutang';
+    }
+
+    public function getDescription(): ?string
+    {
+        return 'Distribusi saldo belum terbayar berdasarkan umur keterlambatan (dalam Rupiah).';
+    }
+
+    protected function getOptions(): ?array
+    {
+        return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => ['display' => false],
+                'tooltip' => ['padding' => 12, 'cornerRadius' => 10],
+            ],
+            'scales' => [
+                'x' => ['grid' => ['display' => false]],
+                'y' => [
+                    'beginAtZero' => true,
+                    'grid' => ['color' => 'rgba(100, 116, 139, 0.12)'],
+                    'border' => ['display' => false],
+                ],
+            ],
+        ];
     }
 
     protected function getType(): string

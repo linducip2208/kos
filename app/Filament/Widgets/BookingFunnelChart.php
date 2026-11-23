@@ -17,6 +17,8 @@ class BookingFunnelChart extends ChartWidget
 
     protected ?string $maxHeight = '300px';
 
+    protected int|string|array $columnSpan = 1;
+
     public static function canView(): bool
     {
         return Gate::allows('booking.view');
@@ -25,6 +27,33 @@ class BookingFunnelChart extends ChartWidget
     public function getHeading(): ?string
     {
         return 'Funnel Booking';
+    }
+
+    public function getDescription(): ?string
+    {
+        return 'Perkembangan prospek booking dari lead hingga check-in.';
+    }
+
+    protected function getOptions(): ?array
+    {
+        return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'indexAxis' => 'y',
+            'plugins' => [
+                'legend' => ['display' => false],
+                'tooltip' => ['padding' => 12, 'cornerRadius' => 10],
+            ],
+            'scales' => [
+                'x' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                    'grid' => ['color' => 'rgba(100, 116, 139, 0.12)'],
+                    'border' => ['display' => false],
+                ],
+                'y' => ['grid' => ['display' => false]],
+            ],
+        ];
     }
 
     protected function getType(): string

@@ -16,6 +16,25 @@ class StatsOverviewWidget extends BaseWidget
 
     protected ?string $pollingInterval = '60s';
 
+    protected ?string $heading = 'Ringkasan Operasional & Keuangan';
+
+    protected ?string $description = 'Indikator utama properti pada periode berjalan.';
+
+    /**
+     * Grid responsif: 1 kolom di mobile, 2 di tablet,
+     * 3–4 di desktop, 5 di layar sangat lebar.
+     */
+    protected function getColumns(): int|array|null
+    {
+        return [
+            'default' => 1,
+            'sm' => 2,
+            'lg' => 3,
+            'xl' => 4,
+            '2xl' => 5,
+        ];
+    }
+
     protected function getStats(): array
     {
         $user = auth()->user();
@@ -40,31 +59,31 @@ class StatsOverviewWidget extends BaseWidget
         $stats = [
             Stat::make('Total Kamar', $metrics['total_rooms'])
                 ->description($metrics['available_rooms'].' tersedia • '.$metrics['occupied_rooms'].' terisi')
-                ->descriptionIcon('heroicon-m-home')->color('primary'),
+                ->icon('heroicon-m-home')->color('primary'),
             Stat::make('Tingkat Hunian', $metrics['occupancy_rate'].'%')
                 ->description('Kamar aktif yang sedang dihuni')
-                ->descriptionIcon('heroicon-m-chart-bar')
+                ->icon('heroicon-m-chart-bar')
                 ->color($metrics['occupancy_rate'] >= 80 ? 'success' : ($metrics['occupancy_rate'] >= 50 ? 'warning' : 'danger')),
             Stat::make('Kamar Maintenance', $metrics['maintenance_rooms'])
                 ->description($metrics['open_maintenance'].' pekerjaan terbuka')
-                ->descriptionIcon('heroicon-m-wrench-screwdriver')->color($metrics['maintenance_rooms'] ? 'warning' : 'success'),
+                ->icon('heroicon-m-wrench-screwdriver')->color($metrics['maintenance_rooms'] ? 'warning' : 'success'),
             Stat::make('Penyewa Aktif', $metrics['active_tenants'])
                 ->description('Kontrak aktif / segera berakhir')
-                ->descriptionIcon('heroicon-m-users')->color('info'),
+                ->icon('heroicon-m-users')->color('info'),
             Stat::make('Kontrak ≤ 30 Hari', $metrics['expiring_leases'])
                 ->description('Perlu follow-up perpanjangan')
-                ->descriptionIcon('heroicon-m-calendar-days')->color($metrics['expiring_leases'] ? 'warning' : 'success'),
+                ->icon('heroicon-m-calendar-days')->color($metrics['expiring_leases'] ? 'warning' : 'success'),
             Stat::make('Booking Menunggu', $metrics['pending_bookings'])
                 ->description('Prospek perlu respons')
-                ->descriptionIcon('heroicon-m-clock')->color($metrics['pending_bookings'] ? 'warning' : 'success'),
+                ->icon('heroicon-m-clock')->color($metrics['pending_bookings'] ? 'warning' : 'success'),
         ];
 
         if ($financeVisible) {
             array_splice($stats, 2, 0, [
-                Stat::make('Ditagihkan', $money($metrics['billed'] ?? 0))->description('Nilai invoice periode berjalan')->descriptionIcon('heroicon-m-document-text')->color('info'),
-                Stat::make('Kas Diterima', $money($metrics['collected'] ?? 0))->description('Pembayaran terverifikasi')->descriptionIcon('heroicon-m-arrow-down-circle')->color('success'),
-                Stat::make('Piutang Berjalan', $money($metrics['receivable'] ?? 0))->description(($metrics['overdue_invoices'] ?? 0).' invoice overdue')->descriptionIcon('heroicon-m-exclamation-triangle')->color(($metrics['overdue_invoices'] ?? 0) ? 'danger' : 'success'),
-                Stat::make('Pengeluaran', $money($metrics['expenses'] ?? 0))->description('Pada periode berjalan')->descriptionIcon('heroicon-m-arrow-trending-down')->color('warning'),
+                Stat::make('Ditagihkan', $money($metrics['billed'] ?? 0))->description('Nilai invoice periode berjalan')->icon('heroicon-m-document-text')->color('info'),
+                Stat::make('Kas Diterima', $money($metrics['collected'] ?? 0))->description('Pembayaran terverifikasi')->icon('heroicon-m-arrow-down-circle')->color('success'),
+                Stat::make('Piutang Berjalan', $money($metrics['receivable'] ?? 0))->description(($metrics['overdue_invoices'] ?? 0).' invoice overdue')->icon('heroicon-m-exclamation-triangle')->color(($metrics['overdue_invoices'] ?? 0) ? 'danger' : 'success'),
+                Stat::make('Pengeluaran', $money($metrics['expenses'] ?? 0))->description('Pada periode berjalan')->icon('heroicon-m-arrow-trending-down')->color('warning'),
             ]);
         }
 
